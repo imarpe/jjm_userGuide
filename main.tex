@@ -1,13 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Created by John Paul Minda, PhD			%%
-%% Professor of Psychology					%%
-%% The Brain and Mind Institute				%%
-%% The University of Western Ontario		%%	
-%% London, ON N6A 5C2						%%
-%%											%%
-%% Version 1.2								%%	
-%% Feb 13, 2018								%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \documentclass{article}
 \usepackage{fullpage}
@@ -16,49 +6,1236 @@
 \usepackage[scaled=1]{helvet}
 \usepackage[helvet]{sfmath}
 \everymath={\sf}
-
+\usepackage{hyperref}
 \usepackage{parskip}
 \usepackage[colorinlistoftodos]{todonotes}
+\usepackage{graphicx} 
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsbsy}
+\usepackage{graphicx}
+\usepackage{bbm}
+\usepackage{mathrsfs}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
 \title{JJM user manual}
-\author{Criscely LUJAN, Mirian GERONIMO, any others?}
-%\company{The University of Western Ontario}
+
+\date{\parbox{\linewidth}{\centering%
+  \skip
+  Criscely LUJAN \hspace*{3cm} Mirian GERONIMO\endgraf\medskip
+  Instituto del Mar del Perú IMARPE}
+  }
 \setcounter{tocdepth}{2}
 \begin{document}
 \maketitle
+
 \tableofcontents
+\newpage
+
+\section*{Abstract} 
+% Model description
+This paper provides a detailed and comprehensive specification of the joint jack mackerel model (JJM), including the algebraic specifications of the assessment model, tables with the input data and key parameters for the assessment. In addition a case study has been used to illustrate the use of the JJM model. This paper aims to provide an illustrative description of the JJM which can serve as support and guidance to users.
 
 \section{Introduction} 
+
 % Model description
-% Programming languages
+This paper gives a full algebraic description of the JJM model which is used for the Jack mackerel assessment in the South Pacific Regional Fisheries Management Organisation \href{https://www.sprfmo.int/}{SPRFMO}. For this work, we provide a set of data that is used as part of a case study (see \nameref{section:AppendixA}). This information is used as data input to simulate an assessment (see results in \nameref{section:AppendixB}). Part of the concepts of the JJM model presented here come from \href{https://www.sprfmo.int/assets/Meetings/SC/10th-SC-2022/Report-and-Annexes/Annex-8-JM-Technical-Advice-CV_2.pdf}{SPRFMO SC10 Report-Annex 10- Jack Mackerel Technical Annex}.
+
+\section{JJM model}
+
+\subsection{Model description}
+
 % Aim of the model
+The Joint Jack Mackerel Model (JJM) is a statistical catch-at-age and age-structured model used to evaluate the Jack mackerel (\textit{Trachurus murphyi}). This species is widespread throughout the South Pacific ocean, and there are at least five management units identified of Jack mackerel whose are associated to distinct fisheries: the Ecuadorian and Peruvian fishery, the northern and central-southern Chilean fisheries, and the purely high sea fishery. 
+
+The JJM model was adopted as the assessment method in 2010 and continues to be used in the SPRFMO. In this context, each year an update of the model data is carried out, and using updated data inputs and indicators the model is run. Model results are used to provide an recommendation of the Jack mackerel population status for its exploitation. On the other hand, the JJM model was been adopted for some SPRFMO delegations (e.g. in Peru) for its internal fishery assessment.
+
+% Programming languages
+This JJM model, implemented in AD Molder Builder (\href{https://www.admb-project.org/}{ADMB}), uses a forward projection approach and maximum likelihood estimation to solve for model parameters. The operational population dynamics model of the JJM is defined by the standard catch equation with various modifications such as those described by Fournier \& Archibald (1982), Hilborn \& Walters (1992) and Schnute \& Richards (1995).\\
+
+\textbf{Algorithm sections}\\
+
+There are three obligatory and important sections in the JJM code:
+
+\begin{itemize}
+    \item Data section: data reading from a document with init prefix
+    \item Parameter section: model parameterisation
+    \item Procedure section: current model calculations
+\end{itemize}
+
+\subsection{Model history}
+% A little of history about the model
+Since the creation of the JJM model, this tool is in continuous development and has been improved by participant scientists mainly involved in the SPRFMO. As part of the most important changes since its creation, was to include length composition data (and specifying or estimating growth) and the capacity to estimate the natural mortality by age and time. Nowadays, the model allow the use of catch information either at age or size for any fleet, this is an important change that provides flexibility in terms of data usage. Besides, other important change is the explicit incorporation of regime shifts in population productivity by fleet.
+
+% Which information need the model
+The model consists of four main components: i) the dynamics of the stock, ii) the fishery dynamics, iii) the observation models for the data, and iv) the procedure used for parameter estimation (including uncertainties).
+
+\subsection{Main assumptions}
+
+A statistical catch-at-age model analyses data on the age of fish caught in scientific surveys and by fisheries to provide a management advice. Catch-at-age models typically require information on stock age, fishing effort and total catches for each fishery targeting a stock.
+
+To apply a statistical catch-at-age models, specific data are needed for each age class, where an age class is a set of all fish born in a given year. Then, catch-at-age results provide the full suite of management advice estimating a stock's current size and its management reference points associated with the maximum sustainable yield (MSY). The main assumptions of such models and implemented in the JJM model are detailed in the following sections.
+
+\subsubsection{Stock dynamics}
+
+\begin{itemize}
+
+\item The JJM model is not spatially-explicit, although the fisheries operate in geographically distinct areas.
+
+\item The model needs initial conditions which should preferably be set at equilibrium conditions.
+
+\item The population's age composition considers individuals of diverse years (from 1 to more). But in all cases a stochastic Beverton-Holt relationship between stock and recruitment is included.
+
+\item The recruitment and the spawning season should be assumed to occur in specific month or period of time.
+
+%For the study of the Jack Mackerel in the South Pacific ocean, the recruitment is assumed to occur in January while the spawning season is assumed to be an instantaneous process occurring in mid-November.
+
+\item Each cohort survives an age-specific mortality composed of fishing mortalities at age by fleet and natural mortality.
+
+\item Natural mortality is assumed to be constant over time and age.
+
+\end{itemize}
+
+\subsubsection{Fishery dynamics}
+
+\begin{itemize}
+
+\item The JJM model assumes that the interaction of the population with the fisheries occurs through the fishing mortality. 
+    
+\item The fishing mortality is assumed to be a composite of several processes: selectivity (by fleet), catchability and effort deviations.
+
+\item The selectivity report the age-specific pattern of fishing mortality and its pattern is non-parametric assuming to be fishery-specific and time-variant.
+
+\item The catchability describes the scales of fishing effort to fishing mortality and it is specific to each of abundance indices.
+    
+\item The effort deviations describes a random effect in the fishing effort.
+
+\item The JJM model includes temporal variation in both fishery and index selectivity patterns at the annual and regime scales, depending on the index and the stock structure hypothesis.
+\end{itemize}
+
+\subsubsection{Observation models for data}
+
+\begin{itemize}
+
+\item There are four data components that contribute to the log-likelihood
+function: the total catch data, the age-frequency data, the length-frequency data and the abundance indices.
+
+\item Probability distributions for the age and length-frequency proportions are assumed to be approximated by multinomial distributions.
+
+\item Sample size is specified to be gear-specific but mostly constant over years.
+
+\item For the total catch by fishery and the abundance indices, a log-normal assumption has been assumed with constant coefficient of variation (CV).
+
+\end{itemize}
+
+%To be included in model input parameters
+%The CV for the fisheries being 0.05 whereas the CV for the abundance indices depends on the index. Besides, the Francis T1.8 weighting method is used to assign weighted sample sizes for age-frequency data. The data weights have been updated during the JM benchmark.
+
+\subsubsection{Parameter estimation}
+
+% Methods for estimated parameters
+
+\begin{itemize}
+
+\item The most numerous parameters estimated involve estimates of annual and age-specific components of fishing mortality for each year and for each of the four fisheries identified in the model.
+
+\item Model parameters are estimated by maximising the log-likelihoods of the data plus the log of the probability density functions of the priors and smoothing penalties specified in the model.
+
+\item Parameter estimation is conducted in a series of phases, the first of which used arbitrary starting values for most parameters.
+
+\end{itemize}
+
+% Modeled process: a description of it
+
+\subsection{Mathematical Model details}
+
+This catch-at-age model is used as the underlying assessment model able to fit to CPUE indices as well as catch-at-age and length data. The assessment process involves developing a model of the resource dynamics and conditioning its output to the available data by minimizing a log-likelihood function.
+
+\subsubsection{Population dynamics}
+
+\textbf{Numbers at age}
+
+The population dynamics are modelled by the following set of equations:
+
+\begin{equation}
+N^s_{y,a=1}=e^{\mu_R+\epsilon_{y}}  \ \ \ \ \ , y_{1}\leq y \leq y_{N}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $s$ is the fish stock, $a$ the age and $y$ the year;
+    
+    \item the simulation period {y \in \{y_{0},y_{N}\}};
+
+    \item $N^s_{y,a=1}$ is the numbers at age $a=1$ for the stock $s$ in year $y$;
+    
+    \item $\mu_R$ is the mean recruitment;
+    %\item $\mu_R$: $mean\_log\_rec(cum\_regs(s)+yy\_sr(s,y))$;
+
+    \item $\epsilon_{y}$ is the annual deviation of recruitment.
+    
+    %\item $\epsilon_{y}:rec\_dev(s,y)$;
+\end{itemize}
+
+The JJM uses the Pope approximation, a variant of the statistical catch-at-age. This fixes the predicted catches to the observed catches using Pope's approximation to calculate the annual exploitation rate in the midpoint of the year. In this case:
+
+\begin{equation}
+N^{s}_{y+1,a+1}=N^s_{y,a}e^{-M^s_y}-C^s_{y,a}e^{-M^s_y 0.5}, \ \ \ \ \ 1\leq a \leq m-2
+\end{equation}
+    
+\begin{equation}
+N^s_{y+1,m}=N^s_{y,m-1}e^{-M^s_y}-C^s_{y,m-1}e^{-M^s_y 0.5}+N^s_{y,m}e^{-M^s_y}-C^s_{y,m}e^{-M^s_y 0.5}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $m$ is the maximum age considered;
+    
+    \item $N^{s}_{y+1,a+1}$ is the number of fish at age $a+1$ for the stock $s$ in the year $y+1$;
+
+    \item $N^{s}_{y+1,m}$ is the number of fish at age $m$ for the stock $s$ in the year $y+1$;
+
+    \item $M^{s}_{y}$ denotes the natural mortality rate on fish of stock $s$ in the year $y$;
+
+    \item $C^s_{y,a}$ and $C^s_{y,m}$ denotes the total catch of stock $s$ in the year $y$ at age $a$ and $m$ respectively.
+    
+\end{itemize}
+
+\hfill
+
+In addition, the fishing mortalities and survival rate are calculated:
+
+\begin{equation}
+F^s_{y,a}=log\left(\dfrac{N^s_{y,a}}{N^s_{y+1,a+1}}\right)-M^s_y, \ \ \ \ \ 1\leq a \leq m-1
+\end{equation}
+
+\begin{equation}
+F^s_{y,m}=log\left(\dfrac{N^s_{y,m-1}+N^s_{y,m}}{N^s_{y+1,m}}\right)-M^s_y
+\end{equation}
+
+where:
+
+\begin{itemize}
+    \item $F^s_{y,a}$ is the fishing mortality for the stock $s$ at the age $a$ in the year $y$;
+
+    \item $F^s_{y,m}$ is the fishing mortality for the stock $s$ at the maximum age $m$ considered in the year $y$.
+\end{itemize}
+
+\hfill
+
+Also, the fishing mortality for each fishery and the survival rate are calculated as follows:
+
+\begin{equation}
+F^k_{y,a}=F^s_{y,a} \dfrac{\sum_{a = 1} ^{m} Cat(k,y)}{\sum_{a=1} ^{m} C^s_{y,a}}, \ \ \ \ \ 1\leq a \leq m.
+\end{equation}
+
+\begin{equation}
+S^s_{y,a}=e^{-(F^s_{y,a}+M^s_{y})}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $k$ is the fishery number and $s$ is the corresponding stock due to the fishery;
+    
+    \item $1\leq k \leq n_{fsh}$ where $n_{fsh}$ is the total number of fisheries;
+   
+    \item $F^k_{y,a}$ is the fishing mortality for fishery $k$ at age $a$ in the year $y$;
+
+    \item $Cat(k,y)$ is the catch at age for fishery $k$ in the year $y$ (see bellow);
+    
+    \item $S^s_{y,a}$ is survival rate for the stock $s$ at age $a$ in the year $y$.
+\end{itemize}
+
+When the Pope approximation is not used the number at age and survival rate are calculated as follows:
+
+\begin{equation}
+N^s_{y+1,a+1}=N^s_{y,a}S^s_{y,a}, \ \ \ \ \ 1\leq a \leq m-2
+\end{equation}
+
+\begin{equation}
+N^s_{y+1,m}=N^s_{y,m-1}S^s_{y,m-1}+N^s_{y,m}S^s_{y,m}
+\end{equation}
+
+Defining the fishing mortality for the stock, survival rate, and fishing mortality for the fishery as:
+
+\begin{equation}
+F^s_{y,a} = XXX
+\end{equation}
+
+\begin{equation}
+S^s_{y,a}=e^{-(F^k_{y,a}+M^{s}_{y})}
+\end{equation}
+
+\begin{equation}
+F^k_{y,a}=e^{Fmort^k_y}Se^k_{y,a}, \ \ \ y_0\leq y \leq y_N \ \ \ and  \ \ \  1\leq a \leq m
+\end{equation}
+
+where:
+\begin{itemize}
+
+    %\item $Z^{s}_{y,a}$ is the total mortality of stock $s$(to which fishery number k corresponds) in the year $y$ at the age $a$ ;
+    %\item $sel\_map$ is a selectivity map,  se refiere al número de stock al que pertenece la pesquería número $k$, notemos que $1\leq k \leq nfsh$ donde $nfsh$ es la cantidad total de pesquerías.
+    
+    \item $Fmort^k_y$ is the annual mortality for the fishery $k$ in the year $y$;
+    \item $Se^k_{y,a}$ is the fishing selectivity of the fishery $k$ in the year $y$ at the age $a$.
+
+\end{itemize}
+
+\hfill
+
+The numbers at age when $y_0$ for the stock $s$ at the age $a$ is calculated as following:
+
+\begin{equation}
+N^s_{y_0,a=1}=e^{\mu^s_{R,y_0} + \epsilon^s_{y_0}}
+\end{equation}
+
+If $r_0 = y_0-m+a_R$, where $r_0$ is the first year of recruitment and $a_R$ is the age at recruitment. For this case $a_R=1$:
+
+\begin{equation}
+N^s_{y_0,a}=e^{\mu_{R,y_0-a+1}^s + \epsilon^s_{y_0-a+1}}
+            \prod_{j=1}^{a-1}e^{-M^s_{y_0,j}}, \ 1<a<m
+\end{equation}
+
+If $r_0 = y_0-m+a_R$, where $a_R>1$:
+
+\begin{equation}
+N^s_{y_0,a}=e^{\mu_{R,y_0-a+1}^s + \epsilon^s_{y_0-a+1}}                          \prod_{j=1}^{a-1}e^{-M^s_{y_0,j}}, \ 1<a\leq m-a_R+1
+\end{equation}
+
+\begin{equation}
+N^s_{y_0,a}=R_0^s\prod_{j=1}^{a-1}e^{-M^s_{y_0,j}}, \ m-a_R+1<a\leq m-1
+\end{equation}
+
+where $R_0^s$ is the recruitment to the first regime of stock $s$.
+
+Finally, the number at age when the age es the maximum age considered in the population:
+
+\begin{equation}
+N^s_{y_0,m}=N^s_{y_0-1,m-1}e^{-M^s_{y_0,m-1}}+N^s_{y_0-1,m}e^{-M^s_{y_0,m}}
+\end{equation}
+
+%\begin{itemize}
+%   \item $log\_Rzero_r$ estimated parameter for the regime $r$;
+%   \item $Rzero(r)$=$e^{log\_Rzero_{r}}$, where $1\leq r \leq n_{regs}$ and $n_{regs}$ is the total number of regimes for all stocks;
+
+%   \item cum\_regs(s) es la cantidad regímenes acumulados hasta el stock número s-1 (cada stock tiene una determinada cantidad de regímenes).
+%   \item $R^s_{0}$ es como el reclutamiento del primer régimen del stock número s
+%   %\item Rzero(cum\_reg(s)+1)=R^s_{0} es como el reclutamiento del primer régimen del stock número s.
+%\end{itemize}
+
+
+\newpage
+% TO BE CHECK
+%    \item[(ii)] If Popes = False:
+%    \begin{equation}
+%    N^s_{i+1,j+1}=N^s_{i,j}.S^s_{i,j}, \ 1\leq j \leq nages-2.
+%    \end{equation}
+%    \begin{equation}
+%    N^s_{i+1,nages}=N^s_{i,nages-1}.S^s_{i,nages-1}+N^s_{i,nages}.S^s_{i,nages}.
+%    \end{equation}
+%Dentro de Popes=false tambień se calcula el survival rate:
+
+%\begin{equation}
+%    S^s_{i,j}=e^{-Z^s_{i,j}},
+%\end{equation}
+%donde \begin{equation}
+%    Z^{s}_{i,j}=M^{s}_{i,j}+ F^k_{i,j}, \ \ F^k_{i,j}=e^{fmort^k_i}*sel\_fsh(k,i)_j
+%\end{equation}
+%cuando $s=sel\_map(1,k)$. 
+%Caso contrario 
+%\begin{equation}
+%    Z^{s}_{i,j}=M^{s}_{i,j}.
+%\end{equation}
+
+%\begin{itemize}
+ %   \item sel\_map: mapa de selectividad, línea 8 del ctl
+ %   \item i:año desde styr a endyr. j:ages. k:número de pesquería.
+ %   \item fmort: mortalidad anual a estimar.
+ %   \item $sel\_fsh(k,i)_j$: selectividad de la pesquería k en el año i a la edad j.
+ %   \item M:mortalidad natural
+ %   \item Z:mortalidad total
+%\end{itemize}
+
+
+%Hasta ahora solo hemos calculado los números a la edad para los años $\{y_1,...y_N\}$ es decir para los años desde styr+1 hasta endyr, ahora calcularemos para el año styr, en otras palabras calcularemos $N^s_{styr,j}$ para cada edad $j$. 
+
+%\begin{equation}
+%    N^s_{styr,1}=e^{\epsilon^s_{styr} + \mu^s_{R,styr}}
+%\end{equation}
+
+%esto ya estaba comentado
+%%\begin{equation}
+%%    N^s_{styr,2}=e^{\epsilon^s_{styr-1}+\mu_{R,styr-1}^s}.e^{-M^s_{styr,1}}
+%%\end{equation}
+%%\begin{equation}
+%%    N^s_{styr,3}=e^{\epsilon^s_{styr-2}+\mu_{R,styr-2}^s}.e^{-M^s_{styr,1}}e^{-M^s_{styr,2}}
+%%\end{equation}
+%%\begin{equation}
+%%    N^s_{styr,4}=e^{\epsilon^s_{styr-3}
+%%    +\mu_{R,styr-3}^s}.e^{-M^s_{styr,1}}.e^{-M^s_{styr,2}}.e^{-M^s_{styr,3}}
+%%\end{equation}
+%%\begin{equation}
+%%\vdots
+%%\end{equation}
+
+%If $styr\_rec=styr-nages+1$:
+%\begin{equation}
+%    N^s_{styr,i}=e^{\epsilon^s_{styr-i+1}
+%    +\mu_{R,styr-i+1}^s}\prod_{j=1}^{i-1}e^{-M^s_{styr,j}}, \ 1<i<nages.
+%\end{equation}
+
+
+%If $styr\_rec=styr-nages+rec\_age$, with $rec\_age>1$:
+
+%\begin{equation}
+%    N^s_{styr,i}=e^{\epsilon^s_{styr-i+1}
+%    +\mu_{R,styr-i+1}^s}\prod_{j=1}^{i-1}e^{-M^s_{styr,j}}, \ 1<i\leq nages-rec\_age+1.
+%\end{equation}
+
+%\begin{equation}
+%N^s_{styr,i}=Rzero(cum\_regs(s)+1)\prod_{j=1}^{i-1}e^{-M^s_{styr,j}}, \ nages-rec\_age+1<i<nages.
+%\end{equation}
+
+%\begin{itemize}
+%    \item $rec\_age$: Es input, línea 6 del archivo dat. Edad a la que empieza el reclutamiento.
+%    \item $styr\_rec:$ Primer año de reclutamiento.
+%    \item $Rzero_r$=$e^{log\_Rzero_{r}}$, donde $1\leq r \leq nregs$ es un régimen y nregs es la cantidad total de regímenes (de todos los stocks).
+%    \item $log\_Rzero_r$ parámetro a estimar, tiene un valor de inicialización.
+%    \item cum\_regs(s) es la cantidad regímenes acumulados hasta el stock número s-1 (cada stock tiene una determinada cantidad de regímenes).
+%    \item Rzero(cum\_reg(s)+1) es como el reclutamiento el primer régimen del stock número s.
+%\end{itemize}
+%Ahora calculamos el número a la edad nages en el año styr para ambos casos:
+%\begin{equation}
+%N^s_{styr,nages}=N^s_{styr-1,nages-1}e^{-M^s_{styr,nages-1}}+N^s_{styr-1,nages}e^{-M^s_{styr,nages}}
+%\end{equation}
+
+% (comentario:hasta ahora se han calculado tanto la mortalidad por pesca F y la mortalidad total Z para popes = true y popes = false, M se asume constante. Para cada opción(popes=true o popes=false) se trabaja con sus respectivas mortalidades en el resto del código.)\\
+
+\newpage
+
+\textbf{Spawning stock biomass}
+
+The spawning stock biomass (SSB) is calculated from the first year of spawning until the first observed year as follows:
+
+
+
+\textbf{Biomasa desovante (sp\_biom)}\\
+Obtención de la biomasa desovante desde el primer año de desove $styr\_sp$ hasta el primer año de observación $styr$.
+\begin{equation}
+    Sp\_Biom(s)_p=wt\_mature(s)_1.e^{-M^s_{styr,1}.spmo\_frac}.Rzero(cum\_regs(s)+1)
+\end{equation}
+\begin{equation*}
+    +\sum_{j=2}^{nages-1}wt\_mature(s)_j.e^{-M^s_{styr,j} spmo\_frac}.Rzero(cum\_regs(s)+1)\prod_{l=1}^{j-1}e^{-M^s_{styr,l}} 
+\end{equation*}
+\begin{equation*}
+    + wt\_mature(s)_{nages}.e^{-M^s_{styr,nages}.spmo\_frac}.\dfrac{Rzero(cum\_regs(s)+1)}{1-e^{-M^s_{styr,nages}}}.\prod_{l=1}^{nages-1}e^{-M^s_{styr,l}}
+\end{equation*}
+donde $styr\_sp\leq p \leq styr\_rec$
+\begin{itemize}
+    \item $Sp\_Biom(s)_p$: Biomasa desovante desde el año $p=styr\_sp$ hasta $p=styr\_rec$.
+\end{itemize}
+
+Ahora calculamos la biomasa desovante para los años desde j=styr\_rec+1 hasta j=styr-1:\\
+
+Sea $1\leq l \leq styr-styr\_rec$ y $2\leq i \leq l+1$:
+\begin{equation}
+natagetmp(s,styr\_rec+l)_i = e^{\epsilon^s_{styr\_rec+l+1-i}+\mu^s_{R,styr\_rec+l+1-i}}\prod_{t=1}^{i-1}e^{-M^s_{styr,t}},
+\end{equation}
+luego para $l+1< i < nages$:
+\begin{equation}
+natagetmp(s,styr\_rec+l)_i=Rzero(cum\_regs(s)+1)\prod_{t=1}^{i-1}e^{-M^s_{styr,t}},
+\end{equation}
+ahora para $i=nages$:
+\begin{equation}
+natagetmp(s,styr\_rec+l)_{nages}=natagetmp(s,styr\_rec+l-1)_{nages-1}
+\end{equation}
+\begin{equation*}
+    +natagetmp(s,styr\_rec+l-1)_{nages}e^{-M^s_{nages}}.
+\end{equation*}
+Con estos cálculos previos calculamos la biomasa desovante:
+\begin{equation}
+    Sp\_Biom(s, j)=\sum_{i=2}^{nages}natagetmp(s,j)_i.e^{-M^s_{styr,i}.spmo\_frac}.wt\_mature(s)_i.
+\end{equation}
+para $styr\_rec +1 \leq j \leq styr-1$. \\
+
+(Luego de haber calculado los números a la edad para cada año y el survival rate (ambos dependiendo de la elección de popes), calculamos la biomasa desovante (Sp\_Biom(s,i)) para cada stock s y cada año i, $styr \leq i \leq endyr$.)
+
+Calculate the biomass for the stock number $s$ in the year $i$ between $styr \leq i \leq endyr$:
+    \begin{equation}
+    Sp\_Biom(s,i)=\sum_{j=1}^{nages}N^s_{i,j}.{S^s_{i,j}}^{spmo\_frac}.wt\_mature(s)_j
+\end{equation}
+%     \end{itemize}
+\begin{itemize}
+    \item spmo\_frac:exponente del survival rate ($S^s_{i,j}$), es calculado como 
+    $spmo\_frac=\dfrac{spawnmo-1}{12}$.
+    \item spawnmo: Es input del archivo dat, línea 278.
+    \item wt\_mature: Es como el peso de especies maduras para cada edad en cada stock, se calcula como
+    \begin{equation}
+        wt\_mature(s)_j=wt\_pop(s)_j.maturity(s)_j
+    \end{equation}
+\end{itemize}
+\begin{itemize}
+    \item $wt\_pop(s)_j$: es input, línea 140 del ctl. Peso a la edad $j$ de la población para cada stock $s$.
+    \item $maturity(s)_j:$ es input, línea 143 del ctl. Madurez a la edad $j$ para cada stock $s$.
+\end{itemize}
+%Calculo de la biomasa desovante para el año j=endyr+1.\\
+Ahora para el año $j=endyr+1$:
+\begin{equation}
+Sp\_Biom(s,endyr+1)=e^{\mu_R(cum\_regs(s)+yy\_sr(s,endyr+1))}.(S^{s}_{endyr,1})^{spmo\_frac
+    }.wt\_mature(s)_1
+\end{equation}
+\begin{equation*}
++\sum_{i=2}^{nages-1}N^{s}_{endyr,i-1}S^{s}_{endyr,i-1}(S^s_{endyr,i})^{spmo\_frac}wt\_mature(s)_i
+\end{equation*}
+\begin{equation*}
+    +(N^{s}_{endyr,nages-1}.S^s_{endyr,nages-1}+N^s_{endyr,nages}.S^s_{endyr,nages}).(S^s_{endyr,nages})^{spmo\_frac}wt\_mature_{nages}
+\end{equation*}
+
+Sin embargo si se quiere proyectar sobre algunos años, es decir, si $nproj\_yrs>0$, entonces el valor de Sp\_Biom(s,endyr+1) cambia:
+\begin{equation}
+    Sp\_Biom(s,endyr+1)=
+\end{equation}
+
+
+
+\textbf{Catch at age}\\
+Se calcula tanto para popes=true y popes=false.\\
+For each stock number $s$ and  each year $i$ between $styr$ and $endyr$. Here there are two ways to calculate $Cat$ and $pred\_catage$:
+\begin{itemize}
+    \item Si $popes=TRUE$, then pentmp=0
+        \begin{equation}
+        vbio=\sum_{age\ j}N^s_{i,j}.e^{-\frac{M^s_{i,j}}{2}}.sel\_fsh_j(k,i).wt\_fsh_j(k,i)
+    \end{equation}
+        \begin{equation}
+        catch\_tmp=vbio-posfun\left(\frac{(vbio - catch\_bio(k,i))}{vbio} , 0.1 , pentmp \right).vbio
+    \end{equation}
+    \begin{equation}
+        Ctmp_j=N^s_{i,j}.e^{-\frac{M^s_{i,j}}{2}}sel\_fsh_j(k,i).\dfrac{catch\_tmp}{vbio}
+    \end{equation}
+    para $1\leq j \leq nages$.
+    \begin{equation}
+        %catage\_tot(s,i)+=Ctmp, consultar
+        C^s_{i,j}+=Ctmp_j
+    \end{equation}
+    \begin{equation}
+        %catage(k,i)=Ctmp
+        Cat(k,i)_j=Ctmp_j
+    \end{equation}
+    \begin{equation}
+            pred\_catch(k,i)=\sum_{j=1}^{nages}Ctmp_j.wt\_fsh_j(k,i)
+        \end{equation}
+    \item Si $popes=FALSE$:
+     \begin{equation}
+        Cat(k,i)_j=\dfrac{F^k_{i,j}}{Z_j(k,i)}\left(1-S^s_{i,j}\right)N^s_{i,j}
+    \end{equation}
+    \begin{itemize}
+        \item $Cat(k,i)_j$: captura a la edad $j$ de la pesquería $k$ en el año $i$.
+    \end{itemize}
+      \begin{equation}
+        pred\_catch(k,i)=\sum_{age \ j}Cat(k,i)_j.wt\_fsh_j(k,i)
+    \end{equation}
+    \begin{itemize}
+        \item pred\_catch(k,i): captura predicha para el año $i$ de la pesquería número $k$.
+        \item $wt\_fsh_j(k,i)$: Peso a la edad $j$ para el año $i$ de observación en la pesquería número $k$. Es input, línea 80 del archivo dat.
+        \item catch\_bio es la biomasa de captura observada
+        \begin{equation}
+          catch\_bio(k)_i=catch\_bio\_in(k)_i,  
+        \end{equation}
+        donde $1\leq k \leq nfsh$ y $styr\leq i \leq endyr$.
+    \end{itemize}
+    \begin{itemize}
+        \item catch\_bio\_in es una matriz input, línea 16 del archivo dat. 
+    \end{itemize}
+\end{itemize}
+\textbf{Cálculo de la biomasa cero}\\
+Se necesita para calcular el reclutamiento.\\
+Sea el stock número $s$:
+\begin{equation}
+    Bzero(cum\_regs(s)+1)=wt\_mature(s)_1.e^{-M^s_{styr,1}.spmo\_frac}.Rzero(cum\_regs(s)+1)
+\end{equation}
+
+
+\begin{equation*}
+    +\sum_{j=2}^{nages-1}wt\_mature(s)_j.e^{-M^s_{styr,j} spmo\_frac}.Rzero(cum\_regs(s)+1)\prod_{l=1}^{j-1}e^{-M^s_{styr,l}} 
+\end{equation*}
+\begin{equation*}
+    + wt\_mature(s)_{nages}.e^{-M^s_{styr,nages}.spmo\_frac}.\dfrac{Rzero(cum\_regs(s)+1)}{1-e^{-M^s_{styr,nages}}}.\prod_{l=1}^{nages-1}e^{-M^s_{styr,l}}.
+\end{equation*}
+\begin{equation}
+    Bzero(cum\_regs(s)+r) = Sp\_Biom(s,reg\_shift(s,r-1)-rec\_age)
+\end{equation}
+donde $2\leq r \leq nreg(s)$.
+\begin{itemize}
+    \item nreg(s) es la cantidad de regímenes para el stock número s.
+    \item reg\_shift(s,r-1) es input, línea 41 del ctl.
+\end{itemize}
+\textbf{Stock-Recruitment Parameters}\\
+Sea $r$ un número de régimen dado, es decir, $1\leq r \leq nregs$.\\
+Se calcula los parámetros de la curva de reclutamiento (alpha, beta) según el valor que se asigne a SrType.\\
+Si SrType=1 (Ricker), entonces
+\begin{equation}
+alpha(r)=log\left(\dfrac{-4*steepness(irec)}{steepness(irec)-1}\right).
+\end{equation}
+Si SrType=2 (Beverton-holt):
+\begin{equation}
+    alpha(r) = Bzero(r)*\dfrac{1}{Rzero(r)}\dfrac{(1-(steepness(irec)-0.2)}{0.8*steepness(irec)}
+\end{equation}
+\begin{equation}
+    beta(r)=\dfrac{(5*steepness(irec)-1)}{4*steepness(irec)*Rzero(r)}.
+\end{equation}
+Si $SrType=4$:
+\begin{equation}
+    beta(r)=log\left(\dfrac{5*steepness(irec)}{0.8*Bzero(r)}\right)
+\end{equation}
+\begin{equation}
+    alpha(r)=log\left(\dfrac{Rzero(r)}{Bzero(r)}\right)+beta(r)*Bzero(r).
+\end{equation}
+\begin{itemize}
+    \item steepness es parámetro a estimar.
+    \item $irec=rec\_map(stk\_reg\_map(1,r),stk\_reg\_map(2,r))$. Donde $rec\_map$ es input, línea 23 del ctl.
+    \item $stk\_reg\_map$ es una matriz de dimensiones 2xnregs, donde $stk\_reg\_map(2,r)$ se refiere al régimen número $r$, con $1\leq r \leq nregs$, correspondiente al stock número $stk\_reg\_map(1,r)$.
+\end{itemize}
+
+\textbf{Reclutamiento}\\
+(considerar escribir desde Von Bertalanfy hasta Age composition to length composition antes de numeros a la edad, así luego de reclutamiento iría selectividad).\\
+
+Se calcula el reclutamiento para cada año $i$, donde $styr\leq i \leq endyr$:
+
+\begin{equation}
+    recruits(s,i)=N^s_{i,1}.
+\end{equation}
+
+Ahora para el año $i=endyr+1$:
+\begin{equation}
+    recruits(s,endyr+1)=e^{\mu_{R,cum\_regs(s)+yy\_sr(s,endyr+1)}}.
+\end{equation}
+
+Para la curva stock-reclutamiento, depende del valor de SrType. Sea 
+\begin{equation}
+    stock=\dfrac{i.Bzero(r)}{250}, 1\leq i \leq 300.
+\end{equation}
+Si SrType=1:
+\begin{equation}
+SRecruit(stock,r)=\dfrac{Rzero(r).stock}{Bzero(r)}e^{alpha(r).\left(1-\dfrac{stock}{Bzero(r)}\right)}
+\end{equation}
+Si SrType=2:
+
+\begin{equation}
+SRecruit(stock,r)=\dfrac{stock}{alpha(r)+beta(r).stock}
+        \end{equation}
+Si SrType=3:
+\begin{equation}
+SRecruit(stock,r)=e^{mean\_log\_rec(r)}
+\end{equation}
+Si SrType=4:
+\begin{equation}
+SRecruit(stock,r) =  stock.e^{alpha(r)-stock.beta(r)}.
+\end{equation}
+Finalmente se grafica los puntos $(stock, SRecruit(stock,r))$.
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%\textbf{Recruitment}
+%\textbf{Total catch and catches-at-age}
+%\textbf{Exploitable and survey biomasses}
+%\textbf{Initial conditions}
+
+%\subsubsection{MSY and relative quantities}
+
+%\subsubsection{The likelihood function}
+%\textbf{CPUE relative biomass data}
+%\textbf{Survey biomass data}
+%\textbf{Catch at age/length}
+%\textbf{Age-length keys}
+%\textbf{Stock-recruitment function residuals}
+
+%In other section:
+%X. Model parameters
+%X.1 Estimable parameters
+%X.2 Input parameters and other choice for application?
+%X.2.1 Age at maturity?
+%X.2.2 Weight-at-length
+
+
+
+
+
+\textbf{Von Bertalanfy}
+
+\begin{equation}
+    \mu_{age}(r,1)=L_0(r)
+\end{equation}
+\begin{equation}
+    \mu_{age}(r,i)=Linf(r)(1-e^{-{k\_coeff(r)}})+\mu_{age}(r,i-1)(e^{-k\_{coeff(r)}}).
+\end{equation}
+ \begin{itemize}
+    \item $\mu_{age}(r,i)$ is the mean lenght for each age $i$.
+     \item $r$ is a entire number between $1\leq r \leq ngrowth$(maximum of the Growth map matrix values). 
+     \item $Linf(r)$ is the maximum lenght.
+     \item $k\_coeff(r)$ is the parameter curvature.
+     \item $L_0(r)$ is the lenght initial.
+     
+ \end{itemize}
+\textbf{Equation weight at lenght}\\
+\begin{equation}
+     wt\_age\_vb(r) = lw\_a * \left(\mu_{age}(r)\right)^{lw\_b}
+ \end{equation}
+ \begin{itemize}
+     \item $wt\_age\_vb(r)$ is the weight vector at lenght vector $\mu_{age}(r)$.
+     \item $lw\_a$, $lw\_b$ are growth parameters given by  $lw\_a=0.007778994e-3$ and $lw\_b=3.089248476$ in the model.
+ \end{itemize}
+ \textbf{Maturity equation}\\
+ \begin{equation}
+    maturity\_vb(r) = \dfrac{1}{1+e^{32.93-1.45*\mu_{age}(r)}}
+\end{equation}
+\begin{itemize}
+    \item $maturity\_vb(r)$ is the proportion of mature species at lenght $\mu_{age}(r)$.
+\end{itemize}
+\textbf{Age composition to length composition}\\
+
+It uses normal Distribution to model the probability of the random variable $X_a$, 
+\begin{equation}
+    P(l-0.5\leq X_a\leq l+0.5 ) = P\left(\dfrac{(l-0.5)-\mu_a}{\sigma_a}\leq Z\leq\dfrac{(l+0.5)-\mu_a}{\sigma_a}\right)
+\end{equation}
+$P(l-0.5\leq X_a\leq l+0.5 )$, is the probability that the number of fish at age $a$ varies in lenght between  $l-0.5$ and $l+0.5$. \\
+The right expression is the normalization for $X_a$ because $X_a$ is a random variable with normal distribution, mean $\mu_a$ and  standard deviation $\sigma_a$ where it is calculated from $\sigma_{a}=sdage(r)*\mu_{age}(r)$).\\
+Let $P\_age2len(r)$ the matrix such that $Cl(1,nyears,1,nlenght)=C(1,nyears,1,nages)*P\_age2lenght$ where $Cl$ is the matrix composition for lenghts that we want to obtein and $C$ is the matrix composition for ages.
+\begin{equation}
+    P\_age2len(a,j) = \dfrac{P(l_j-0.5\leq X_a\leq l_j+0.5 )}{\sum_{a}P(l_j-0.5\leq X_a\leq l_j+0.5 )}.
+\end{equation}
+
+\begin{itemize}
+    \item $P\_age2len$ is a array with dimensions  $(1,ngrowth,1,nages,1,nlength)$.
+\end{itemize}
+\begin{itemize}
+    \item $l_j$ is the lenght $j-esima$ considered from the vector $len\_bins$ ($lengthbin$ is in the document dat line 10).
+\end{itemize}
+
+\textbf{Selectivity}\\
+
+- The treatment of selectivity patterns and how they are shared among fisheries and indices need to be specified. Also the selectivity for each fleet, and depending on the model configuration, some growth functions were employed inside the model to convert model-predicted age compositions to length compositions, in order to fit the model to the length composition data.\\
+
+Let $k$ the number of fishery and $i$ is the year between $styr$ and $endyr$.
+Depending on which values $fsh\_sel\_opt$ takes in order to calculate the logarithm of fishery selectivity $log\_sel\_fsh$:
+\begin{itemize}
+\item $fsh\_sel\_opt=1:$\\
+% \begin{equation}
+%        log\_sel\_fsh(k,i)(1,nselages\_fsh(k))=sel\_coffs\_tmp
+%    \end{equation}
+%    \begin{equation}
+%        log\_sel\_fsh(k,i)(nselages\_fsh(k),nages)=log\_sel\_fsh(k,i,nselages\_fsh(k))
+%    \end{equation}
+%    \begin{equation}
+%        log\_sel\_fsh(k,i)-=log(mean(e^{log\_sel\_fsh(k,i)}))
+%    \end{equation}
+Se asume styr como el primer año de cambio de selectividad, es decir $yrs\_sel\_ch\_fsh(k,1)=styr$, luego se toman en cuenta el resto de años de cambio de selectividad $yrs\_sel\_ch\_fsh(k,i)$, para $2\leq i \leq n\_sel\_ch\_fsh(k)$, introducidos en el archivo .ctl en la línea 116.
+\begin{itemize}
+    \item $yrs\_sel\_ch\_fsh(k)$ contiene los años de cambio de selectividad para cada pesquería número k.
+    \item $n\_sel\_ch\_fsh(k)$ es el número de cambios de selectividad para la pesquería $k$.
+    
+\end{itemize}
+
+%También sel\_change\_in\_fsh(k,styr)=1. 
+Se calcula los valores para $log\_selcoffs\_fsh\_in$( logaritmo de los coeficientes de selectividad (?) ) desde el primer cambio de selectividad hasta el cambio número $n\_sel\_ch\_fsh(k)$ para la respectiva pesquería número $k$:
+\begin{equation}
+    log\_selcoffs\_fsh\_in(k,jj)_l=\log\left(\dfrac{sel\_fsh\_tmp_l+1e-7}{\dfrac{1}{nselages\_in\_fsh(k)}\displaystyle\sum_{p=1}^{nselages\_in\_fsh(k)}(sel\_fsh\_tmp_p+1e-7)}\right),
+\end{equation}
+for $1\leq l \leq nselages\_fsh(k)$ y $1\leq jj \leq n\_sel\_ch\_fsh(k)$.
+%Ahora calculamos $log\_selcoffs\_fsh\_in(k,jj)$, que es el logaritmo de los coeficientes de selectividad para la pesquería número $k$ y el cambio de selectividad número $jj$, donde $2\leq jj \leq nsel\_ch\_fsh(k)$(se utilizaría esto si cambiara sel\_fsh\_tmp_j para 1\leq j \ļeq nselages\_in\_fsh(k) pero no cambia solo cambia para nselages\_in\_fsh +1 \leq j \leq nages) :
+
+%\begin{equation}
+%    log\_selcoffs\_fsh\_in(k,jj)_l = 
+%\end{equation}
+
+\begin{itemize}
+    \item $sel\_fsh\_tmp_j$ es el coeficiente de cambio de selelctividad para cada edad $j$, con $1\leq j \leq nages$. Es input, línea 119 del archivo .ctl.
+    \item Además para esta opción (fsh\_sel\_opt(1)), se asigna a la fase de coeficientes de selectividad para la pesquería $k$ ($phase\_selcoff\_fsh(k)$):
+    \begin{equation}
+        phase\_selcoff\_fsh(k)=phase\_sel\_fsh(k),
+    \end{equation}
+    \end{itemize}
+
+    donde $phase\_sel\_fsh(k)$ es la fase de minimización(del parámetro log\_selcoffs\_fsh?), input dada en la línea 111 del ctl, asímismo si este es negativo entonces se calculan los valores de inicialización para $log\_selcoffs\_fsh$ de la siguiente manera:
+    \begin{equation}
+        log\_selcoffs\_fsh(k,jj)\_l = log\_selcoffs\_fsh\_in_l
+    \end{equation}
+for $1\leq l \leq nselages\_in\_fsh(k)$ and $1\leq jj \leq n\_sel\_ch\_fsh(k)$.\\
+
+Ahora calculamos la selectividad de la pesquería $k$ en el año $i$. Sea $A$ el conjunto de años de cambio de selectividad (se incluye styr) y $p\in A$ algún elemento de $A$:
+ \begin{equation}
+        log\_sel\_fsh(k,i)_j=log\_selcoffs\_fsh(k,jj_p)\_j-log\left(\dfrac{1}{nages}*\left(\sum_{l=1}^{nselages\_fsh(k)}e^{log\_selcoffs\_fsh(k,jj_p)_l}+\right.\right.
+    \end{equation}
+    \begin{equation*}
+       \left. \left.\sum_{l=nselages\_fsh(k)+1}^{nages}e^{log\_selcoffs\_fsh(k,jj_p)_{nselages\_fsh(k)}}\right)\right), 
+    \end{equation*}
+   for $\ 1\leq j \leq nselages\_fsh(k)$ and $p\leq i \leq p-1$.\\
+   
+  Ahora para las edades restantes:
+    \begin{equation}
+         log\_sel\_fsh(k,i)_j=log\_selcoffs\_fsh(k,jj_p)\_{nselages\_fsh(k)}-log\left(\dfrac{1}{nages}*\left(\sum_{l=1}^{nselages\_fsh(k)}e^{log\_selcoffs\_fsh(k,jj_p)_l}+\right.\right.
+    \end{equation}
+ \begin{equation*}
+       \left. \left.\sum_{l=nselages\_fsh(k)+1}^{nages}e^{log\_selcoffs\_fsh(k,jj_p)_{nselages\_fsh(k)}}\right)\right), 
+    \end{equation*}
+    for $nselages\_fsh(k)\leq j \leq nages$ y $jj_p$ es el número de cambio que le corresponde al año de cambio $p\in A$.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+   
+   % \begin{equation}
+   %     log\_sel\_fsh(k,styr)_j=sel\_coffs\_tmp_j-log\left(\dfrac{1}{nages}*%%\left(\sum_{l=1}^{nselages\_fsh(k)}e^{sel\_coffs\_tmp_l}+\right.\right.
+  %  \end{equation}
+   % \begin{equation*}
+    %   \left. \left.\sum_{l=nselages\_fsh(k)+1}^{nages}e^{sel\_coffs\_tmp_{nselages\_fsh(k)}}\right)\right), \ 1\leq j \leq nselages\_fsh(k).
+    %\end{equation*}
+    %\begin{equation}
+    %    sel\_coffs\_tmp_j=\log\left(\dfrac{sel\_fsh\_tmp_j+1e-7}{mean(sel\_fsh\_tmp(1,nselages\_in\_fsh(k))+1e-7)}\right)
+    %\end{equation}
+   % \begin{itemize}
+   %     \item $sel\_fsh\_tmp$ is input line 119 of ctl (?).
+   % \end{itemize}
+   % Now for $nselages\_fsh(k)\leq j \leq nages$:
+   % \begin{equation}
+   %     log\_sel\_fsh(k,styr)=log\_sel\_fsh(k,styr)_{nselgaes\_fsh(k)}.
+   % \end{equation}
+   % Now calculate $log\_sel\_fsh$ para el resto de años de cambio de selectividad. La selectividad es lo mismo para los años que siguen a menos que haya un cambio (año de cambio de selectividad, estos años están ubicados en la línea 116 del ctl).
+    %\begin{equation}
+    %    sel\_fsh\_tmp_j=sel\_fsh\_tmp(nselages\_in\_fsh(k)), \ nselages\_in\_fsh(k)+1\leq j \leq nages.
+    %    \end{equation}
+    
+\item $fsh\_sel\_opt=2:$ 
+\begin{equation}
+            log\_sel\_fsh(k,i)(1,nselages\_fsh(k))=-log( 1.0 + e^{(-1.*sel\_slope\_tmp * ( age\_vector(1,nselages\_fsh(k)) - sel50\_tmp) )})
+        \end{equation}
+        \begin{equation}
+            log\_sel\_fsh(k,i)(nselages\_fsh(k),nages)=log\_sel\_fsh(k,i,nselages\_fsh(k)).
+        \end{equation}
+\item $fsh\_sel\_opt=3:$
+ \begin{equation}
+        log\_sel\_fsh(k,i)(1,nselages\_fsh(k))     = ( -log(1.0 + e^{(\frac{-2.9444389792}{du} * ( age\_vector(1,nselages\_fsh(k)) - bu) )})
+    \end{equation}
+    
+    \begin{equation*}
+         +log(1 - \dfrac{1}{(1 + e^{(\frac{-2.9444389792}{dd} ( age\_vector(1,nselages\_fsh(k)) - bd))})} ) )+0.102586589 
+    \end{equation*}
+    
+    \begin{equation}
+        log\_sel\_fsh(k,i)(nselages\_fsh(k),nages) = log\_sel\_fsh(k,i,nselages\_fsh(k)).
+    \end{equation}
+    \end{itemize}
+
+For the surveys:\\
+\begin{itemize}
+    \item $ind\_sel\_opt=1:$
+      \begin{equation}
+        log\_sel\_ind(k,i)(1,nselages\_ind(k))=sel\_coffs\_tmp
+    \end{equation}
+    \begin{equation}
+        log\_sel\_ind(k,i)(nselages\_ind(k),nages)=log\_sel\_ind(k,i,nselages\_ind(k))
+    \end{equation}
+    \begin{equation}
+        log\_sel\_ind(k,i)-=log(mean(e^{(log\_sel\_ind(k,i)(q\_age\_min(k),q\_age\_max(k)))}))
+    \end{equation}
+    \item $ind\_sel\_opt=2:$
+        \begin{equation}
+        log\_sel\_ind(k,i) = - log( 1.0 + e^{(-sel\_slope\_tmp * ( age\_vector - sel50\_tmp) )}).
+    \end{equation}
+    \item $ind\_sel\_opt=3:$
+     \begin{equation}
+        log\_sel\_ind(k,i)(1,nselages\_ind(k))     = ( -log(1.0 + e^{(\frac{-2.9444389792}{p1} * ( age\_vector(1,nselages\_ind(k)) - i1) )}) 
+\end{equation}
+    \begin{equation}
+          +log(1 - \frac{1}{(1 + e^{(\frac{-2.9444389792}{p3} * ( age_vector(1,nselages\_ind(k)) - i2))})} ) )+0.102586589 
+    \end{equation}
+    \begin{equation}
+         log\_sel\_ind(k,i)(nselages\_ind(k),nages) = log\_sel\_ind(k,i,nselages\_ind(k)).
+    \end{equation}
+\end{itemize}
+Finally we get the selectivites from:
+\begin{equation}
+    sel\_fsh=e^{log\_sel\_fsh}
+\end{equation}
+\begin{equation}
+    sel\_ind=e^{log\_sel\_ind}.
+\end{equation}
+
+- The equilibrium-based reference points are calculated within the JJM model. The model estimates values of Maximum Sustainable Yield (MSY) and the Fishing mortality expected to produce maximum sustainable yield (\(F_{MSY}\)) using a Newton-Raphson minimization routine that finds the value of fishing mortality, given the terminal year relative catches (and selectivities-at-age) by fleet,  and the terminal year weights-at-ages for each fleet, that maximizes catch. Since weights-at-age and effective selectivity change each year, these values can vary. MSY is thus defined as the maximum amount of catch that allows the remaining stock to generate sufficient recruitment to maintain the population at the same level. Besides (\(B_{MSY}\)) is taken as the long-term average of biomass fished under MSY.
+
+%To be included in model input parameters
+Between 2013 and 2021, a provisional \(B_{MSY}\) level of 5.5 millions tons was applied. 
+An interim management reference point for \(B_{MSY}\) was revised to a ten-year average of the model-estimated (\(B_{MSY}\)). 
+A limit reference point \(B_{LIM}\) (where B refers to spawning biomass) was defined as the spawning biomass level below which recruitment would likely be impaired. As such, there should be no fishing when the current spawning biomass is estimated to be below \(B_{LIM}\).
+For the jack mackerel, \(B_{LIM}\) was computed from the lowest ratio of historical spawning biomass relative to the most recently estimated unfished spawning biomass (e.g. as the 8\% of the unfished spawning biomass).\\
+
+%\textbf{Mortality}\\
+%If popes=false:
+%Let the number of fishery $k$ and $i$ the year of observation between $styr$ and $endyr$.
+%\begin{equation}
+%    F(k,i)=e^{fmort(k,i)}*sel\_fsh(k,i)
+%\end{equation}
+%\begin{equation}
+%    Z(sel\_map(1,k),i)=M(sel\_map(1,k),i)+F(k,i)
+%\end{equation}
+%\begin{equation}
+%    S=e^{-Z}
+%\end{equation}
+%\begin{itemize}
+    %\item Fmort:matrix Fmort(1,nstk,styr,endyr). Annual total Fmort.
+%    \item init\_bounded\_matrix fmort(1,nfsh,styr,endyr,-15,15.,phase\_fmort)
+%    \item sel\_map:mapa de selectividad
+%    \item sel\_fsh: selectividad de la pesquería.
+%\end{itemize}
+
+
+
+
+\textbf{Survey Predictions}\\
+Predicción para el índice número k en el año de número i, esto es para i variando $1\leq i \leq nyrs\_ind(k)$. Donde $nyrs\_ind(k)$ es la cantidad de años para el índice de número $k$ (está ubicado en la línea 138 del dat).
+\begin{equation}
+    pred\_ind(k,i)=q\_ind(k,i)* 
+\end{equation}
+\begin{equation}
+    \left(\left(\sum_{age \ j}natage_j(istk,iyr).S(istk,iyr)_j^{ind\_month\_frac(k)}sel\_ind_j(k,iyr).wt\_ind_j(k,iyr)\right)\right)^{q\_power\_ind(k)}
+\end{equation}
+
+Luego, para $1\leq i \leq nyrs\_ind\_age(k)$:
+\begin{equation}
+    tmp\_n_j= S_j(istk,iyr)^{ind\_month\_frac(k)}sel\_ind(k,iyr)_j.natage(istk,iyr)_j
+\end{equation}
+\begin{itemize}
+    \item $ind\_month\_frac$ es un vector de dimensiones (1,nind) y además $ind\_month\_frac=\dfrac{mo\_ind-1}{12}$, donde $mo\_ind(1,nind)$ está en la línea 144 del dat.
+    \item $istk=sel\_map(1,k+nfsh)$
+    \item $iyr=yrs\_ind\_age(k,i)$, índice número $k$ y año número $i$.
+    \end{itemize}
+    
+    Calculate expected age comp from index eac\_ind:
+    \begin{itemize}
+        \item [i.] Si $use\_age\_err$=TRUE entonces: 
+    \begin{equation}
+        eac\_ind(k,i)=age\_err*\dfrac{tmp\_n}{sum\_tmp}
+    \end{equation}
+        \item [ii.] Si $use\_age\_err$=FALSE :
+        \begin{equation}eac\_ind(k,i)=\dfrac{tmp\_n}{sum\_tmp}
+    \end{equation}
+    donde $sum\_tmp=sum(tmp\_n)$.
+    \end{itemize}
+    
+    Now for the lenghts. Let $i\in \mathbb{N}$ 
+    such that $1\leq i \leq nyrs\_ind\_length(k)$:
+
+\begin{equation}
+    tmp\_n_j= S_j(istk,iyr)^{ind\_month\_frac(k)}sel\_ind(k,iyr)_j.natage(istk,iyr)_j
+\end{equation}
+\begin{itemize}
+    \item tmp\_n es un vector de dimensiones (1,nages).
+    \item iyr=$yrs\_ind\_lenght(k,i)$, en el índice número $k$ y el año $i$ variando de 1 a $nyrs\_ind\_lenght(k)$. $iyr$: año para los datos de longitud del índice $k$.
+    
+\end{itemize}
+    Then the expected lenght composition from index elc\_ind is calculate from:
+    \begin{equation}
+    elc\_ind(k,i)=tmp\_n*P\_age2len(igrowth).
+\end{equation}
+
+Index predicted for the next year is calculated from:
+\begin{equation}
+    pred\_ind\_nextyr(k)=q\_ind(k,nyrs\_ind(k)) * 
+\end{equation}
+\begin{equation}
+\left(\sum_inatagetmp_iS(istk,endyr)_i^{ind\_month\_frac(k)} sel\_ind_i(k,endyr)  wt\_ind_i(k,endyr)\right)^{q\_power\_ind(k)}.
+\end{equation}
+\textbf{Fishery Predictions}\\
+Calculate the expected age composition from fisheries:
+\begin{itemize}
+    \item [i.] If $use\_age\_err=TRUE$:
+    \begin{equation}
+    eac\_fsh(k,i)=age\_err\dfrac{catage(k,yrs\_fsh\_age(k,i))}{sum(catage(k,yrs\_fsh\_age(k,i)))}
+\end{equation}
+\item [ii.] If $use\_age\_err=FALSE$:
+\begin{equation}
+    eac\_fsh(k,i)=\dfrac{catage(k,yrs\_fsh\_age(k,i))}{sum(catage(k,yrs\_fsh\_age(k,i)))}.
+\end{equation}
+\end{itemize}
+After calculate eac\_fsh:
+\begin{equation}
+    eac\_fsh(k,i)=\dfrac{eac\_fsh(k,i)}{sum(eac\_fsh(k,i))}
+\end{equation}
+Now for the lenghts. Calculate the expected length composition for fisheries from: 
+\begin{equation}
+    elc\_fsh(k,i)=catage(k,yrs\_fsh\_length(k,i))*P\_age2len(igrowth)
+\end{equation}
+\begin{equation}
+    elc\_fsh(k,i)=\dfrac{elc\_fsh(k,i)}{sum(elc\_fsh(k,i))}
+\end{equation}
+for $1\leq i \leq nyrs\_fsh\_length(k)$.\\
+
+\textbf{The objective function obj\_fun}\\
+
+The parameters of the model are chosen so that this value obj\_comp is minimized. That is, it should be the negative of the log-likelihood.
+
+\begin{equation}
+    obj\_fun=obj\_fun+sum(catch\_like)+sum(age\_like\_fsh)+sum(lenght\_like\_fsh)+sum(sel\_like\_fsh)+
+\end{equation}
+\begin{equation*}
+    sum(ind\_like)+sum(age\_like\_ind)+sum(lenght\_like\_ind)+
+\end{equation*}
+\begin{equation*}
+    sum(sel\_like\_ind)+sum(rec\_like)+sum(fpen)+sum(post\_priors\_indp)+sum(post\_priors).
+\end{equation*}
+In the last phase, the model calculate the Replacement Yield.\\
+
+\textbf{Replacement Yield}\\
+The volume by weight that can be removed from a fish stock without increasing or decreasing the biomass of the stock.
+For calculate this use Newton method for 4 iterations to find the root of 
+\begin{equation}
+    dssb   = \dfrac{ssb2 - ssb3}{df}
+\end{equation}
+Iteration on
+\begin{equation}
+    F_{i+1}=F_{i}-\dfrac{dssb}{dssbp},
+\end{equation}
+here $dssp$ is the second derivative of $dssb$:
+\begin{equation}
+    dssbp  = \dfrac{(ssb2 + ssb3 - 2.*ssb1)}{(.25*df*df)}.
+\end{equation}
+The numerical solution (F) is the  FMSY.\\
+\textbf{Function yld:}\\
+%calc_dependent_vars
+\textbf{Get MSY}\\
+
+Calculate MSY, FMSY, MSY, Bmsy for the last year of observation (endyr). 
+Use Newton Raphson with 4 iterations to find the root of
+\begin{equation}
+        dyld=\dfrac{yld2-yld3}{df}.
+    \end{equation}
+Iteration on
+\begin{equation}
+    F_{i+1}=F_i-\dfrac{dyld}{dyldp},
+\end{equation}
+    here $dyldp$ is the derivative expression of $dyld$. 
+After obtaining the numerical solution F1 (FMSY), we use the function yld again in the last year (endyr) with $F1$:
+\begin{equation}
+msy\_stuff(2) = \sum_{k \ nfsh}\sum_{age \ j}wt\_fsh(k,endyr)_j.Ntmp(j)*Fatmp(k,j)*\dfrac{(1-e^{-Ztmp(j)})}{Ztmp(j)}
+\end{equation}
+Para cada stock $s$:
+\begin{equation}
+    MSY=msy\_stuff(2)*Requil(phi,endyr,s)
+\end{equation}
+\begin{equation}
+    msy\_stuff(5)=\sum_{j \ nages}Ntmp_j.wt\_pop(s)_j
+\end{equation}
+\begin{equation}
+    BmsyTot=msy\_stuff(5)*Requil(phi,endyr,s),
+\end{equation}
+here $Requil(phi,endyr,s)$ (i.e Rtmp) is the Eq Recruitment.
+
+\begin{equation}
+    Bmsy=\left(\sum_{age \ j}Ntmp_j.e^{-Ztmp_j.spmo\_frac}.wt\_mature_j(s)\right)*Requil(phi,endyr,s).
+\end{equation}
+
+
+\textbf{N\_NoFsh}\\
+%Let the array $N\_NoFsh$ with dimensions $(1,nstk,styr,endyr\_fut,1,nages)$.\\
+Let $s$ the number stock,  that is $1\leq s \leq nstk$.
+\begin{equation}
+N\_NoFsh(s,styr)=natage(s,styr)
+\end{equation}
+and for $styr\_sp \leq i \leq styr$ 
+\begin{equation}
+    Sp\_Biom\_NoFish(s,i)=Sp\_Biom(s,i).
+\end{equation}
+\begin{itemize}
+    \item $N\_NoFsh$
+    \item $Sp\_Biom\_NoFish$
+    \item $Sp\_Biom$
+\end{itemize}
+Now for $styr\leq i \leq endyr$, el número de reclutas del stock número $s$ en el año $i$  es igual al número del stock $s$ del año $i$ a la edad 1. Si $i>styr$:
+\begin{equation}
+    N\_NoFsh(s,i,1)=recruits(s,i)*\dfrac{SRecruit(Sp\_Biom\_NoFish(s,i-rec\_age),cum\_regs(s)+yy\_sr(s,i))}{SRecruit(Sp\_Biom(s,i-rec\_age),cum\_regs(s)+yy\_sr(s,i))}
+\end{equation}
+\begin{itemize}
+    \item recruits:
+    \item $SRecruit$:
+    \item $rec\_age$
+    \item $cum\_regs$
+    \item $yy\_sr$
+\end{itemize}
+\begin{equation}
+    N\_NoFsh(s,i)_j=N\_NoFsh(s,i-1)_{j-1}.e^{-M(s,i-1)_{j-1}}
+\end{equation}
+for $2\leq j \leq nages.$ Updating for $nages$:
+\begin{equation}
+    N\_NoFsh(s,i,nages)=N\_NoFsh(s,i-1)_{nages-1}.e^{-M(s,i-1)_{nages-1}}+N\_NoFsh(s,i-1,nages).e^{-M(s,i-1,nages)}
+\end{equation}
+Now for $ styr\leq i \leq endyr$:
+\begin{equation}
+    totbiom\_NoFish(s,i)=\sum_{age \ j}N\_NoFsh(s,i)_j.wt\_pop(s)_j.
+\end{equation}
+\begin{equation}
+    totbiom(s,i)=\sum_{age \ j}natage(s,i)_j.wt\_pop(s)_j.
+\end{equation}
+\begin{equation}
+Sp\_Biom\_NoFish(s,i)=\sum_{age \ j} N\_NoFsh(s,i)_j.e^{-M(s,i)_j.spmo\_frac}wt\_mature(s)_j
+\end{equation}
+\begin{equation}
+    Sp\_Biom\_NoFishRatio(s,i)=\dfrac{Sp\_Biom(s,i)}{Sp\_Biom\_NoFish(s,i)}
+\end{equation}
+\begin{equation}
+    depletion(s)=\dfrac{totbiom(s,endyr)}{totbiom(s,styr)}
+\end{equation}
+\begin{equation}
+    depletion\_dyn(s)=\dfrac{totbiom(s,endyr)}{totbiom\_NoFish(s,endyr)}
+\end{equation}
+\begin{itemize}
+    \item totbim\_NoFish
+    \item totbiom
+    \item Sp\_Biom\_NoFish
+    \item Sp\_Biom\_NoFishRatio
+    \item depletion\_dyn
+\end{itemize}
+\begin{equation}
+Nnext(s)_j=natage(s,endyr)_{j-1}.S(s,endyr)_{j-1}, \ for \ 2\leq j\leq nages-1.
+\end{equation}
+\begin{equation}
+Nnext(s,nages)=natage(s,endyr)_{nages-1}.S(s,endyr)_{nages-1}+natage(s,endyr,nages)*S(s,endyr,nages)
+\end{equation}
+Calcula la SSB para el siguiente año usando el reclutamiento medio  para la edad 1 y el mismo survival (S) como en endyr:
+\begin{equation}
+    Nnext(s,1)=e^{mean\_log\_rec(cum\_regs(s)+yy\_sr(s,endyr+1))}
+\end{equation}
+\begin{equation}
+    Sp\_Biom(s,endyr+1)=\sum_{age \ j}Nnext(s)_jS(s,endyr)^{spmo\_frac}.wt\_mature(s)_j
+\end{equation}
+\begin{equation}
+recruits(s,endyr+1)=Nnext(s,1)
+\end{equation}
+\begin{equation}
+totbiom(s,endyr+1)=\sum_{age \ j}Nnext(s)_j.wt\_pop(s)_j.
+\end{equation}
+\begin{itemize}
+    \item Nnext
+    \item wt\_mature
+    \item recruits
+\end{itemize}
+OFL for the next year:
+\begin{equation}
+    OFL(sel\_map(1,k)) += \sum_{age \ j}wt\_fsh(k,endyr)_j . Nnext(sel\_map(1,k),j) * Fatmp(k,j) * \dfrac{(1. - e^{-Z(sel\_map(1,k),j)})}{Ztmp(sel\_map(1,k),j)}
+\end{equation}
+with
+\begin{equation}
+    seltmp(k)=sel\_fsh(k,endyr)
+\end{equation}
+para $1\leq k \leq nfsh.$
+Para $1\leq k \leq nfhs$:
+\begin{equation}
+    Fatmp(k)=(Fratio(k)*Fmsy(sel\_map(1,k))*seltmp(k))
+\end{equation}
+\begin{equation}
+    Ztmp(sel\_map(1,k))=M(sel\_map(1,k),styr)+ Fatmp(k)
+\end{equation}
+
+\textbf{Get Future Fs:}\\
+Depending the value of iscenario:
+\begin{itemize}
+    \item Caso 1. Don´t calculate nothing.
+    \item Caso 2.  \begin{equation}
+        F\_fut\_tmp(k) = F(k,endyr)*0.75
+    \end{equation}
+    \item Caso 3.  \begin{equation}
+        F\_fut\_tmp(k) = F(k,endyr)*1.25
+    \end{equation}
+    \item Caso 4.For the fishery number $k$, $1\leq k \leq nfsh$:
+    \begin{equation}
+        F\_fut\_tmp(k)=seltmp(k)*Fratio(k)*Fmsy(s)
+    \end{equation}
+    \item Caso 5.
+\end{itemize}
+\textbf{Future Projections}
+\subsection{Models for stock structure hypothesis}
+
+The JJM model allows the exploration of two types of population structure. This allow the construction of models under the one-stock hypothesis "h1" and under the two-stock hypothesis "h2".
+
+\subsection{Description of Model Explorations}
+
+Model implementation could allow to analyse the effect of stock structure hypothesis, model updates and data revisions, changes in selectivity for a specific year, shift in the distribution of fishing effort, among others. 
+
+\section{Data files}
+% List of information as part of the data input files
+
+\subsection{Fishery data}
+
+- Catch data: This model uses the catch data for each of the fleet as part of the model representation.
+
+- Length and age data: the age data is also an important input for the JJM model. But in the case any fleet is using length distribution data, this information in converted into age distributions by using age-length keys. The age-length keys is fleet dependent.
+
+- CPUE (catch per unit effort) data series are used in the model, each fleet with a specific methodology for CPUE estimation. Besides, since 2022 the CPUE series include a factor that compensates for efficiency (also termed "effort creep") increases of fishing operations.
+
+\subsection{Fishery independent data}
+
+The model also allow the use of relative abundance indices such as for example acoustic biomass and numbers, spawning stock biomass, estimates of abundance and numbers-at-age, egg surveys results, among others. This information comes from hydro-acoustics, stock assessment and egg and larvae surveys. This information is also fleet-dependent.
+
+\subsection{Biological parameters}
+
+- The JJM model requires the maturity-at-age for the Jack mackerel. This parameter can be estimated by applying an ageing criteria to the otoliths and histological maturity data.
+
+- On the other hand, for fleets that are using length data and age-length keys to convert length to age data, to fit the length composition data a growth curve is used to convert age composition predicted by the model to predicted lengths, with the conversion occurring withing the model.
+
+- The model needs the growth parameters and in this case the JJM model uses the von Bertalanffy growth model. For the model under development is important to consistently use the same length metric for parameters and data, i.e. total length or fork length for model parameters and data.
+
+- The mean weight-at-age will be calculated by year by taking the mean length-at-age in the catch and a length-weight relationship derived for the year. Mean weight-at-age is required for all fishing fleets and biomass indices in order to relate biomass quantities to the underlying model estimates of jack mackerel abundance (in numbers). In some cases, missing weight-at-age data could be replaced with data from the previous year. However, it is recommended that those missing data be replaced with appropriate mean values by fleet instead. 
+
+- The natural mortality is also required for the JJM model. For this, the (\href{https://connect.fisheries.noaa.gov/natural-mortality-tool/}{Natural Mortality Tool}) could be used. 
+
+\subsection{Data sets}
+% Name, years, ages, nbins, lengthbin, Fnum, Fnames, Fcaton, Fcatonerr, FnumyearsA, FnumyearsL, Fageyears, Flengthyears, Fagesample, Flengthsample, Fagecomp, Flengthcomp, Fwtatage, Inum, Inames, Inumyears, Iyears, Imonths, Index, Indexerr, Inumageyears, Inumlengthyears, Iyearsage, Iagesample, Ipropage, Iyearslength, Ilengthsample, Iproplength, Iwtatage, Pspwn, Pageerr.
+
+A full description of data sets used to the assessment of Jack mackerel is in the Annex X. Summaries of all data available for the assessment are provided in Table X and Figure Y.
 
 \section{Getting started} 
 % R, admb
 % Installing jjmR: from CRAN, github
 % Any other consideration
 
-\section{JJM model}
-% A little of history about the model 
-% Which information need the model
-% Estimated parameters
-% Main assumptions
-% Modeled process: a description of it
-
 \section{File organization}
 % List of files to run the model, and how those files are organized?
 
-\section{Starting the jjm model}
+\section{Starting the JJM model}
 % How run the model?
 
 \section{Configuration files}
-% List of information as part of the configuration files
+% List of information as part of the configuration files (ctl files)
 
-\section{Data files}
-% List of information as part of the data input files
+- Input Data File, model name, Number of stocks, Names of stocks, Selectivity sharing vector, (number\_fisheries + number\_surveys), Number of regimes (by stock), Sr\_type, AgeError, Retro, Recruitment sharing matrix (number\_stocks, number\_regimes), Steepness, SigmaR, phase\_Rzero, Nyrs\_sr, yrs\_sr, reg\_shifts blank if nreg==1, Growth parameters sharing matrix (number\_stocks, number\_regimes), Linf, K, Lo\_Len, Sigma\_len, Mortality sharing matrix number\_stocks, number\_regimes), Natural\_Mortality, npars\_mage, ages\_M\_changes, Mage\_in, phase\_Mage, Phase\_Random\_walk\_M, Nyrs\_Random\_walk\_M, Random\_walk\_M\_yrs blank if nyrs==0, Random\_walk\_M\_sigmas blank if nyrs==0, catchability, q\_power, Random\_walk\_q\_phases, Nyrs\_Random\_walk\_q, Random\_walk\_q\_yrs blank if nyrs==0, Random\_walk\_q\_sigmas blank if nyrs==0, q\_agemin, q\_agemax, use vb wt age, n\_proj\_yrs, Select type for fshry 1, n\_sel\_ages, phase sel, curvature penalty, Dome-shape penalty, Years of selectivity change Fishery 3 Peru, n\_sel\_ch\_fsh, yrs\_sel\_ch\_fsh, sel\_sigma\_fsh, Initial values for coefficitients at each change (one for every change plus 1), Initial values for parameters, Index number 5 Acoustic\_Peru, SelOption, n\_sel\_ages, phase sel, curvature penalty, Dome-shape penalty, n\_sel\_ch\_ind, yrs\_sel\_ch\_ind, sel\_sigma\_ind, Initial values for parameters, Population Weight at Age 1000, Maturity at Age, Test.
+
+
 
 \section{Model outputs}
+
+To analyse the stock status the JJM model provides a big set of model outputs such as: the biomass of the population, the spawning stock biomass (SSB) and the recruitment over the time. Also, the management reference points such as: \(B_{MSY}\) and \(F_{MSY}\) over the time (years).
+
+% To be check!: 
+The fishery mean weights-at-age?, estimates of numbers-at-age?, fits to the composition data, fits of age composition data from the surveys, fit of the indices, relative abundance, estimates of fishery mean age compositions, survey mean age compositions.
+
+Time series stock status: spawning biomass, fishing mortality, recruitment, total biomass, for each hypothesis.
+
+% Management advice and assessment issues is not included.
 
 \section{Bibliography}
 
@@ -66,5 +1243,12 @@
 % Any other important points to be explained
 \section{Parameter index}
 % List of parameter names
+
+\section{Appendix A: Case study description}
+\label{section:AppendixA}
+
+\section{Appendix B: Assessment results of case study}
+\label{section:AppendixB}
+
 
 \end{document}
