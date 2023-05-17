@@ -333,51 +333,67 @@ The spawning stock biomass (SSB) is calculated from the first year of spawning u
 
 
 \textbf{Biomasa desovante (sp\_biom)}\\
-Obtención de la biomasa desovante desde el primer año de desove $styr\_sp$ hasta el primer año de observación $y_0$.
+Obtención de la biomasa desovante desde el primer año de desove $\left(styr\_sp\right)$ hasta el primer año de observación ($y_0$).
 % \begin{equation}
 %     Sp\_Biom(s)_p=wt\_mature(s)_1.e^{-M^s_{styr,1}.spmo\_frac}.Rzero(cum\_regs(s)+1),
 %coment: Rzero(cum\_regs(s)+1)=R^s_0
 % \end{equation}
 
+% \begin{equation}
+%     SB^s_p=wt\_mature(s)_1.e^{-M^s_{y_0,1}.spmo\_frac}.R^s_0
+% \end{equation}
+
 \begin{equation}
-    SB^s_p=wt\_mature(s)_1.e^{-M^s_{y_0,1}.spmo\_frac}.R^s_0
+    SB^s_p=wt\_mature^s_1.e^{-M^s_{y_0,1}.spmo\_frac}.R^s_0
 \end{equation}
+
+
 %styr_rec=r_0
 \begin{equation*}
-    +\sum_{j=2}^{m-1}wt\_mature(s)_j.e^{-M^s_{y_0,j} spmo\_frac}.R^s_0\prod_{l=1}^{j-1}e^{-M^s_{y_0,l}} 
+    +\sum_{j=2}^{m-1}wt\_mature^s_j.e^{-M^s_{y_0,j} spmo\_frac}.R^s_0\prod_{l=1}^{j-1}e^{-M^s_{y_0,l}} 
 \end{equation*}
 \begin{equation*}
-    + wt\_mature(s)_{m}.e^{-M^s_{y_0,m}.spmo\_frac}.\dfrac{R^s_0}{1-e^{-M^s_{y_0,m}}}.\prod_{l=1}^{m-1}e^{-M^s_{y_0,l}}
+    + wt\_mature^s_{m}.e^{-M^s_{y_0,m}.spmo\_frac}.\dfrac{R^s_0}{1-e^{-M^s_{y_0,m}}}.\prod_{l=1}^{m-1}e^{-M^s_{y_0,l}}
 \end{equation*}
 donde $styr\_sp\leq p \leq r_0$
 \begin{itemize}
    % \item $Sp\_Biom(s)_p$: Biomasa desovante desde el año $p=styr\_sp$ hasta $p=styr\_rec$.
-   \item $SB^s_p$: Biomasa desovante desde el año $p=styr\_sp$ hasta $p=r_0$.
+   \item $SB^s_p$ es la Biomasa desovante para el stock número s en el año p, cuando  $styr\_sp\leq p \leq r_0$. 
+   %Biomasa desovante desde el año $p=styr\_sp$ hasta $p=r_0$.
+   \item $wt\_mature^s_j$ es el peso(o proporción) de especies maduras para cada edad $j$ en cada stock $s$, se calcula como
+    \begin{equation}
+        wt\_mature^s_j=wt\_pop^s_j.maturity^s_j
+    \end{equation}
+    \item $wt\_pop^s_j$ es input, línea 140 del ctl. Peso a la edad $j$ de la población para cada stock $s$.
+    \item $maturity^s_j$ es input, línea 143 del ctl. Madurez a la edad $j$ para cada stock $s$.
 \end{itemize}
 
 Ahora calculamos la biomasa desovante para los años desde $j=r_0+1$ hasta $j=y_0-1$.\\
-Primero necesitamos calcular $natagetmp$.\\
+Primero se calcula $natagetmp$.\\
 %y_0=styr
 Sea $1\leq l \leq y_0-r_0$ y $2\leq i \leq l+1$:
+% \begin{equation}
+% natagetmp(s,r_0+l)_i = e^{\epsilon^s_{r_0+l+1-i}+\mu^s_{R,r_0+l+1-i}}\prod_{t=1}^{i-1}e^{-M^s_{y_0,t}},
+% \end{equation}
 \begin{equation}
-natagetmp(s,r_0+l)_i = e^{\epsilon^s_{r_0+l+1-i}+\mu^s_{R,r_0+l+1-i}}\prod_{t=1}^{i-1}e^{-M^s_{y_0,t}},
+natagetmp^s_{r_0+l,i}= e^{\epsilon^s_{r_0+l+1-i}+\mu^s_{R,r_0+l+1-i}}\prod_{t=1}^{i-1}e^{-M^s_{y_0}},
 \end{equation}
 %nages=m
 luego para $l+2\leq  i \leq m-1$:
 %Rzero(cum\_regs(s)+1)=R^s_0
 \begin{equation}
-natagetmp(s,r_0+l)_i=R^s_0\prod_{t=1}^{i-1}e^{-M^s_{y_0,t}},
+natagetmp^s_{r_0+l,i}=R^s_0\prod_{t=1}^{i-1}e^{-M^s_{y_0}},
 \end{equation}
 ahora para $i=m$:
 \begin{equation}
-natagetmp(s,r_0+l)_{m}=natagetmp(s,r_0+l-1)_{m-1}
+natagetmp^s_{r_0+l,m}=natagetmp^s_{r_0+l-1,m-1}
 \end{equation}
 \begin{equation*}
-    +natagetmp(s,r_0+l-1)_{m}e^{-M^s_{m}}.
+    +natagetmp^s_{r_0+l-1,m}e^{-M^s_{m}}.
 \end{equation*}
-Con estos cálculos previos calculamos la biomasa desovante:
+Con estos cálculos previos se obtiene la biomasa desovante:
 \begin{equation}
-    SB^s_j=\sum_{i=2}^{m}natagetmp(s,j)_i.e^{-M^s_{y_0,i}.spmo\_frac}.wt\_mature(s)_i.
+    SB^s_j=\sum_{i=2}^{m}natagetmp^s_{j,i}.e^{-M^s_{y_0}.spmo\_frac}.wt\_mature^s_i.
 \end{equation}
 para $r_0 +1 \leq j \leq y_0-1$. \\
 
@@ -385,122 +401,148 @@ para $r_0 +1 \leq j \leq y_0-1$. \\
 
 Calculate the biomass for the stock number $s$ in the year $i$ between $y_0 \leq i \leq y_N$:
     \begin{equation}
-    SB^s_i=\sum_{j=1}^{m}N^s_{i,j}.{S^s_{i,j}}^{spmo\_frac}.wt\_mature(s)_j
+    SB^s_i=\sum_{j=1}^{m}N^s_{i,j}.{S^s_{i,j}}^{spmo\_frac}.wt\_mature^s_j
 \end{equation}
 %     \end{itemize}
 \begin{itemize}
     \item spmo\_frac: exponente del survival rate ($S^s_{i,j}$), es calculado como 
     $spmo\_frac=\dfrac{spawnmo-1}{12}$.
     \item spawnmo: Es input del archivo dat, línea 278.
-    \item $wt\_mature(s)_j$: Es como el peso de especies maduras para cada edad $j$ en cada stock $s$, se calcula como
-    \begin{equation}
-        wt\_mature(s)_j=wt\_pop(s)_j.maturity(s)_j
-    \end{equation}
+    
 \end{itemize}
-\begin{itemize}
-    \item $wt\_pop(s)_j$: es input, línea 140 del ctl. Peso a la edad $j$ de la población para cada stock $s$.
-    \item $maturity(s)_j:$ es input, línea 143 del ctl. Madurez a la edad $j$ para cada stock $s$.
-\end{itemize}
+% \begin{itemize}
+%     \item $wt\_pop^s_j$: es input, línea 140 del ctl. Peso a la edad $j$ de la población para cada stock $s$.
+%     \item $maturity^s_j:$ es input, línea 143 del ctl. Madurez a la edad $j$ para cada stock $s$.
+% \end{itemize}
 %Calculo de la biomasa desovante para el año j=endyr+1.\\
 Ahora para el año $j=endyr+1$:
 %\mu_R(cum\_regs(s)+yy\_sr(s,endyr+1))
 \begin{equation}
     SB^s_{y_N+1}=e^{\mu^s_{R,y_N+1}}.(S^{s}_{y_N,1})^{spmo\_frac
-    }.wt\_mature(s)_1
+    }.wt\_mature^s_1
 \end{equation}
 \begin{equation*}
-+\sum_{i=2}^{m-1}N^{s}_{y_N,i-1}S^{s}_{y_N,i-1}(S^s_{y_N,i})^{spmo\_frac}wt\_mature(s)_i
++\sum_{i=2}^{m-1}N^{s}_{y_N,i-1}S^{s}_{y_N,i-1}(S^s_{y_N,i})^{spmo\_frac}wt\_mature^s_i
 \end{equation*}
 \begin{equation*}
-    +(N^{s}_{y_N,m-1}.S^s_{y_N,m-1}+N^s_{y_N,m}.S^s_{y_N,m}).(S^s_{y_N,m})^{spmo\_frac}wt\_mature(s)_{m}
+    +(N^{s}_{y_N,m-1}.S^s_{y_N,m-1}+N^s_{y_N,m}.S^s_{y_N,m}).(S^s_{y_N,m})^{spmo\_frac}wt\_mature^s_{m}
 \end{equation*}
 
 Sin embargo si se quiere proyectar sobre algunos años, es decir si $nproj\_yrs>0$, entonces el valor de $SB^s_{y_N+1}$ cambia:
 \begin{equation}
-    SB^s_{y_N+1}=
+    SB^s_{y_N+1}= \sum_{j=1}wt\_mature^s_j.{N_{fut}}^s_{y_N+1,j}.{{S_{fut}}^s_{y_N+1,j}}^{spmo\_frac}
 \end{equation}
-
-
+donde 
+\begin{equation}
+    {S_{fut}}^s_{y_N+1,j}=M^s_{y_N},
+\end{equation}
+\begin{equation}
+    {N_{fut}}^s_{y_N+1,j}=N^s_{y_N,j-1}.S^s_{y_N,j-1}, \ 2\leq j \leq m-1,
+\end{equation}
+\begin{equation}
+    {N_{fut}}^s_{y_N+1,m}=N^s_{y_N,m-1}.S^s_{y_N,m-1}+N^s_{y_N,m}.S^s_{y_N,m},
+\end{equation}
+y 
+\begin{equation}
+    {N_{fut}}^s_{y_N,1}=SRecruit(SB^s_{y_N-rec\_age},cum\_reg(s)+yy\_sr(s,y_N)).e^{\epsilon^s_{y_N}},
+\end{equation}
+SRecruit se calcula en la sección reclutamiento(apartir de la ecuacion 50), es una función que tiene por primer argumento a la biomasa desovante y por segundo argumento a un número de régimen.
 
 \textbf{Catch at age}\\
-Se calcula tanto para popes=true y popes=false.\\
-For each stock number $s$ and  each year $i$ between $y_0$ and $y_N$. Here there are two ways to calculate $Cat$ and $pred\_catage$:
+Se calcula tanto para popes=true y popes=false for each stock number $s$ and  each year $i$ between $y_0$ and $y_N$. Then there are two ways to calculate the catch ($Cat$) and the predicted catch ($pred\_catage$):
 \begin{itemize}
     \item Si $popes=TRUE$, then pentmp=0. Sean  $k_s$ las pesquerías que le corresponden al stock $s$:
     %sel\_map(1,k) == s
-        \begin{equation}
-        vbio=\sum_{age\ j}N^s_{i,j}.e^{-\frac{M^s_{i,j}}{2}}.sel\_fsh_j(k_s,i).wt\_fsh_j(k_s,i)
-    \end{equation}
-        \begin{equation}
-        catch\_tmp=vbio-posfun\left(\frac{(vbio - catch\_bio(k_s,i))}{vbio} , 0.1 , pentmp \right).vbio
-    \end{equation}
+        
     \begin{equation}
-        Ctmp^{k_s}_j=N^s_{i,j}.e^{-\frac{M^s_{i,j}}{2}}sel\_fsh_j(k_s,i).\dfrac{catch\_tmp}{vbio}
+        Ctmp^{k_s}_j=N^s_{i,j}.e^{-\frac{M^s_{i,j}}{2}}sel\_fsh_j(k_s,i).\dfrac{catch\_tmp}{vbio},
     \end{equation}
-    para $1\leq j \leq m$.
+    para $1\leq j \leq m$, donde 
+    \begin{equation}
+        vbio=\sum_{age\ j}N^s_{i,j}.e^{-\frac{M^s_{i,j}}{2}}.sel\_fsh_j(k_s,i).wt\_fsh_j(k_s,i),
+    \end{equation}
+    y 
+        \begin{equation}
+        catch\_tmp=vbio-posfun\left(\frac{(vbio - catch\_bio(k_s,i))}{vbio} , 0.1 , pentmp \right).vbio,
+    \end{equation}
+    con ello se calcula la captura total, captura y la catura predicha:
     \begin{equation}
         %catage\_tot(s,i)+=Ctmp, consultar
-        C^s_{i,j}=\sum_{k_s}Ctmp^{k_s}_j, \ \text{suma sobre las pesquerías que pertenecen al stock s}
+        C^s_{i,j}=\sum_{k_s}Ctmp^{k_s}_j \ \text{(suma sobre las pesquerías que pertenecen al stock s)},
     \end{equation}
     \begin{equation}
         %catage(k,i)=Ctmp
-        Cat(k_s,i)_j=Ctmp^{k_s}_j
+        Cat(k_s,i)_j=Ctmp^{k_s}_j,
     \end{equation}
     \begin{equation}
-            pred\_catch(k_s,i)=\sum_{j=1}^{m}Ctmp_j.wt\_fsh_j(k_s,i)
-        \end{equation}
-    \item Si $popes=FALSE$:
-     \begin{equation}
-        Cat(k_s,i)_j=\dfrac{F^{k_s}_{i,j}}{Z^s_{i,j}}\left(1-S^s_{i,j}\right)N^s_{i,j}
-    \end{equation}
-    \begin{itemize}
-    \item $C^s_{i,j}$ captura total del stock $s$ del año $i$ a la edad $j$.
-        \item %$Z_j(s,i)=Z^s_{i,j}$
-        Donde $Z^s_{i,j}=F^s_{y,a}+M^{s}_{y}$ (cuando $popes=FALSE$).
-        \item $Cat(k,i)_j$: captura a la edad $j$ de la pesquería $k$ en el año $i$.
-    \end{itemize}
-      \begin{equation}
-        pred\_catch(k,i)=\sum_{j=1}^{m}Cat(k,i)_j.wt\_fsh_j(k,i)
-    \end{equation}
-    \begin{itemize}
-        \item pred\_catch(k,i): captura predicha para el año $i$ de la pesquería número $k$.
-        \item $wt\_fsh_j(k,i)$: Peso a la edad $j$ para el año $i$ de observación en la pesquería número $k$. Es input, línea 80 del archivo dat.
+            pred\_catch(k_s,i)=\sum_{j=1}^{m}Ctmp_j.wt\_fsh_j(k_s,i),
+        \end{equation} respectivamente.
+\begin{itemize}
+    \item $C^s_{i,j}$ es la captura total del stock $s$ del año $i$ a la edad $j$.
+    \item $Cat(k,i)_j$ es la  captura a la edad $j$ de la pesquería $k$ en el año $i$.
+    \item pred\_catch(k,i) es la captura predicha para el año $i$ de la pesquería número $k$.
+    \item $wt\_fsh_j(k,i)$ es el peso a la edad $j$ para el año $i$ de observación en la pesquería número $k$. Es input, línea 80 del archivo dat.
         \item catch\_bio es la biomasa de captura observada
         \begin{equation}
           catch\_bio(k)_i=catch\_bio\_in(k)_i,  
         \end{equation}
         donde $1\leq k \leq nfsh$ y $y_0\leq i \leq y_N$.
-    \end{itemize}
-    \begin{itemize}
+
         \item $catch\_bio\_in(k)_i$ es la captura observada de la pesquería $k$ en el año $i$. Es input, línea 16 del archivo dat. 
-    \end{itemize}
+ 
+\end{itemize}
+    \item Si $popes=FALSE$:
+     \begin{equation}
+        Cat(k_s,i)_j=\dfrac{F^{k_s}_{i,j}}{Z^s_{i,j}}\left(1-S^s_{i,j}\right)N^s_{i,j},
+    \end{equation}
+      \begin{equation}
+        pred\_catch(k,i)=\sum_{j=1}^{m}Cat(k,i)_j.wt\_fsh_j(k,i),
+    \end{equation}
+    %\begin{itemize}
+    %\item %$Z_j(s,i)=Z^s_{i,j}$
+        donde $Z^s_{i,j}=F^s_{y,a}+M^{s}_{y}$ 
+ (valores respectivos cuando $popes=FALSE$).
+        
+    %\end{itemize}
+    
 \end{itemize}
 \textbf{Cálculo de la biomasa cero}\\
-Se calcula la biomasa cero para cada régimen $1\leq r \leq nregs$, es necesario para calcular el reclutamiento.\\
+Se calcula la biomasa cero (o biomasa virgen) para cada régimen $1\leq r \leq nregs$. La biomasa cero es necesario para calcular el reclutamiento.\\
 Sea el stock número $s$:
 % \begin{equation}
 %     Bzero(cum\_regs(s)+1)=wt\_mature(s)_1.e^{-M^s_{styr,1}.spmo\_frac}.Rzero(cum\_regs(s)+1)
 % \end{equation}
 %cambiando Rzero(cum\_regs(s)+1) por R^s_0.
+% \begin{equation}
+%     Bzero(cum\_regs(s)+1)=wt\_mature^s_1.e^{-M^s_{styr,1}.spmo\_frac}.R^s_0
+% \end{equation}
 \begin{equation}
-    Bzero(cum\_regs(s)+1)=wt\_mature(s)_1.e^{-M^s_{styr,1}.spmo\_frac}.R^s_0
+    B^{s,1}_0=wt\_mature^s_1.e^{-M^s_{styr,1}.spmo\_frac}.R^s_0
 \end{equation}
 
 
 \begin{equation*}
-    +\sum_{j=2}^{nages-1}wt\_mature(s)_j.e^{-M^s_{styr,j} spmo\_frac}.R^s_0\prod_{l=1}^{j-1}e^{-M^s_{styr,l}} 
+    +\sum_{j=2}^{m-1}wt\_mature^s_j.e^{-M^s_{y_0,j} spmo\_frac}.R^s_0\prod_{l=1}^{j-1}e^{-M^s_{y_0,l}} 
 \end{equation*}
 \begin{equation*}
-    + wt\_mature(s)_{nages}.e^{-M^s_{styr,nages}.spmo\_frac}.\dfrac{R^s_0}{1-e^{-M^s_{styr,nages}}}.\prod_{l=1}^{nages-1}e^{-M^s_{styr,l}},
+    + wt\_mature^s_{m}.e^{-M^s_{y_0,m}.spmo\_frac}.\dfrac{R^s_0}{1-e^{-M^s_{y_0,m}}}.\prod_{l=1}^{m-1}e^{-M^s_{y_0,l}}.
 \end{equation*}
-y
+Y
+% \begin{equation}
+%     B^{s,r}_0 = Sp\_Biom(s,reg\_shift(s,r-1)-rec\_age)
+% \end{equation}
 \begin{equation}
-    Bzero(cum\_regs(s)+r) = Sp\_Biom(s,reg\_shift(s,r-1)-rec\_age)
+    B^{s,r}_0 = SB^s_{reg\_shift(s,r-1)-rec\_age}
 \end{equation}
 donde $2\leq r \leq nreg(s)$.
 \begin{itemize}
     \item nreg(s) es la cantidad de regímenes para el stock número s.
+    \item %Bzero(cum\_regs(s)+1) es la biomasa virgen en el primer régimen del stock s.
+    $B^{s,1}_0$ es la biomasa virgen en el primer régimen perteneciente al stock s.
+    \item  %Bzero(cum\_regs(s)+r) es la biomasa virgen en el régimen r del stock s.
+    $B^{s,r}_0$ es la biomasa virgen en el régimen r perteneciente al stock s con $2\leq r \leq nreg(s)$.
     \item reg\_shift(s,r-1) es input, línea 41 del ctl.
+    \item $rec\_age$ es la edad a la que es factible el reclutamiento.
 \end{itemize}
 \textbf{Stock-Recruitment Parameters}\\
 Sea $r$ un número de régimen dado, es decir, $1\leq r \leq nregs$.\\
@@ -510,27 +552,32 @@ Si SrType=1 (Ricker), entonces
 alpha(r)=log\left(\dfrac{-4*steepness(irec)}{steepness(irec)-1}\right).
 \end{equation}
 Si SrType=2 (Beverton-holt):
+% \begin{equation}
+%     alpha(r) = Bzero(r)*\dfrac{1}{Rzero(r)}\dfrac{(1-(steepness(irec)-0.2)}{0.8*steepness(irec)}
+% \end{equation}
 \begin{equation}
-    alpha(r) = Bzero(r)*\dfrac{1}{Rzero(r)}\dfrac{(1-(steepness(irec)-0.2)}{0.8*steepness(irec)}
+    alpha(r) = B^{s,r}_0*\dfrac{1}{R^{s,r}_0}\dfrac{(1-(steepness(irec)-0.2)}{0.8*steepness(irec)},
 \end{equation}
 \begin{equation}
-    beta(r)=\dfrac{(5*steepness(irec)-1)}{4*steepness(irec)*Rzero(r)}.
+    beta(r)=\dfrac{(5*steepness(irec)-1)}{4*steepness(irec)*R^{s,r}_0}.
 \end{equation}
 Si $SrType=4$:
 \begin{equation}
-    beta(r)=log\left(\dfrac{5*steepness(irec)}{0.8*Bzero(r)}\right)
+    beta(r)=log\left(\dfrac{5*steepness(irec)}{0.8*B^{s,r}_0}\right),
 \end{equation}
 \begin{equation}
-    alpha(r)=log\left(\dfrac{Rzero(r)}{Bzero(r)}\right)+beta(r)*Bzero(r).
+    alpha(r)=log\left(\dfrac{R^{s,r}_0}{B^{s,r}_0}\right)+beta(r)*B^{s,r}_0.
 \end{equation}
 \begin{itemize}
+    % \item Rzero(r) es el reclutamiento en el régimen número $r$, donde $1\leq r \leq nregs.$
+    \item $R^{s,r}_0$ es el reclutamiento en el régimen número $r$ (perteneciente al stock s), donde $1\leq r \leq nregs.$
     \item steepness es parámetro a estimar.
-    \item $irec=rec\_map(stk\_reg\_map(1,r),stk\_reg\_map(2,r))$. Donde $rec\_map$ es la matriz de reclutamiento input, línea 23 del ctl.
-    \item $stk\_reg\_map$ es una matriz de dimensiones 2xnregs, donde $stk\_reg\_map(2,r)$ se refiere al régimen número $r$, con $1\leq r \leq nregs$, correspondiente al stock número $stk\_reg\_map(1,r)$.
+    \item $irec=rec\_map(stk\_reg\_map(1,r),stk\_reg\_map(2,r))$, donde $rec\_map$ es la matriz de reclutamiento input, línea 23 del ctl.
+    \item $stk\_reg\_map$ es una matriz de dimensiones 2xnregs, donde $stk\_reg\_map(2,r)$ es el régimen número $r_s$, con $1\leq r_s \leq nreg(s)$, correspondiente al stock número $s=stk\_reg\_map(1,r)$.
 \end{itemize}
 
 \textbf{Reclutamiento}\\
-(considerar escribir desde Von Bertalanfy hasta Age composition to length composition antes de numeros a la edad, así luego de reclutamiento iría selectividad).\\
+%(considerar escribir desde Von Bertalanfy hasta Age composition to length composition antes de numeros a la edad, así luego de reclutamiento iría selectividad).\\
 
 Se calcula el reclutamiento para cada año $i$, donde $styr\leq i \leq endyr$:
 
@@ -539,17 +586,20 @@ Se calcula el reclutamiento para cada año $i$, donde $styr\leq i \leq endyr$:
 \end{equation}
 
 Ahora para el año $i=endyr+1$:
+% \begin{equation}
+%     recruits(s,endyr+1)=e^{\mu_{R,cum\_regs(s)+yy\_sr(s,endyr+1)}}.
+% \end{equation}
 \begin{equation}
-    recruits(s,endyr+1)=e^{\mu_{R,cum\_regs(s)+yy\_sr(s,endyr+1)}}.
+    recruits(s,endyr+1)=e^{\mu^s_{R,y_N+1}}.
 \end{equation}
 
 Para la curva stock-reclutamiento, depende del valor de SrType. Sea 
 \begin{equation}
-    stock^r_i=\dfrac{i.Bzero(r)}{250}, 1\leq i \leq 300.
+    stock^r_i=\dfrac{i.B^{s,r}_0}{250}, 1\leq i \leq 300.
 \end{equation}
 Si SrType=1:
 \begin{equation}
-SRecruit(stock^r_i,r)=\dfrac{Rzero(r).stock^r_i}{Bzero(r)}e^{alpha(r).\left(1-\dfrac{stock^r_i}{Bzero(r)}\right)}
+SRecruit(stock^r_i,r)=\dfrac{R^{s,r}_0.stock^r_i}{B^{s,r}_0}e^{alpha(r).\left(1-\dfrac{stock^r_i}{B^{s,r}_0}\right)}
 \end{equation}
 Si SrType=2:
 
@@ -557,9 +607,15 @@ Si SrType=2:
 SRecruit(stock^r_i,r)=\dfrac{stock^r_i}{alpha(r)+beta(r).stock^r_i}
         \end{equation}
 Si SrType=3:
+% \begin{equation}
+% SRecruit(stock^r_i,r)=e^{mean\_log\_rec(r)}
+% \end{equation}
 \begin{equation}
-SRecruit(stock^r_i,r)=e^{mean\_log\_rec(r)}
+SRecruit(stock^r_i,r)=e^{\mu_{R,r}}
 \end{equation}
+\begin{itemize}
+    \item $\mu_{R,r}$ es el reclutamiento medio en el régimen $r$, $1\leq r \leq nregs$.
+\end{itemize}
 Si SrType=4:
 \begin{equation}
 SRecruit(stock^r_i,r) =  stock^r_i.e^{alpha(r)-stock^r_i.beta(r)}.
@@ -647,6 +703,121 @@ Let $P\_age2len(r)$ the matrix such that $Cl(1,nyears,1,nlenght)=C(1,nyears,1,na
 \begin{itemize}
     \item $l_j$ is the lenght $j-esima$ considered from the vector $len\_bins$ ($lengthbin$ is in the document dat line 10).
 \end{itemize}
+
+\textbf{Survey Predictions}\\
+Predicción apartir del índice número k en el año y, con y variando $1\leq y \leq nyrs\_ind(k)$, donde $nyrs\_ind(k)$ es la cantidad de años de observación  para el survey número $k$ (está ubicado en la línea 138 del archivo dat).\\
+Primero calculemos $q\_ind(k,y)$ para cada survey $1\leq k \leq nind$ y cada año de observación $1\leq y \leq nyrs\_ind(k)$.
+\begin{equation}
+    q\_ind(k,y)=e^{log\_q\_ind(k,y)}
+\end{equation}
+para $1\leq y < yrs\_rw\_q(k,1)-yrs\_ind(k,1)+1$.\\
+
+Sea $2\leq i \leq 1+npars\_rw\_q(k)$ y $p_i=yrs\_rw\_q(k,i-1)-yrs\_ind(k,1)+1$:
+\begin{equation}
+     q\_ind(k,p_i)  = q\_ind(k,p_i-1)*e^{log\_rw\_q\_ind(k,1)},
+\end{equation}
+\begin{equation}
+    q\_ind(k,iyr)  = q\_ind(k,p_i), 
+\end{equation}
+para $p_i+1\leq iyr \leq nyrs\_ind(k).$
+\begin{itemize}
+    \item log\_q\_ind es parámetro a estimar. Se inicializa.
+    \item $yrs\_rw\_q(k,i-1)$ es input, línea 95 del ctl.
+    %  yrs_ind(k)  = yrs_ind_in(k)(1,nyrs_ind(k)), yrs_ind_in es input linea 141 del dat
+    \item $yrs\_ind(k,1)$ es el primer año de observación para el survey número $k$.
+    \item yrs\_rw\_q es input, línea 95 del ctl.
+    \item yrs\_ind(k) es el conjunto de años de observación del survey número k. 
+    \item log\_rw\_q\_ind es parámetro a estimar.
+\end{itemize}
+
+Ahora se calcula la predicción para el survey número k en el año $1\leq i \leq nyrs\_ind(k)$:
+\begin{equation}
+    pred\_ind(k,i)=q\_ind(k,i).
+\end{equation}
+% \begin{equation}
+%     \left(\left(\sum_{age \ j}natage_j(istk,iyr).S(istk,iyr)_j^{ind\_month\_frac(k)}sel\_ind_j(k,iyr).wt\_ind_j(k,iyr)\right)\right)^{q\_power\_ind(k)}
+% \end{equation}
+\begin{equation}
+    \left(\left(\sum_{j=1}^mN^{istk}_{iyr,j}.{S^{istk}_{iyr,j}}^{ind\_month\_frac(k)}sel\_ind_j(k,iyr).wt\_ind_j(k,iyr)\right)\right)^{q\_power\_ind(k)},
+\end{equation}
+con $iyr=yrs\_ind(k,i)$.
+\begin{itemize}
+\item nind es el número de survey(o índices).
+
+    %\item $ind\_month\_frac$ es un vector de dimensiones (1,nind) y se calcula como $ind\_month\_frac(k)=\dfrac{mo\_ind(k)-1}{12}$, donde $mo\_ind(k)$, para cada pesquería número $k$, está en la línea 144 del archivo dat.
+    \item $ind\_month\_frac$ se calcula como $ind\_month\_frac(k)=\dfrac{mo\_ind(k)-1}{12}$, donde $mo\_ind(k)$ (para cada pesquería número $k$) está en la línea 144 del archivo dat.
+    \item $istk=sel\_map(1,k+nfsh)$ es decir, es el número de stock que le corresponde al survey número $k$.
+    %\item $iyr=yrs\_ind(k,i)$, índice número $k$ y año número $i$.
+    \item $sel\_ind_j(k,iyr)$ es el índice de selectividad del survey número k en el año iyr a la edad j.
+    \item $wt\_ind_j(k,iyr)$ composición del peso a la edad j en el año iyr del survey número $k$. Input línea 171 del archivo .dat .
+    \end{itemize}
+Calculamos la composición de la edad esperada apartir del índice (eac\_ind).\\
+Sea $i$ el índice del año para el cuál se tienen datos de las edades para el survey $k$, esto es, $1\leq i \leq nyrs\_ind\_age(k)$:
+\begin{itemize}
+        \item [i.] Si $use\_age\_err$=TRUE entonces: 
+    \begin{equation}
+        eac\_ind(k,i)_j=age\_err*\dfrac{tmp\_n_j}{\sum_{j=1}^mtmp\_n_j}
+    \end{equation}
+        \item [ii.] Si $use\_age\_err$=FALSE :
+        \begin{equation}eac\_ind(k,i)_j=\dfrac{tmp\_n_j}{\sum_{j=1}^mtmp\_n_j}
+    \end{equation}
+%     donde \begin{equation}
+%     tmp\_n_j= S_j(istk,iyr)^{ind\_month\_frac(k)}sel\_ind(k,iyr)_j.natage(istk,iyr)_j
+% \end{equation}.
+donde \begin{equation}
+    tmp\_n_j= {S^{istk}_{iyr,j}}^{ind\_month\_frac(k)}sel\_ind(k,iyr)_j.N^{istk}_{iyr,j},
+% \end{equation}.
+\end{equation}
+ $iyr=yrs\_ind\_age(k,i)$ y $1\leq j\leq m$.
+    \end{itemize}
+
+Ahora, se calcula la composición de las tallas esperada apartir del índice(elc\_ind). Sea $i$ el índice del año para cuál se tienen datos de las tallas para el survey $k$, esto es  $1\leq i \leq nyrs\_ind\_length(k)$:
+\begin{equation}
+    elc\_ind(k,i)_l=\sum_{j=1}^m\dfrac{tmp\_n_j}{\sum_{j=1}^mtmp\_n_j}*P\_age2len(igrowth,j,l).
+\end{equation}
+donde
+% \begin{equation}
+%     tmp\_n_j= S_j(istk,iyr)^{ind\_month\_frac(k)}sel\_ind(k,iyr)_j.natage(istk,iyr)_j
+% \end{equation}
+\begin{equation}
+    tmp\_n_j= {S^{istk}_{iyr,j}}^{ind\_month\_frac(k)}sel\_ind(k,iyr)_j.N^{istk}_{iyr,j},
+\end{equation}
+y
+\begin{equation}
+    igrowth=growth\_map(istk,yy\_sr(istk,iyr)).    
+\end{equation}
+
+\begin{itemize}
+    %\item tmp\_n es un vector de dimensiones (1,nages).
+    \item growth\_map matriz de crecimeitno, es input. Línea 43 del ctl.
+    \item P\_age2len(igrowth,j,l) es el elemento de la matriz respectiva a la edad $j$ y talla $l$.
+    \item iyr=$yrs\_ind\_lenght(k,i)$, año de índice i para el cuál se tienen datos de longitud del survey $k$.
+    \end{itemize}
+    
+%     Then the expected lenght composition from index elc\_ind is calculate from:
+%     \begin{equation}
+%     elc\_ind(k,i)=tmp\_n*P\_age2len(igrowth).
+% \end{equation}
+
+Index predicted for the next year of the survey $k$ is calculated from:
+\begin{equation}
+    pred\_ind\_nextyr(k)=q\_ind(k,nyrs\_ind(k)) * 
+\end{equation}
+\begin{equation*}
+    \left( SRecruit. {S^{istk}_{y_N,i}}^{ind\_month\_frac(k)} sel\_ind_i(k,endyr)  wt\_ind_i(k,endyr).\right.
+\end{equation*}
+% \begin{equation}
+% \left(\sum_inatagetmp_iS(istk,endyr)_i^{ind\_month\_frac(k)} sel\_ind_i(k,endyr)  wt\_ind_i(k,endyr)\right)^{q\_power\_ind(k)}.
+% \end{equation}
+
+\begin{equation}
++\sum_{i=2}^{m-1}S^{istk}_{y_N,i-1}N^{istk}_{y_N,i-1}{S^{istk}_{y_N,i}}^{ind\_month\_frac(k)} sel\_ind_i(k,endyr)  wt\_ind_i(k,endyr)+.
+\end{equation}
+\begin{equation*}
+  \left. (S^{istk}_{y_N,m-1}.N^{istk}_{y_N,m-1}+N^{istk}_{y_N,m}S^{istk}_{y_N,m}){S^{istk}_{y_N,i}}^{ind\_month\_frac(k)} sel\_ind_i(k,endyr)  wt\_ind_i(k,endyr) \right)^{q\_power\_ind(k)}.
+\end{equation*}
+
+
 
 \textbf{Selectivity}\\
 
@@ -838,60 +1009,8 @@ For the jack mackerel, \(B_{LIM}\) was computed from the lowest ratio of histori
 
 
 
-\textbf{Survey Predictions}\\
-Predicción apartir del índice número k en el año i, con i variando $1\leq i \leq nyrs\_ind(k)$. Donde $nyrs\_ind(k)$ es la cantidad de años para el índice de número $k$ (está ubicado en la línea 138 del archivo dat).
-\begin{equation}
-    pred\_ind(k,i)=q\_ind(k,i)* 
-\end{equation}
-\begin{equation}
-    \left(\left(\sum_{age \ j}natage_j(istk,iyr).S(istk,iyr)_j^{ind\_month\_frac(k)}sel\_ind_j(k,iyr).wt\_ind_j(k,iyr)\right)\right)^{q\_power\_ind(k)}
-\end{equation}
 
-Luego, para $1\leq i \leq nyrs\_ind\_age(k)$:
-\begin{equation}
-    tmp\_n_j= S_j(istk,iyr)^{ind\_month\_frac(k)}sel\_ind(k,iyr)_j.natage(istk,iyr)_j
-\end{equation}
-\begin{itemize}
-    \item $ind\_month\_frac$ es un vector de dimensiones (1,nind) y además $ind\_month\_frac=\dfrac{mo\_ind-1}{12}$, donde $mo\_ind(1,nind)$ está en la línea 144 del dat.
-    \item $istk=sel\_map(1,k+nfsh)$
-    \item $iyr=yrs\_ind\_age(k,i)$, índice número $k$ y año número $i$.
-    \end{itemize}
-    
-    Calculate expected age comp from index eac\_ind:
-    \begin{itemize}
-        \item [i.] Si $use\_age\_err$=TRUE entonces: 
-    \begin{equation}
-        eac\_ind(k,i)=age\_err*\dfrac{tmp\_n}{sum\_tmp}
-    \end{equation}
-        \item [ii.] Si $use\_age\_err$=FALSE :
-        \begin{equation}eac\_ind(k,i)=\dfrac{tmp\_n}{sum\_tmp}
-    \end{equation}
-    donde $sum\_tmp=sum(tmp\_n)$.
-    \end{itemize}
-    
-    Now for the lenghts. Let $i\in \mathbb{N}$ 
-    such that $1\leq i \leq nyrs\_ind\_length(k)$:
 
-\begin{equation}
-    tmp\_n_j= S_j(istk,iyr)^{ind\_month\_frac(k)}sel\_ind(k,iyr)_j.natage(istk,iyr)_j
-\end{equation}
-\begin{itemize}
-    \item tmp\_n es un vector de dimensiones (1,nages).
-    \item iyr=$yrs\_ind\_lenght(k,i)$, en el índice número $k$ y el año $i$ variando de 1 a $nyrs\_ind\_lenght(k)$. $iyr$: año para los datos de longitud del índice $k$.
-    
-\end{itemize}
-    Then the expected lenght composition from index elc\_ind is calculate from:
-    \begin{equation}
-    elc\_ind(k,i)=tmp\_n*P\_age2len(igrowth).
-\end{equation}
-
-Index predicted for the next year is calculated from:
-\begin{equation}
-    pred\_ind\_nextyr(k)=q\_ind(k,nyrs\_ind(k)) * 
-\end{equation}
-\begin{equation}
-\left(\sum_inatagetmp_iS(istk,endyr)_i^{ind\_month\_frac(k)} sel\_ind_i(k,endyr)  wt\_ind_i(k,endyr)\right)^{q\_power\_ind(k)}.
-\end{equation}
 \textbf{Fishery Predictions}\\
 Calculate the expected age composition from fisheries:
 \begin{itemize}
