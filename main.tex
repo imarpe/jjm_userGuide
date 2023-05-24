@@ -228,7 +228,7 @@ where:
 Also, the fishing mortality for each fishery and the survival rate are calculated as follows:
 
 \begin{equation}
-F^k_{y,a}=F^s_{y,a} \dfrac{\sum_{a = 1} ^{m} Cat_a(k,y)}{\sum_{a=1} ^{m} C^s_{y,a}}, \ \ \ \ \ 1\leq a \leq m.
+F^k_{y,a}=F^s_{y,a} \dfrac{\sum_{a = 1} ^{m} Cat^k_{y,a}}{\sum_{a=1} ^{m} C^s_{y,a}}, \ \ \ \ \ 1\leq a \leq m.
 \end{equation}
 
 \begin{equation}
@@ -243,7 +243,7 @@ where:
    
     \item $F^k_{y,a}$ is the fishing mortality for fishery $k$ at age $a$ in the year $y$;
 
-    \item $Cat_a(k,y)$ is the catch at age $a$ for fishery $k$ in the year $y$ (see bellow);
+    \item $Cat^k_{y,a}$ is the catch at age $a$ for fishery $k$ in the year $y$ (see bellow);
     
     \item $S^s_{y,a}$ is survival rate for the stock $s$ at age $a$ in the year $y$.
 \end{itemize}
@@ -255,7 +255,7 @@ N^s_{y+1,a+1}=N^s_{y,a}S^s_{y,a}, \ \ \ \ \ 1\leq a \leq m-2
 \end{equation}
 
 \begin{equation}
-N^s_{y+1,m}=N^s_{y,m-1}S^s_{y,m-1}+N^s_{y,m}S^s_{y,m}.
+N^s_{y+1,m}=N^s_{y,m-1}S^s_{y,m-1}+N^s_{y,m}S^s_{y,m}
 \end{equation}
 
 Defining the fishing mortality for the stock, survival rate, and fishing mortality for the fishery as:
@@ -437,7 +437,7 @@ Now for the year $y=y_N+1$:
 The SSB ($SSB^s_{y_N+1}$) is also projected over the time when the number of projected years is $nproj\_yrs>0$ as function of futures numbers at age ($N^s_{fut}$) and survival rate ($S^s_{fut}$): 
 
 \begin{equation}
-    SSB^s_{y_N+1}= \sum_{a=1}^m wt\_{mat}^s_a{N_{fut}}^s_{y_N+1,a}{{S_{fut}}^s_{y_N+1,a}}^{s_f}
+    SSB^s_{y_N+1}= \sum_{a=1}^m wt\_{mat}^s_a{N_{fut}}^s_{y_N+1,a}({{S_{fut}}^s_{y_N+1,a}})^{s_f}
 \end{equation}
 
 where: 
@@ -446,11 +446,11 @@ where:
 
     \item ${S_{fut}}^s_{y_N+1,a} = e^{-M^s_{y_N}}$
 
-    \item ${N_{fut}}^s_{y_N+1,a} = N^s_{y_N,a-1}S^s_{y_N,a-1}$, \ \ 2\leq a \leq m-1
+    \item ${N_{fut}}^s_{y_N+1,a} = N^s_{y_N,a-1}S^s_{y_N,a-1}, \ \ 2\leq a \leq m-1$
     
     \item ${N_{fut}}^s_{y_N+1,m} = N^s_{y_N,m-1}S^s_{y_N,m-1}+N^s_{y_N,m}S^s_{y_N,m}$, \ \ a = m 
     
-    \item ${N_{fut}}^s_{y_N,1} = SRecruit(SSB^s_{y_N-rec\_age},cum\_reg(s)+yy\_sr(s,y_N))e^{\epsilon^s_{y_N}}$, where $SRecruit$ is a function of  XXX
+    \item ${N_{fut}}^s_{y_N,1} = SRecruit(SSB^s_{y_N-rec\_age},cum\_reg(s)+yy\_sr(s,y_N))e^{\epsilon^s_{y_N}}$, where $SRecruit$ is a function of  spawning biomass and the number of regimen (see section Recruitment).
     
 \end{itemize}
 
@@ -458,65 +458,100 @@ where:
 
 \hfill
 
-\textbf{c. Catch at age}\\
+\textbf{c. Catches}\\
 
-It is calculated for both when popes=true and popes=false for each stock number $s$, with $1\leq s \leq nstk$, and  each year $i$ between $y_0$ and $y_N$. Then there are two ways to calculate the catch ($Cat$) and the predicted catch ($pred\_catage$):
-\begin{itemize}
-    \item If $popes=TRUE$, then pentmp=0. Let  $k_s$ the fisheries that correspond to the stock $s$:
-    %sel\_map(1,k) == s
-        
-    \begin{equation}
-        Ctmp^{k_s}_j=N^s_{i,j}.e^{-\frac{M^s_{i,j}}{2}}sel\_fsh_j(k_s,i).\dfrac{catch\_tmp}{vbio},
-    \end{equation}
-    para $1\leq j \leq m$, where
-    \begin{equation}
-        vbio=\sum_{age\ j}N^s_{i,j}.e^{-\frac{M^s_{i,j}}{2}}.sel\_fsh_j(k_s,i).wt\_fsh_j(k_s,i),
-    \end{equation}
-    and 
-        \begin{equation}
-        catch\_tmp=vbio-posfun\left(\frac{(vbio - catch\_bio(k_s,i))}{vbio} , 0.1 , pentmp \right).vbio,
-    \end{equation}
-    this is used to calculate the total catch, catch and predicted catch:
-    \begin{equation}
+When the model is using the Popes's approximation, the total catch of stock ($C^s_{y,a}$) is calculated as a function of $C_{tmp}^{k_s}_a$ for each stock $s$ ($1\leq s \leq nstk$) at age $a$ in the year $y$ ($y_0 \leq y \leq y_N$): 
+
+\begin{equation}
+C_{tmp}^{k_s}_{y,a}=N^s_{y,a}e^{-0.5M^s_{y,a}} Se_{y,a}^{k_s} \dfrac{c_{tmp}}{v_{bio}}, \ \  1\leq a \leq m, \ \ where
+\end{equation}
+
+%\begin{equation}
+%        Ctmp^{k_s}_a=N^s_{y,a}.e^{-\frac{M^s_{y,a}}{2}}sel\_fsh_a(k_s,y).\dfrac{catch\_tmp}{vbio},
+%    \end{equation}
+
+\begin{equation}
+v_{bio}=\sum_{a=1}^mN^s_{y,a}e^{-0.5M^s_{y,a}} Se_{y,a}^{k_s} w_{y,a}^{k_s}, \ \ and 
+\end{equation}
+    %\item If $popes=TRUE$, then pentmp=0. Let  $k_s$ the fisheries that correspond to the stock $s$:
+    
+%    para $1\leq a \leq m$, where
+%    \begin{equation}
+%        vbio=\sum_{a=1}^mN^s_{y,a}.e^{-\frac{M^s_{y,a}}{2}}.sel\_fsh_a(k_s,y).wt\_fsh_a(k_s,y),
+%    \end{equation}
+%    and 
+
+\begin{equation}
+c_{tmp} = v_{bio}-posfun\left(\frac{v_{bio} - C_{obs}_{k_s,y}}{v_{bio}} , 0.1 , pen_{tmp}=0 \right)v_{bio}
+\end{equation}
+
+%        \begin{equation}
+%        catch\_tmp=vbio-posfun\left(\frac{(vbio - catch\_bio(k_s)_y)}{vbio} , 0.1 , pentmp \right).vbio,
+%    \end{equation}
+
+Following this, the catch of the stock ($C$), catch-at-age ($Cat$) and the predicted catch ($C_{pred}$) are calculated as follows:
+
+\begin{equation}
         %catage\_tot(s,i)+=Ctmp, consultar
-        C^s_{i,j}=\sum_{k_s}Ctmp^{k_s}_j \ \text{(sum on the fisheries belonging to the stock s)},
-    \end{equation}
-    \begin{equation}
-        %catage(k,i)=Ctmp
-        Cat(k_s,i)_j=Ctmp^{k_s}_j,
-    \end{equation}
-    \begin{equation}
-            pred\_catch(k_s,i)=\sum_{j=1}^{m}Ctmp_j.wt\_fsh_j(k_s,i).
-        \end{equation} 
-\begin{itemize}
-    \item $C^s_{i,j}$ is the total catch of stock $s$ for year $i$ at age $j$. It is used in eq. 6.
-    \item $Cat(k,i)_j$ is the catch at age $j$ of fishery $k$ in year $i$. It is used in eq. 6.
-    \item pred\_catch(k,i) is the predicted catch for year $i$ of fishery number $k$.
-    \item $wt\_fsh_j(k,i)$ is the weight at age $j$ for year $i$ of observation in fishery number $k$. Is input, line 80 of .dat file.
-        \item catch\_bio is the observed catch biomass
-        \begin{equation}
-          catch\_bio(k)_i=catch\_bio\_in(k)_i,  
-        \end{equation}
-        where $1\leq k \leq nfsh$ y $y_0\leq i \leq y_N$.
+C^s_{y,a}=\sum_{k_s}C_{tmp}^{k_s}_{y,a} 
+%(sum on the fisheries belonging to the stock s)
+\end{equation}
 
-        \item $catch\_bio\_in(k)_i$ is the observed catch of fishery $k$ in year $i$.. Is input, line 16 of .dat file. 
+\begin{equation}
+%catage(k,i)=Ctmp
+Cat^{k_s}_{y,a}=C_{tmp}^{k_s}_{y,a},  \  \  \ 1\leq a \leq m
+\end{equation}
+
+\begin{equation}
+C_{pred}^{k_s}_y=\sum_{a=1}^{m}C_{tmp}^{k_s}_{y,a} w_{y,a}^{k_s}
+\end{equation} 
+%$\begin{equation}
+%pred\_catch(k_s,y)=\sum_{a=1}^{m}Ctmp_a.wt\_fsh_a(k_s,y).
+%\end{equation} 
+
+where:        
+\begin{itemize}
+    %\item $C^s_{y,a}$ is the total catch of stock $s$ for year $y$ at age $a$. It is used in eq. 6.
+    %\item $Cat(k,y)_a$ is the catch at age $a$ of fishery $k$ in year $y$. It is used in eq. 6.
+    %\item pred\_catch(k,y) is the predicted catch for year $y$ of fishery number $k$.
+
+    \item $Se_{y,a}^{k_s}$ is the fishing selectivity of the fishery $k$ at the age $a$ in the year $y$;
+    
+    \item $w_{y,a}^{k}$ is the weight at age $a$ for the fishery $k$ in the year $y$ of observation;
+    %Is input, line 80 of .dat file.
+    
+    \item $C_{obs}$ is the observed catch.
+    
+    %\item catch\_bio is the observed catch biomass
+    
+    %    \begin{equation}
+    %      catch\_bio(k)_y=catch\_bio\_in(k)_y,  
+    %    \end{equation}
+    %    where $1\leq k \leq nfsh$ y $y_0\leq y \leq y_N$.
+
+    %\item $catch\_bio\_in(k)_y$ is the observed catch of fishery $k$ in year $y$. Is input, line 16 of .dat file. 
  
 \end{itemize}
-    \item If $popes=FALSE$:
-     \begin{equation}
-        Cat(k_s,i)_j=\dfrac{F^{k_s}_{i,j}}{Z^s_{i,j}}\left(1-S^s_{i,j}\right)N^s_{i,j},
-    \end{equation}
-      \begin{equation}
-        pred\_catch(k,i)=\sum_{j=1}^{m}Cat(k,i)_j.wt\_fsh_j(k,i),
-    \end{equation}
-    %\begin{itemize}
-    %\item %$Z_j(s,i)=Z^s_{i,j}$
-        where $Z^s_{i,j}=F^s_{y,a}+M^{s}_{y}$ 
- (respective values when $popes=FALSE$).
-        
-    %\end{itemize}
-    
-\end{itemize}
+
+However, when the Pope's approximation is not used, the catch-at-age and predicted catch are estimated as follows:
+
+\begin{equation}
+Cat^{k_s}_{y,a}=\dfrac{F^{k_s}_{y,a}}{F^s_{y,a}+M^{s}_{y}}\left(1-S^s_{y,a}\right)N^s_{y,a}
+\end{equation}
+
+%\begin{equation}
+%Cat(k_s,y)_a=\dfrac{F^{k_s}_{y,a}}{Z^s_{y,a}}\left(1-S^s_{y,a}\right)N^s_{y,a},
+%\end{equation}
+
+\begin{equation}
+C_{pred}^{k_s}_y=\sum_{a=1}^{m}Cat^{k_s}_{y,a} w_{y,a}^{k_s}
+\end{equation}
+
+%\begin{equation}
+%pred\_catch(k,y)=\sum_{a=1}^{m}Cat(k,y)_a.wt\_fsh_a(k,y),
+%\end{equation}
+
+%where $Z^s_{y,a}=F^s_{y,a}+M^{s}_{y}$ 
 
 \hfill
 
@@ -592,7 +627,7 @@ If $SrType=4$:
 
 \hfill
 
-\textbf{f. Reclutamiento}\\
+\textbf{f. Recruitment}\\
 
 %(considerar escribir desde Von Bertalanfy hasta Age composition to length composition antes de numeros a la edad, así luego de reclutamiento iría selectividad).\\
 
