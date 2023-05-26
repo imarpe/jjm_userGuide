@@ -460,10 +460,10 @@ where:
 
 \textbf{c. Catches}\\
 
-When the model is using the Popes's approximation, the total catch of stock ($C^s_{y,a}$) is calculated as a function of $C_{tmp}^{k_s}_a$ for each stock $s$ ($1\leq s \leq nstk$) at age $a$ in the year $y$ ($y_0 \leq y \leq y_N$): 
+When the model is using the Popes's approximation, the total catch of stock ($C^s_{y,a}$) is calculated as a function of ${C_{tmp}}^{k_s}_{y,a}$ for each stock $s$ ($1\leq s \leq nstk$) at age $a$ in the year $y$ ($y_0 \leq y \leq y_N$): 
 
 \begin{equation}
-C_{tmp}^{k_s}_{y,a}=N^s_{y,a}e^{-0.5M^s_{y,a}} Se_{y,a}^{k_s} \dfrac{c_{tmp}}{v_{bio}}, \ \  1\leq a \leq m, \ \ where
+{C_{tmp}}^{k_s}_{y,a}=N^s_{y,a}e^{-0.5M^s_{y,a}} Se_{y,a}^{k_s} \dfrac{c_{tmp}}{v_{bio}}, \ \  1\leq a \leq m, \ \ where
 \end{equation}
 
 %\begin{equation}
@@ -482,7 +482,7 @@ v_{bio}=\sum_{a=1}^mN^s_{y,a}e^{-0.5M^s_{y,a}} Se_{y,a}^{k_s} w_{y,a}^{k_s}, \ \
 %    and 
 
 \begin{equation}
-c_{tmp} = v_{bio}-posfun\left(\frac{v_{bio} - C_{obs}_{k_s,y}}{v_{bio}} , 0.1 , pen_{tmp}=0 \right)v_{bio}
+c_{tmp} = v_{bio}-posfun\left(\frac{v_{bio} - {C_{obs}}_{k_s,y}}{v_{bio}} , 0.1 , pen_{tmp}=0 \right).v_{bio}
 \end{equation}
 
 %        \begin{equation}
@@ -493,17 +493,17 @@ Following this, the catch of the stock ($C$), catch-at-age ($Cat$) and the predi
 
 \begin{equation}
         %catage\_tot(s,i)+=Ctmp, consultar
-C^s_{y,a}=\sum_{k_s}C_{tmp}^{k_s}_{y,a} 
+C^s_{y,a}=\sum_{k_s}{C_{tmp}}^{k_s}_{y,a} 
 %(sum on the fisheries belonging to the stock s)
 \end{equation}
 
 \begin{equation}
 %catage(k,i)=Ctmp
-Cat^{k_s}_{y,a}=C_{tmp}^{k_s}_{y,a},  \  \  \ 1\leq a \leq m
+Cat^{k_s}_{y,a}={C_{tmp}}^{k_s}_{y,a},  \  \  \ 1\leq a \leq m
 \end{equation}
 
 \begin{equation}
-C_{pred}^{k_s}_y=\sum_{a=1}^{m}C_{tmp}^{k_s}_{y,a} w_{y,a}^{k_s}
+{C_{pred}}^{k_s}_y=\sum_{a=1}^{m}{C_{tmp}}^{k_s}_{y,a} w_{y,a}^{k_s}
 \end{equation} 
 %$\begin{equation}
 %pred\_catch(k_s,y)=\sum_{a=1}^{m}Ctmp_a.wt\_fsh_a(k_s,y).
@@ -544,7 +544,7 @@ Cat^{k_s}_{y,a}=\dfrac{F^{k_s}_{y,a}}{F^s_{y,a}+M^{s}_{y}}\left(1-S^s_{y,a}\righ
 %\end{equation}
 
 \begin{equation}
-C_{pred}^{k_s}_y=\sum_{a=1}^{m}Cat^{k_s}_{y,a} w_{y,a}^{k_s}
+{C_{pred}}^{k_s}_y=\sum_{a=1}^{m}Cat^{k_s}_{y,a} w_{y,a}^{k_s}.
 \end{equation}
 
 %\begin{equation}
@@ -557,8 +557,8 @@ C_{pred}^{k_s}_y=\sum_{a=1}^{m}Cat^{k_s}_{y,a} w_{y,a}^{k_s}
 
 \textbf{d. Calculation of zero biomass}\\
 
-The zero biomass (or virgin biomass) is calculated for each regime $1\leq r \leq  nregs$. The zero biomass is needed to calculate recruitment.\\
-Let the stock number $s$:
+The zero biomass (also called virgin biomass) is calculated for each regime $1\leq r \leq  nregs$. This estimation is needed to calculate recruitment and is calculated as follows:
+
 % \begin{equation}
 %     Bzero(cum\_regs(s)+1)=wt\_mature(s)_1.e^{-M^s_{styr,1}.spmo\_frac}.Rzero(cum\_regs(s)+1)
 % \end{equation}
@@ -566,21 +566,23 @@ Let the stock number $s$:
 % \begin{equation}
 %     Bzero(cum\_regs(s)+1)=wt\_mature^s_1.e^{-M^s_{styr,1}.spmo\_frac}.R^s_0
 % \end{equation}
+
 \begin{equation}
     B^{s,1}_0=wt\_{mat}^s_1.e^{-M^s_{y_0,1}.s_f}.R^s_0
   +\sum_{a=2}^{m-1}wt\_{mat}^s_a.e^{-M^s_{y_0,a} s_f}.R^s_0\prod_{l=1}^{a-1}e^{-M^s_{y_0,l}} 
 + wt\_{mat}^s_{m}.e^{-M^s_{y_0,m}.s_f}.\frac{R^s_0}{1-e^{-M^s_{y_0,m}}}.\prod_{l=1}^{m-1}e^{-M^s_{y_0,l}}.
 \end{equation}
-And
+
 % \begin{equation}
 %     B^{s,r}_0 = Sp\_Biom(s,reg\_shift(s,r-1)-rec\_age)
 % \end{equation}
 \begin{equation}
-    B^{s,r}_0 = SB^s_{reg\_shift(s,r-1)-a_R}
+    B^{s,r}_0 = SSB^s_{reg\_shift(s,r-1)-a_R}, \ \ \ 2\leq r \leq nreg(s)
 \end{equation}
-where $2\leq r \leq nreg(s)$.
+
+where: 
 \begin{itemize}
-    \item nreg(s) is the number of regimes of stock number s.
+    \item $n_{reg}(s)$ is the number of regimes of stock number s
     \item %Bzero(cum\_regs(s)+1) es la biomasa virgen en el primer régimen del stock s.
     $B^{s,1}_0$ is the virgin biomass in the first regime belonging to the stock s.
     \item  %Bzero(cum\_regs(s)+r) es la biomasa virgen en el régimen r del stock s.
