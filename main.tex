@@ -920,7 +920,7 @@ for $1\leq y \leq nyrs\_fsh\_length(k)$.\\
 \textbf{Selectivity}\\
 - The treatment of selectivity patterns and how they are shared among fisheries and indices need to be specified. Also the selectivity for each fleet, and depending on the model configuration, some growth functions were employed inside the model to convert model-predicted age compositions to length compositions, in order to fit the model to the length composition data.\\
 
-Let $k$ the number of fishery and $i$ is the year between $styr$ and $endyr$.
+Let $k$ the number of fishery and $y$ is the year between $y_0$ and $y_N$.
 Depending on which values $fsh\_sel\_opt$ takes in order to calculate the logarithm of fishery selectivity $log\_sel\_fsh$:
 \begin{itemize}
 \item $fsh\_sel\_opt=1:$\\
@@ -933,7 +933,7 @@ Depending on which values $fsh\_sel\_opt$ takes in order to calculate the logari
 %    \begin{equation}
 %        log\_sel\_fsh(k,i)-=log(mean(e^{log\_sel\_fsh(k,i)}))
 %    \end{equation}
-Se asume styr como el primer año de cambio de selectividad, es decir $yrs\_sel\_ch\_fsh(k,1)=styr$, luego se toman en cuenta el resto de años de cambio de selectividad $yrs\_sel\_ch\_fsh(k,i)$, para $2\leq i \leq n\_sel\_ch\_fsh(k)$, introducidos en el archivo .ctl en la línea 116.
+Se asume $y_0$ como el primer año de cambio de selectividad, es decir $yrs\_sel\_ch\_fsh(k,1)=y_0$, luego se toman en cuenta el resto de años de cambio de selectividad $yrs\_sel\_ch\_fsh(k,y)$, para $2\leq y \leq n\_sel\_ch\_fsh(k)$, introducidos en el archivo .ctl en la línea 116.
 \begin{itemize}
     \item $yrs\_sel\_ch\_fsh(k)$ contiene los años de cambio de selectividad para cada pesquería número k.
     \item $n\_sel\_ch\_fsh(k)$ es el número de cambios de selectividad para la pesquería $k$.
@@ -941,48 +941,52 @@ Se asume styr como el primer año de cambio de selectividad, es decir $yrs\_sel\
 \end{itemize}
 
 %También sel\_change\_in\_fsh(k,styr)=1. 
-Se calcula los valores para $log\_selcoffs\_fsh\_in$( logaritmo de los coeficientes de selectividad (?) ) desde el primer cambio de selectividad hasta el cambio número $n\_sel\_ch\_fsh(k)$ para la respectiva pesquería número $k$:
-\begin{equation}
-    log\_selcoffs\_fsh\_in(k,jj)_l=\log\left(\dfrac{sel\_fsh\_tmp_l+1e-7}{\dfrac{1}{nselages\_in\_fsh(k)}\displaystyle\sum_{p=1}^{nselages\_in\_fsh(k)}(sel\_fsh\_tmp_p+1e-7)}\right),
-\end{equation}
-for $1\leq l \leq nselages\_fsh(k)$ y $1\leq jj \leq n\_sel\_ch\_fsh(k)$.
-%Ahora calculamos $log\_selcoffs\_fsh\_in(k,jj)$, que es el logaritmo de los coeficientes de selectividad para la pesquería número $k$ y el cambio de selectividad número $jj$, donde $2\leq jj \leq nsel\_ch\_fsh(k)$(se utilizaría esto si cambiara sel\_fsh\_tmp_j para 1\leq j \ļeq nselages\_in\_fsh(k) pero no cambia solo cambia para nselages\_in\_fsh +1 \leq j \leq nages) :
+% Se calcula los valores para $log\_selcoffs\_fsh\_in$( logaritmo de los coeficientes de selectividad (?) ) desde el primer cambio de selectividad hasta el cambio número $n\_sel\_ch\_fsh(k)$ para la respectiva pesquería número $k$:
+% \begin{equation}
+%     log\_selcoffs\_fsh\_in(k,jj)_l=\log\left(\dfrac{sel\_fsh\_tmp_l+1e-7}{\dfrac{1}{nselages\_in\_fsh(k)}\displaystyle\sum_{p=1}^{nselages\_in\_fsh(k)}(sel\_fsh\_tmp_p+1e-7)}\right),
+% \end{equation}
+% for $1\leq l \leq nselages\_fsh(k)$ y $1\leq jj \leq n\_sel\_ch\_fsh(k)$.
+% %Ahora calculamos $log\_selcoffs\_fsh\_in(k,jj)$, que es el logaritmo de los coeficientes de selectividad para la pesquería número $k$ y el cambio de selectividad número $jj$, donde $2\leq jj \leq nsel\_ch\_fsh(k)$(se utilizaría esto si cambiara sel\_fsh\_tmp_j para 1\leq j \ļeq nselages\_in\_fsh(k) pero no cambia solo cambia para nselages\_in\_fsh +1 \leq j \leq nages) :
 
-%\begin{equation}
-%    log\_selcoffs\_fsh\_in(k,jj)_l = 
-%\end{equation}
+% %\begin{equation}
+% %    log\_selcoffs\_fsh\_in(k,jj)_l = 
+% %\end{equation}
 
-\begin{itemize}
-    \item $sel\_fsh\_tmp_j$ es el coeficiente de cambio de selelctividad para cada edad $j$, con $1\leq j \leq nages$. Es input, línea 119 del archivo .ctl.
-    \item Además para esta opción (fsh\_sel\_opt(1)), se asigna a la fase de coeficientes de selectividad para la pesquería $k$ ($phase\_selcoff\_fsh(k)$):
-    \begin{equation}
-        phase\_selcoff\_fsh(k)=phase\_sel\_fsh(k),
-    \end{equation}
-    \end{itemize}
+% \begin{itemize}
+%     \item $sel\_fsh\_tmp_j$ es el coeficiente de cambio de selelctividad para cada edad $j$, con $1\leq j \leq nages$. Es input, línea 119 del archivo .ctl.
+%     \item Además para esta opción (fsh\_sel\_opt(1)), se asigna a la fase de coeficientes de selectividad para la pesquería $k$ ($phase\_selcoff\_fsh(k)$):
+%     \begin{equation}
+%         phase\_selcoff\_fsh(k)=phase\_sel\_fsh(k),
+%     \end{equation}
+%     \end{itemize}
 
-    donde $phase\_sel\_fsh(k)$ es la fase de minimización(del parámetro log\_selcoffs\_fsh?), input dada en la línea 111 del ctl, asímismo si este es negativo entonces se calculan los valores de inicialización para $log\_selcoffs\_fsh$ de la siguiente manera:
-    \begin{equation}
-        log\_selcoffs\_fsh(k,jj)\_l = log\_selcoffs\_fsh\_in_l
-    \end{equation}
-for $1\leq l \leq nselages\_in\_fsh(k)$ and $1\leq jj \leq n\_sel\_ch\_fsh(k)$.\\
+%     donde $phase\_sel\_fsh(k)$ es la fase de minimización(del parámetro log\_selcoffs\_fsh?), input dada en la línea 111 del ctl, asímismo si este es negativo entonces se calculan los valores de inicialización para $log\_selcoffs\_fsh$ de la siguiente manera:
+%     \begin{equation}
+%         log\_selcoffs\_fsh(k,jj)\_l = log\_selcoffs\_fsh\_in_l
+%     \end{equation}
+% for $1\leq l \leq nselages\_in\_fsh(k)$ and $1\leq jj \leq n\_sel\_ch\_fsh(k)$.\\
 
-Ahora calculamos la selectividad de la pesquería $k$ en el año $i$. Sea $A$ el conjunto de años de cambio de selectividad (se incluye styr) y $p\in A$ algún elemento de $A$:
+Calculamos la selectividad de la pesquería $k$ en el año $y$. Sea $A$ el conjunto de años de cambio de selectividad ( i.e $A= yrs\_sel\_ch\_fsh(k)$, además se incluye $y_0$) y $p_k\in A$ ($p_{k+1}$ vendría ser el siguiente año de cambio de selectividad), algún elemento de $A$:
  \begin{equation}
-        log\_sel\_fsh(k,i)_j=log\_selcoffs\_fsh(k,jj_p)\_j-log\left(\dfrac{1}{nages}*\left(\sum_{l=1}^{nselages\_fsh(k)}e^{log\_selcoffs\_fsh(k,jj_p)_l}+\right.\right.
+        log\_sel\_fsh(k,y)_a=log\_selcoffs\_fsh(k,jj_{p_k})_a-log\left(\dfrac{1}{m}.\left(\sum_{i=1}^{nselages\_fsh(k)}e^{log\_selcoffs\_fsh(k,jj_{p_k})_i}+\right.\right.
     \end{equation}
     \begin{equation*}
-       \left. \left.\sum_{l=nselages\_fsh(k)+1}^{nages}e^{log\_selcoffs\_fsh(k,jj_p)_{nselages\_fsh(k)}}\right)\right), 
+       \left. \left.\sum_{i=nselages\_fsh(k)+1}^{m}e^{log\_selcoffs\_fsh(k,jj_{p_k})_{nselages\_fsh(k)}}\right)\right), 
     \end{equation*}
-   for $\ 1\leq j \leq nselages\_fsh(k)$ and $p\leq i \leq p-1$.\\
+   for $\ 1\leq a \leq nselages\_fsh(k)$.\\
    
-  Ahora para las edades restantes:
+  Now for the remaining ages:
     \begin{equation}
-         log\_sel\_fsh(k,i)_j=log\_selcoffs\_fsh(k,jj_p)\_{nselages\_fsh(k)}-log\left(\dfrac{1}{nages}*\left(\sum_{l=1}^{nselages\_fsh(k)}e^{log\_selcoffs\_fsh(k,jj_p)_l}+\right.\right.
+         log\_sel\_fsh(k,y)_a=log\_selcoffs\_fsh(k,jj_{p_k})_{nselages\_fsh(k)}-log\left(\dfrac{1}{nages}.\left(\sum_{i=1}^{nselages\_fsh(k)}e^{log\_selcoffs\_fsh(k,jj_{p_k})_i}+\right.\right.
     \end{equation}
  \begin{equation*}
-       \left. \left.\sum_{l=nselages\_fsh(k)+1}^{nages}e^{log\_selcoffs\_fsh(k,jj_p)_{nselages\_fsh(k)}}\right)\right), 
+       \left. \left.\sum_{i=nselages\_fsh(k)+1}^{m}e^{log\_selcoffs\_fsh(k,jj_{p_k})_{nselages\_fsh(k)}}\right)\right), 
     \end{equation*}
-    for $nselages\_fsh(k)\leq j \leq nages$ y $jj_p$ es el número de cambio que le corresponde al año de cambio $p\in A$.
+    for $nselages\_fsh(k)\leq a \leq m$ where $p_k\leq y < p_{k+1}$.
+    \begin{itemize}
+        \item $jj_{p_k}$ es el número de cambio que le corresponde al año de cambio $p_k\in A$.
+        \item $log\_selcoffs\_fsh$ es parámetro a estimar.
+    \end{itemize}
 
 
 
@@ -1021,52 +1025,109 @@ Ahora calculamos la selectividad de la pesquería $k$ en el año $i$. Sea $A$ el
     %    \end{equation}
     
 \item $fsh\_sel\_opt=2:$ 
+Sea $p_k$ como antes, 
 \begin{equation}
-            log\_sel\_fsh(k,i)(1,nselages\_fsh(k))=-log( 1.0 + e^{(-1.*sel\_slope\_tmp * ( age\_vector(1,nselages\_fsh(k)) - sel50\_tmp) )})
+            log\_sel\_fsh(k,y)_a=-log( 1.0 + e^{(-1.sel\_slope\_fsh(k,jj_{p_k}) . ( age\_vector_a - sel50\_fsh(k,jj_{p_k})) )})
         \end{equation}
+        for $1\leq a \leq nselages\_fsh(k)$.
         \begin{equation}
-            log\_sel\_fsh(k,i)(nselages\_fsh(k),nages)=log\_sel\_fsh(k,i,nselages\_fsh(k)).
+            log\_sel\_fsh(k,y)_a=log\_sel\_fsh(k,y)_{nselages\_fsh(k))},
         \end{equation}
-\item $fsh\_sel\_opt=3:$
+        for $nselages\_fsh(k) \leq a \leq m$ where $p_k\leq y < p_{k+1}$.
+        \begin{itemize}
+            \item $sel\_slope\_fsh(k,jj_{p_k}) = e^{logsel\_slope\_fsh(k,jj_{p_k})}$.
+            \item logsel\_slope\_fsh and sel50\_fsh are parameters to be estimated.
+        \end{itemize}
+\item $fsh\_sel\_opt=3:$ Sea $p_k$ como antes,
  \begin{equation}
-        log\_sel\_fsh(k,i)(1,nselages\_fsh(k))     = ( -log(1.0 + e^{(\frac{-2.9444389792}{du} * ( age\_vector(1,nselages\_fsh(k)) - bu) )})
+        log\_sel\_fsh(k,y)_a     = \left( -log(1.0 + e^{(\frac{-2.9444389792}{du}.( age\_vector_a - bu) )}) \right.
     \end{equation}
-    
     \begin{equation*}
-         +log(1 - \dfrac{1}{(1 + e^{(\frac{-2.9444389792}{dd} ( age\_vector(1,nselages\_fsh(k)) - bd))})} ) )+0.102586589 
+         \left.+log\left(1 - \dfrac{1}{1 + e^{(\frac{-2.9444389792}{dd} ( age\_vector_a - bd))}} \right) \right)+0.102586589 
     \end{equation*}
-    
+      for $1\leq a \leq nselages\_fsh(k)$.\\
+      Now for the remaining ages:
     \begin{equation}
-        log\_sel\_fsh(k,i)(nselages\_fsh(k),nages) = log\_sel\_fsh(k,i,nselages\_fsh(k)).
+        log\_sel\_fsh(k,y)_a = log\_sel\_fsh(k,y)_{nselages\_fsh(k)},
     \end{equation}
+    for $nselages\_fsh(k)\leq a \leq m$.
+    \begin{itemize}
+        \item %$bu = sel\_p1\_fsh(k,jj_{p_k})$
+        $bu = e^{logsel\_p1\_fsh(k,jj_{p_k})}$
+        \item 
+        $du = e^{logsel\_p2\_fsh(k,jj_{p_k})}$
+        %$du = sel\_p2\_fsh(k,jj_{p_k})$
+        \item
+        $dd = e^{logsel\_p3\_fsh(k,jj_{p_k})}$
+        %$dd = sel\_p3\_fsh(k,jj_{p_k})$
+        \item $bd = bu + du + dd$.
+        \item $logsel\_p1\_fsh$, $logsel\_p2\_fsh$ and $logsel\_p3\_fsh$ are parameters to be estimated.
+    \end{itemize}
+    
     \end{itemize}
 
 For the surveys:\\
 \begin{itemize}
-    \item $ind\_sel\_opt=1:$
-      \begin{equation}
-        log\_sel\_ind(k,i)(1,nselages\_ind(k))=sel\_coffs\_tmp
+
+\item $ind\_sel\_opt=1:$
+Calculamos la selectividad del crucero $k$ en el año $y$. Sea $B$ el conjunto de años de cambio de selectividad ( i.e $B= yrs\_sel\_ch\_ind(k)$, además se incluye $y_0$) y $p_k\in A$, algún elemento de $B$:
+\begin{equation}
+    sel\_tmp_{y,a} = log\_selcoffs\_ind(k,jj_{p_k})_a
+\end{equation}
+for $1\leq a \leq nselages\_ind(k)$.
+Now for remaining ages
+\begin{equation}
+    sel\_tmp_{y,a}= log\_selcoffs\_ind(k,jj_{p_k})_{nselages\_ind(k)},
+\end{equation}
+for $nselages\_ind(k)\leq a \leq m$. \\
+
+Now we calculate $log\_sel\_ind$
+     \begin{equation}
+        log\_sel\_ind(k,y)_a=sel\_tmp_{y,a}-log\left(\dfrac{1}{q\_age\_max(k)-q\_age\_min(k)+1}\sum_{i=q\_age\_min(k)}^{q\_age\_max(k)}sel\_tmp_{y,i}\right)
     \end{equation}
-    \begin{equation}
-        log\_sel\_ind(k,i)(nselages\_ind(k),nages)=log\_sel\_ind(k,i,nselages\_ind(k))
-    \end{equation}
-    \begin{equation}
-        log\_sel\_ind(k,i)-=log(mean(e^{(log\_sel\_ind(k,i)(q\_age\_min(k),q\_age\_max(k)))}))
-    \end{equation}
+    for $1\leq a \leq m$ and $p_k\leq y < p_{k+1}$.\\ 
+\begin{itemize}    
+    \item $jj_{p_k}$ es el número de cambio que le corresponde al año de cambio $p_k\in B$.
+    \item $log\_selcoffs\_ind$ es parámetro a estimar.
+\end{itemize}
+
+    
     \item $ind\_sel\_opt=2:$
-        \begin{equation}
-        log\_sel\_ind(k,i) = - log( 1.0 + e^{(-sel\_slope\_tmp * ( age\_vector - sel50\_tmp) )}).
-    \end{equation}
+    Sea $p_k$ como antes, 
+\begin{equation}
+            log\_sel\_ind(k,y)_a = - log( 1.0 + e^{(-sel\_slope\_ind(k,jj_{p_k}) . ( age\_vector_a - sel50\_ind(k,jj_{p_k})) )}).
+        \end{equation}
+        for $1\leq a \leq m
+$ where $p_k\leq y < p_{k+1}$.
+        \begin{itemize}
+            \item $sel\_slope\_ind(k,jj_{p_k}) = e^{logsel\_slope\_ind(k,jj_{p_k})}$.
+            \item logsel\_slope\_ind and sel50\_ind are parameters to be estimated.
+        \end{itemize}
+
     \item $ind\_sel\_opt=3:$
      \begin{equation}
-        log\_sel\_ind(k,i)(1,nselages\_ind(k))     = ( -log(1.0 + e^{(\frac{-2.9444389792}{p1} * ( age\_vector(1,nselages\_ind(k)) - i1) )}) 
+        log\_sel\_ind(k,y)_a     = ( -log(1.0 + e^{(\frac{-2.9444389792}{p1} . ( age\_vector_a - i1) )}) 
 \end{equation}
     \begin{equation}
-          +log(1 - \frac{1}{(1 + e^{(\frac{-2.9444389792}{p3} * ( age_vector(1,nselages\_ind(k)) - i2))})} ) )+0.102586589 
+          +log\left(1 - \frac{1}{(1 + e^{(\frac{-2.9444389792}{p3} . ( age\_vector_a - i2))})} ) \right)+0.102586589 
     \end{equation}
+for $1\leq a \leq nselages\_ind(k).$ \\
+
+    Now for remaining ages
     \begin{equation}
-         log\_sel\_ind(k,i)(nselages\_ind(k),nages) = log\_sel\_ind(k,i,nselages\_ind(k)).
+         log\_sel\_ind(k,y)_a = log\_sel\_ind(k,y)_{nselages\_ind(k)},
     \end{equation}
+    for $nselages\_ind(k)\leq a \leq m$ where $p_k\leq y < p_{k+1}$.
+\begin{itemize}
+    \item $p1 = e^{logsel\_p1\_ind(k,jj_{p_k})}$
+    \item $p2 = sel\_p2\_ind(k,jj_{p_k})$
+    \item $p3 = e^{logsel\_p3\_ind(k,jj_{p_k})}$
+    \item $i1 = p1 + p2$
+    \item $i2 = p1 + i1 + p3$
+    \item logsel\_p1\_ind, sel\_p2\_ind y logsel\_p3\_ind are parameters to be estimated.
+\end{itemize}
+
+    
 \end{itemize}
 Finally we get the selectivites from:
 \begin{equation}
@@ -1636,6 +1697,49 @@ Model implementation could allow to analyse the effect of stock structure hypoth
 \section{Data files}
 % List of information as part of the data input files
 
+\begin{tabular}{| c | c | c | c | c |}
+\hline
+Line in the .dat file & Name in .dat file  & Name in the User Guide & Tpl name & Definition\\ \hline
+ 3 &  years & $y_0$  & styr & year of start of observation\\ \hline
+4 &  years & $y_N$  & endyr & end year of observation\\ \hline
+6 & ages  & $a_R$  & $rec\_age$ & recruitment age\\ \hline
+7 & ages  &   & $oldest\_age$ & oldest age\\ \hline
+9 & nbins &   & $n\_lenght$ & number of sizes  considered\\ \hline
+10 & lengthbin &   & $len\_bin$ & \\  \hline
+12 & Fnum &   & $nfsh$ & \\ \hline
+14 & Fnames &   & $fshnameread$ & \\ \hline
+16 & Fcaton &   & $catch\_bio\_in$ & \\ \hline
+19 & Fcatonerr &   & $catch\_bio\_sd\_in$ & \\ \hline
+21 & FnumyearsA &   & $nyrs\_fsh\_age$ & \\ \hline
+23 & FnumyearsL &   & $nyrs\_fsh\_lenght$ & \\ \hline
+25 & Fageyears &   & $yrs\_fsh\_age\_in$ & \\ \hline
+27 & Flenghtyears &   & $yrs\_fsh\_lenght\_in$ & \\ \hline
+29 & Fagesample &   & $n\_sample\_fsh\_age\_in$ & \\ \hline
+31 & Flenghtsample &   & $n\_sample\_fsh\_lenght\_in$ & \\ \hline
+33 & Fagecomp &   & $oac\_fsh\_in$ & \\ \hline
+36 & Flenghtcomp &   & $olc\_fsh\_in$ & \\ \hline
+80 & Fwtatage &   & $wt\_fsh$ & \\ \hline
+134 & Inum &   & $nind$ & \\ \hline
+136 & Inames &   & $indnameread$ & \\ \hline
+138 & Inumyears &   & $nyrs\_ind$ & \\ \hline
+141 & Iyears &   & $yrs\_ind\_in$ & \\ \hline
+144 & Imonths &   & $mo\_ind$ & \\ \hline
+147 & Index &   & $obs\_ind\_in$ & \\ \hline
+150 & Indexerr &   & $obs\_se\_ind\_in$ & \\ \hline
+153 & Inumageyears &   & $nyrs\_ind\_age$ & \\
+\hline
+156 & Inumlenghtyears &   & $nyrs\_ind\_lenght$ & \\ \hline
+159 & Iyearsage &   & $yrs\_ind\_age\_in$ & \\ \hline
+161 & Iagesample &   & $s\_sample\_ind\_age\_in$ & \\ \hline
+163 & Ipropage &   & $oac\_ind\_in$ & \\ \hline
+165 & Iyearslenght &   & $syrs\_ind\_lenght\_in$ & \\ \hline
+167 & Ilenghtsample &   & $n\_sample\_ind\_lenght\_in$ & \\ \hline
+169 & Iproplenght &   & $olc\_ind\_in$ & \\ \hline
+171 & Iwtatage &   & $wt\_ind$ & \\ \hline
+278 & Pspwn &   & $spawnmo$ & \\ \hline
+280 & Pageerr &   & $age\_err$ & \\ \hline
+\end{tabular} 
+
 \subsection{Fishery data}
 
 - Catch data: This model uses the catch data for each of the fleet as part of the model representation.
@@ -1678,6 +1782,89 @@ A full description of data sets used to the assessment of Jack mackerel is in th
 
 \section{Configuration files}
 % List of information as part of the configuration files (ctl files)
+
+\begin{tabular}{| c | c | c | c | c |}
+\hline
+Line in the .ctl file & Name in .ctl file  & Name in the User Guide & Tpl name & Definition\\ \hline
+ 5 &  Number of stocks & $nstk$  & nstk & number of stocks\\ \hline
+6 &  Names of stocks &  & $stknameread$   & \\ \hline
+8 &  Selectivity sharing vector &   & $sel\_map$ &\\ \hline
+15 &  Number of regimes &   & $nreg$ &\\ \hline
+17 &  Sr\_type &   & $SrType$ &\\ \hline
+19 &  AgeError &   & $use\_age\_err$ &\\ \hline
+21 &  Retro &   & $retro$ &\\ \hline
+23 & Recruitment sharing matrix &   & $rec\_map$ &\\ \hline
+26 &  Steepness &   & $steepnessprior$ &\\ \hline
+27 &  Steepness &   & $cvsteepnessprior$ &\\ \hline
+28 &  Steepness &   & $phase\_srec$ &\\ \hline
+30 &  SigmaR &   & $sigmarprior$ &\\ \hline
+31 &  SigmaR &   & $cvsigmarprior$ &\\ \hline
+32 &  SigmaR &   & $phase\_sigmar$ &\\ \hline
+33 &  phase\_Rzero &   & $phase\_Rzero$ &\\ \hline
+35 &  Nyrs\_sr &   & $nrecs\_est\_shift$ &\\ \hline
+38 &  yrs\_sr &   & $yr\_rec\_est$ &\\ \hline
+41 &  reg\_shifts &   & $reg\_shift$ &\\ \hline
+43 &  Growth parameters sharing matrix &   & $growth\_map$ &\\ \hline
+46 &  Linf &   & $Linfprior$ &\\ \hline
+47 &  Linf &   & $cvLinfprior$ &\\ \hline
+48 &  Linf &   & $phase\_Linf$ &\\ \hline
+50 &  K &   & $kprior$ &\\ \hline
+51 & K &   & $cvkprior$ &\\ \hline
+52 &  k &   & $phase\_k$ &\\ \hline
+54 &  Lo\_Len &   & $Loprior$ &\\ \hline
+55 &  Lo\_Len  &   & $cvLoprior$ &\\ \hline
+56 &  Lo\_Len  &   & $phase\_Lo$ &\\ \hline
+58 &  Sigma\_len  &   &  
+ $sdageprior$ &\\ \hline
+59 &  Sigma\_len  &   & $cvsdageprior$ &\\ \hline
+60 &  Sigma\_len  &   & $phase\_sdage$  &\\ \hline
+61 &  Mortality sharing matrix  &   & $mort\_map$  &\\ \hline
+64 &  Natural\_Mortality  &   & $natmortprior$ &\\ \hline
+65 &  Natural\_Mortality  &   & $cvnatmortprior$ &\\ \hline
+66 &  Natural\_Mortality  &   & $phase\_M$  &\\ \hline
+67 &  NEW npars\_mage  &   & $npars\_Mage$ &\\ \hline
+69 &  NEW ages\_M\_changes  &   & $ages\_M\_changes$ &\\ \hline
+71 &  NEW Mage\_in  &   & $Mage\_in$  &\\ \hline
+73 &  phase\_Mage  &   &  $phase\_Mage$ &\\ \hline
+75 &  Phase\_Random\_walk\_M	  &   & $phase\_rw\_M$ &\\ \hline
+77 &  Nyrs\_Random\_walk\_M  &   & $npars\_rw\_M$ &\\ \hline
+79 &  Random\_walk\_M\_yrs	  &   & $yrs\_rw\_M$ &\\ \hline
+81 &  Random\_walk\_M\_sigmas  &   & $sigma\_rw\_M$  &\\ \hline
+
+\end{tabular} 
+
+\begin{tabular}{| c | c | c | c | c |}
+\hline
+Line in the .ctl file & Name in .ctl file  & Name in the User Guide & Tpl name & Definition\\ \hline
+
+84 & catchability &   &  $qprior$&\\ \hline
+85 & catchability &   &  $cvqprior$&\\ \hline
+86 & catchability &   &  $phase\_q$&\\ \hline
+88 & q\_power &   & $q\_power\_prior$ &\\ \hline
+89 & q\_power &   & $cvq\_power\_prior$ &\\ \hline
+90 & q\_power &   & $phase\_q\_power$  &\\ \hline
+91 & Random\_walk\_q\_phases &   & $phase\_rw\_q$ &\\ \hline
+93 & Nyrs\_Random\_walk\_q &   & $npars\_rw\_q$ &\\ \hline
+95 & Random\_walk\_q\_yrs &   & $yrs\_rw\_q$ &\\ \hline
+97 & Random\_walk\_q\_sigmas &   & $sigma\_rw\_q$ &\\ \hline
+99 & q\_agemin &   & $q\_age\_min$ &\\ \hline
+102 & q\_agemax &   & $q\_age\_max$  &\\ \hline
+103 & use vb wt age &   & $use\_vb\_wt\_age$  &\\ \hline
+105 & n\_proj\_yrs &   & $nproj\_yrs$ &\\ \hline
+109 & Fishery \#  &   & $fsh\_sel\_opt$  &\\ \hline
+110 & Fishery \# &   & $nselages\_in\_fsh$  &\\ \hline
+112 & Fishery \# &   & $curv\_pen\_fsh$ &\\ \hline
+113 & Fishery \# &   & $seldec\_pen\_fsh$ &\\ \hline
+115 & Years of selectivity &   & $s\_sel\_ch\_fsh$ &\\ \hline
+116 & Years of selectivity &   & $yrs\_sel\_ch\_fsh$ &\\ \hline
+117 & Years of selectivity &   & $sel\_sigma\_fsh$ &\\ \hline
+119 & Initial values for coeff. &   & $sel\_fsh\_tmp$ &\\ \hline
+140 & Population weight at age 1000&   & $wt\_pop$ &\\ \hline
+143 & Maturity at Age &   & $maturity$  &\\ \hline
+146 & Test &   & $test$ &\\ \hline
+\end{tabular} 
+
+
 
 - Input Data File, model name, Number of stocks, Names of stocks, Selectivity sharing vector, (number\_fisheries + number\_surveys), Number of regimes (by stock), Sr\_type, AgeError, Retro, Recruitment sharing matrix (number\_stocks, number\_regimes), Steepness, SigmaR, phase\_Rzero, Nyrs\_sr, yrs\_sr, reg\_shifts blank if nreg==1, Growth parameters sharing matrix (number\_stocks, number\_regimes), Linf, K, Lo\_Len, Sigma\_len, Mortality sharing matrix number\_stocks, number\_regimes), Natural\_Mortality, npars\_mage, ages\_M\_changes, Mage\_in, phase\_Mage, Phase\_Random\_walk\_M, Nyrs\_Random\_walk\_M, Random\_walk\_M\_yrs blank if nyrs==0, Random\_walk\_M\_sigmas blank if nyrs==0, catchability, q\_power, Random\_walk\_q\_phases, Nyrs\_Random\_walk\_q, Random\_walk\_q\_yrs blank if nyrs==0, Random\_walk\_q\_sigmas blank if nyrs==0, q\_agemin, q\_agemax, use vb wt age, n\_proj\_yrs, Select type for fshry 1, n\_sel\_ages, phase sel, curvature penalty, Dome-shape penalty, Years of selectivity change Fishery 3 Peru, n\_sel\_ch\_fsh, yrs\_sel\_ch\_fsh, sel\_sigma\_fsh, Initial values for coefficitients at each change (one for every change plus 1), Initial values for parameters, Index number 5 Acoustic\_Peru, SelOption, n\_sel\_ages, phase sel, curvature penalty, Dome-shape penalty, n\_sel\_ch\_ind, yrs\_sel\_ch\_ind, sel\_sigma\_ind, Initial values for parameters, Population Weight at Age 1000, Maturity at Age, Test.
 
