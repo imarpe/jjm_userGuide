@@ -460,7 +460,7 @@ where:
 
 \textbf{c. Catches}\\
 
-When the model is using the Popes's approximation, the total catch of stock ($C^s_{y,a}$) is calculated as a function of ${C_{tmp}}^{k_s}_{y,a}$ for each stock $s$ ($1\leq s \leq nstk$) at age $a$ in the year $y$ ($y_0 \leq y \leq y_N$): 
+When the model is using the Popes's approximation, the total catch of stock ($C^s_{y,a}$) is calculated as a function of ${C_{tmp}}^{k_s}_{y,a}$ for each stock $s$ ($1\leq s \leq n_{stk}$) at age $a$ in the year $y$ ($y_0 \leq y \leq y_N$): 
 
 \begin{equation}
 {C_{tmp}}^{k_s}_{y,a}=N^s_{y,a}e^{-0.5M^s_{y,a}} Se_{y,a}^{k_s} \dfrac{c_{tmp}}{v_{bio}}, \ \  1\leq a \leq m, \ \ where
@@ -557,7 +557,7 @@ Cat^{k_s}_{y,a}=\dfrac{F^{k_s}_{y,a}}{F^s_{y,a}+M^{s}_{y}}\left(1-S^s_{y,a}\righ
 
 \textbf{d. Calculation of zero biomass}\\
 
-The zero biomass (also called virgin biomass) is calculated for each regime $1\leq r \leq  nregs$. This estimation is needed to calculate recruitment and is calculated as follows:
+The zero biomass (also called virgin biomass) is calculated for each regime $1\leq r \leq  n_{regs}$. This estimation is needed to calculate recruitment and is calculated as follows:
 
 % \begin{equation}
 %     Bzero(cum\_regs(s)+1)=wt\_mature(s)_1.e^{-M^s_{styr,1}.spmo\_frac}.Rzero(cum\_regs(s)+1)
@@ -568,25 +568,25 @@ The zero biomass (also called virgin biomass) is calculated for each regime $1\l
 % \end{equation}
 
 \begin{equation}
-    B^{s,1}_0=wt\_{mat}^s_1.e^{-M^s_{y_0,1}.s_f}.R^s_0
-  +\sum_{a=2}^{m-1}wt\_{mat}^s_a.e^{-M^s_{y_0,a} s_f}.R^s_0\prod_{l=1}^{a-1}e^{-M^s_{y_0,l}} 
-+ wt\_{mat}^s_{m}.e^{-M^s_{y_0,m}.s_f}.\frac{R^s_0}{1-e^{-M^s_{y_0,m}}}.\prod_{l=1}^{m-1}e^{-M^s_{y_0,l}}.
+    B^{s,1}_0=wt\_{mat}^s_1e^{(-M^s_{y_0,1)}(s_f)}R^s_0
+  +\sum_{a=2}^{m-1}wt\_{mat}^s_ae^{(-M^s_{y_0,a})(s_f)}R^s_0\prod_{l=1}^{a-1}e^{-M^s_{y_0,l}} 
++ wt\_{mat}^s_{m}e^{(-M^s_{y_0,m})(s_f)}\frac{R^s_0}{1-e^{-M^s_{y_0,m}}}\prod_{l=1}^{m-1}e^{-M^s_{y_0,l}}
 \end{equation}
 
 % \begin{equation}
 %     B^{s,r}_0 = Sp\_Biom(s,reg\_shift(s,r-1)-rec\_age)
 % \end{equation}
 \begin{equation}
-    B^{s,r}_0 = SSB^s_{reg\_shift(s,r-1)-a_R}, \ \ \ 2\leq r \leq nreg(s)
+    B^{s,r}_0 = SSB^s_{reg\_shift(s,r-1)-a_R}, \ \ \ 2\leq r \leq n_{regs}
 \end{equation}
 
 where: 
 \begin{itemize}
-    \item $n_{reg}(s)$ is the number of regimes of stock number s
+    \item $n_{regs}$ is the number of regimes of stock number s;
     \item %Bzero(cum\_regs(s)+1) es la biomasa virgen en el primer régimen del stock s.
-    $B^{s,1}_0$ is the virgin biomass in the first regime belonging to the stock s.
+    $B^{s,1}_0$ is the virgin biomass for the first regime belonging to the stock s;
     \item  %Bzero(cum\_regs(s)+r) es la biomasa virgen en el régimen r del stock s.
-    $B^{s,r}_0$ is the virgin biomass in regime r belonging to stock s with $2\leq r \leq nreg(s)$.
+    $B^{s,r}_0$ is the virgin biomass for regime r belonging to stock s with $2\leq r \leq n_{regs}$;
     \item reg\_shift(s,r-1) is input, line 41 of .ctl file, for each stock s and regime number $r$.
     %\item $a_R$ rec\_age$ is the age at which recruitment is feasible.
 \end{itemize}
@@ -595,116 +595,113 @@ where:
 
 \textbf{e. Stock-Recruitment Parameters}\\
 
-Let $r$ be a given regime number, that is, $1\leq r \leq nregs$.\\
-The parameters of the recruitment curve (alpha, beta) are calculated according to the value assigned to SrType.\\
+%Let $r$ be a given regime number, that is, $1\leq r \leq nregs$.\\
+The parameters of the recruitment curve ($\alpha$, $\beta$) are calculated according to the specified stock-recruitment relationship type (sr\_type). Also, they are parameterized in terms of the steepness of the stock-recruitment relationship (h), the recruitment to the first regime of stock ($R_0$), and the virgin biomass ($B_0$).\\
 
-If SrType=1 (Ricker), then
+Using the Ricker stock-recruitment relationship (sr\_type = 1):
+
 \begin{equation}
-alpha(r)=log\left(\dfrac{-4*steepness(irec)}{steepness(irec)-1}\right).
+\alpha = log\left(\dfrac{-4h}{h-1}\right).
 \end{equation}
-If SrType=2 (Beverton-holt):
-% \begin{equation}
-%     alpha(r) = Bzero(r)*\dfrac{1}{Rzero(r)}\dfrac{(1-(steepness(irec)-0.2)}{0.8*steepness(irec)}
-% \end{equation}
+
+Using the Beverton-Holt stock-recruitment relationship (sr\_type = 2):
+
 \begin{equation}
-    alpha(r) = B^{s,r}_0*\dfrac{1}{R^{s,r}_0}\dfrac{(1-(steepness(irec)-0.2)}{0.8*steepness(irec)},
+\alpha = \dfrac{B^{s,r}_0}{R^{s,r}_0}\left(\dfrac{1 - h}{4h}\right),  
 \end{equation}
+
 \begin{equation}
-    beta(r)=\dfrac{(5*steepness(irec)-1)}{4*steepness(irec)*R^{s,r}_0}.
+\beta = \dfrac{5h-1}{4hR^{s,r}_0}
 \end{equation}
-If $SrType=4$:
+
+When sr\_type = 4:
+
 \begin{equation}
-    beta(r)=log\left(\dfrac{5*steepness(irec)}{0.8*B^{s,r}_0}\right),
+\alpha = log\left(\dfrac{R^{s,r}_0}{B^{s,r}_0}\right)+\beta B^{s,r}_0, 
 \end{equation}
+
 \begin{equation}
-    alpha(r)=log\left(\dfrac{R^{s,r}_0}{B^{s,r}_0}\right)+beta(r)*B^{s,r}_0.
+\beta = log\left(\dfrac{5h}{0.8B^{s,r}_0}\right)
 \end{equation}
+
+where:
+
 \begin{itemize}
-    % \item Rzero(r) es el reclutamiento en el régimen número $r$, donde $1\leq r \leq nregs.$
-    \item $R^{s,r}_0$ is the recruitment in regime number $r$ (belonging to stock s), where $1\leq r \leq nregs.$
-    \item steepness is a parameter to be estimated.
-    \item $irec=rec\_map(stk\_reg\_map(1,r),stk\_reg\_map(2,r))$, where $rec\_map$ is the recruitment matrix, it is input in the line 23 of .ctl file.
-    \item $stk\_reg\_map$ is a matrix of dimensions 2xnregs, where $stk\_reg\_map(2,r)$ is the regime number $r_s$, with $1\leq r_s \leq nreg(s)$, corresponding to stock number $s=stk\_reg\_map(1,r)$.
+% \item Rzero(r) es el reclutamiento en el régimen número $r$, donde $1\leq r \leq nregs.$
+
+\item $R^{s,r}_0$ is the recruitment to the first regime $r$ of stock $s$, where $1\leq r \leq n_{regs}$;
+
+\item $B^{s,r}_0$ is the virgin biomass for regime $r$ belonging to the stock $s$.
+
+%\item $irec=rec\_map(stk\_reg\_map(1,r),stk\_reg\_map(2,r))$, where $rec\_map$ is the recruitment matrix, it is input in the line 23 of .ctl file.
+
+%\item $stk\_reg\_map$ is a matrix of dimensions 2xnregs, where $stk\_reg\_map(2,r)$ is the regime number $r_s$, with $1\leq r_s \leq nreg(s)$, corresponding to stock number $s=stk\_reg\_map(1,r)$.
 \end{itemize}
 
 \hfill
 
-\textbf{f. Recruitment}\\
+\textbf{e. Recruitment}\\
 
 %(considerar escribir desde Von Bertalanfy hasta Age composition to length composition antes de numeros a la edad, así luego de reclutamiento iría selectividad).\\
 
-Recruitment is calculated for each year $i$, where $y_0\leq i \leq y_N$:
+The numbers of recruits is calculated for each year $y$, where $y_0\leq y \leq y_N$:
 
 \begin{equation}
-    recruits(s,i)=N^s_{i,1}.
+    recruits^s_y =N^s_{y,a = 1},
 %es calculado en la función calc_dependent_vars
 \end{equation}
 
-Now for the year $i=endyr+1$:
+
 % \begin{equation}
 %     recruits(s,endyr+1)=e^{\mu_{R,cum\_regs(s)+yy\_sr(s,endyr+1)}}.
 % \end{equation}
 \begin{equation}
-    recruits(s,endyr+1)=e^{\mu^s_{R,y_N+1}}.
+    recruits^s_{y_{N+1}}=e^{\mu^s_{R,y_N+1}}, \ when \ y = y_{N+1}
 \end{equation}
 
-For the stock-recruitment curve, it depends on the value of SrType. Let be
-\begin{equation}
-    stock^r_i=\dfrac{i.B^{s,r}_0}{250}, 1\leq i \leq 300.
-\end{equation}
-(Why is the stock $stock^r_i$ selected in this way?)\\
-If SrType=1:
-\begin{equation}
-SRecruit(stock^r_i,r)=\dfrac{R^{s,r}_0.stock^r_i}{B^{s,r}_0}e^{alpha(r).\left(1-\dfrac{stock^r_i}{B^{s,r}_0}\right)}
-\end{equation}
-If SrType=2:
+Besides, the number of recruits is calculated according to the specified curve type of the stock-recruitment relationship. Besides, the recruits will depend on the virgin biomass of the stock ($stock_i^r$), as follows:
 
 \begin{equation}
-SRecruit(stock^r_i,r)=\dfrac{stock^r_i}{alpha(r)+beta(r).stock^r_i}
-        \end{equation}
-If SrType=3:
-% \begin{equation}
-% SRecruit(stock^r_i,r)=e^{mean\_log\_rec(r)}
-% \end{equation}
-\begin{equation}
-SRecruit(stock^r_i,r)=e^{\mu_{R,r}}
+stock^r_i=\dfrac{iB^{s,r}_0}{250}, \ \ 1\leq i \leq 300
 \end{equation}
+
 \begin{itemize}
-    \item $\mu_{R,r}$ is the average recruitment in the regime $r$, $1\leq r \leq nregs$.
+
+\item When $sr_{type}=1$ (Ricker form from Dorn):
+
+    \begin{equation}
+    recruits^{s,r} = \dfrac{R^{s,r}_0 stock^r_i}{B^{s,r}_0}e^{\alpha \left(1-\dfrac{stock^r_i}{B^{s,r}_0}\right)}
+    \end{equation}
+
+\item When $sr_{type}=2$ (Beverton-Holt form):
+
+    \begin{equation}
+    recruits^{s,r} = \dfrac{stock^r_i}{\alpha+\beta stock^r_i}
+    \end{equation}
+
+\item When $sr_{type}=3$ (mean recruitment):
+
+    \begin{equation}
+    recruits^{s,r} = e^{\mu_{R,r}},
+    \end{equation}
+
+    where $\mu_{R,r}$ is the average recruitment in the regime $r$ ($1\leq r \leq n_{regs}$).
+
+\item When $sr_{type}=4$ (old Ricker form):
+
+    \begin{equation}
+    recruits^{s,r} =  stock^r_i e^{\alpha-stock^r_i \beta}
+    \end{equation}
+
 \end{itemize}
-If SrType=4:
-\begin{equation}
-SRecruit(stock^r_i,r) =  stock^r_i.e^{alpha(r)-stock^r_i.beta(r)}.
-\end{equation}
-Finally, the points are plotted $(stock^r_i, SRecruit(stock^r_i,r))$ for each regime $1\leq r \leq nregs$.
 
-%%%%%%%%%%%%%%%%%%%%%%%%
-%\textbf{Recruitment}
-%\textbf{Total catch and catches-at-age}
-%\textbf{Exploitable and survey biomasses}
-%\textbf{Initial conditions}
+%Finally, the points are plotted $(stock^r_i, SRecruit(stock^r_i,r))$ for each regime $1\leq r \leq nregs$.
 
-%\subsubsection{MSY and relative quantities}
+\hfill
 
-%\subsubsection{The likelihood function}
-%\textbf{CPUE relative biomass data}
-%\textbf{Survey biomass data}
-%\textbf{Catch at age/length}
-%\textbf{Age-length keys}
-%\textbf{Stock-recruitment function residuals}
+\textbf{g. von Bertalanffy growth model}
 
-%In other section:
-%X. Model parameters
-%X.1 Estimable parameters
-%X.2 Input parameters and other choice for application?
-%X.2.1 Age at maturity?
-%X.2.2 Weight-at-length
-
-
-
-
-
-\textbf{Von Bertalanfy}
+To study the growth the JJM model uses is the von bertalanffy growth model.
 
 \begin{equation}
     \mu_{age}(r,1)=L_0(r)
@@ -720,7 +717,10 @@ Finally, the points are plotted $(stock^r_i, SRecruit(stock^r_i,r))$ for each re
      \item $L_0(r)$ is the lenght initial.
      
  \end{itemize}
-\textbf{Equation weight at lenght}\\
+
+\hfill
+
+\textbf{h. Equation weight at lenght}\\
 \begin{equation}
      wt\_age\_vb(r) = lw\_a * \left(\mu_{age}(r)\right)^{lw\_b}
  \end{equation}
@@ -728,14 +728,20 @@ Finally, the points are plotted $(stock^r_i, SRecruit(stock^r_i,r))$ for each re
      \item $wt\_age\_vb(r)$ is the weight vector at lenght vector $\mu_{age}(r)$.
      \item $lw\_a$, $lw\_b$ are growth parameters given by  $lw\_a=0.007778994e-3$ and $lw\_b=3.089248476$ in the model.
  \end{itemize}
- \textbf{Maturity equation}\\
+
+\hfill
+
+\textbf{i. Maturity equation}\\
  \begin{equation}
     maturity\_vb(r) = \dfrac{1}{1+e^{32.93-1.45*\mu_{age}(r)}}
 \end{equation}
 \begin{itemize}
     \item $maturity\_vb(r)$ is the proportion of mature species at lenght $\mu_{age}(r)$.
 \end{itemize}
-\textbf{Age composition to length composition}\\
+
+\hfill
+
+\textbf{j. Age composition to length composition}\\
 
 It uses normal Distribution to model the probability of the random variable $X_a$, 
 \begin{equation}
@@ -1859,6 +1865,13 @@ Line in the .ctl file & Name in .ctl file  & Name in the User Guide & Tpl name &
 116 & Years of selectivity &   & $yrs\_sel\_ch\_fsh$ &\\ \hline
 117 & Years of selectivity &   & $sel\_sigma\_fsh$ &\\ \hline
 119 & Initial values for coeff. &   & $sel\_fsh\_tmp$ &\\ \hline
+123 & Index \# &   & ind\_sel\_opt\ &\\ \hline
+124 & Index \# &   & nselages\_in\_ind &\\ \hline
+125 & Index \# &   & phase\_sel\_ind &\\ \hline
+126 & Index \# &   & curv\_pen\_fsh &\\ \hline
+127 & Index \# &   & seldec\_pen\_ind &\\ \hline
+128 & Index \# &   &  &\\ \hline
+129 & Index \# &   & sel\_ind\_tmp &\\ \hline
 140 & Population weight at age 1000&   & $wt\_pop$ &\\ \hline
 143 & Maturity at Age &   & $maturity$  &\\ \hline
 146 & Test &   & $test$ &\\ \hline
