@@ -544,7 +544,7 @@ Cat^{k_s}_{y,a}=\dfrac{F^{k_s}_{y,a}}{F^s_{y,a}+M^{s}_{y}}\left(1-S^s_{y,a}\righ
 %\end{equation}
 
 \begin{equation}
-{C_{pred}}^{k_s}_y=\sum_{a=1}^{m}Cat^{k_s}_{y,a} w_{y,a}^{k_s}.
+{C_{pred}}^{k}_y=\sum_{a=1}^{m}Cat^{k}_{y,a} w_{y,a}^{k}.
 \end{equation}
 
 %\begin{equation}
@@ -568,7 +568,7 @@ The zero biomass (also called virgin biomass) is calculated for each regime $1\l
 % \end{equation}
 
 \begin{equation}
-    B^{s,1}_0=wt\_{mat}^s_1e^{(-M^s_{y_0,1)}(s_f)}R^s_0
+    B^{s,1}_0=wt\_{mat}^s_1e^{(-M^s_{y_0,1})(s_f)}R^s_0
   +\sum_{a=2}^{m-1}wt\_{mat}^s_ae^{(-M^s_{y_0,a})(s_f)}R^s_0\prod_{l=1}^{a-1}e^{-M^s_{y_0,l}} 
 + wt\_{mat}^s_{m}e^{(-M^s_{y_0,m})(s_f)}\frac{R^s_0}{1-e^{-M^s_{y_0,m}}}\prod_{l=1}^{m-1}e^{-M^s_{y_0,l}}
 \end{equation}
@@ -644,10 +644,10 @@ where:
 
 %(considerar escribir desde Von Bertalanfy hasta Age composition to length composition antes de numeros a la edad, así luego de reclutamiento iría selectividad).\\
 
-The numbers of recruits is calculated for each year $y$, where $y_0\leq y \leq y_N$:
+The number of recruits is calculated for each year $y$, where $y_0\leq y \leq y_N$:
 
 \begin{equation}
-    recruits^s_y =N^s_{y,a = 1},
+    recruits^s_y =N^s_{y,a = 1}, \ \text{and}
 %es calculado en la función calc_dependent_vars
 \end{equation}
 
@@ -722,7 +722,7 @@ To study the growth the JJM model uses is the von bertalanffy growth model.
 
 \textbf{h. Equation weight at lenght}\\
 \begin{equation}
-     wt\_age\_vb(r) = lw\_a * \left(\mu_{age}(r)\right)^{lw\_b}
+     wt\_age\_vb(r) = lw\_a . \left(\mu_{age}(r)\right)^{lw\_b}
  \end{equation}
  \begin{itemize}
      \item $wt\_age\_vb(r)$ is the weight vector at lenght vector $\mu_{age}(r)$.
@@ -733,7 +733,7 @@ To study the growth the JJM model uses is the von bertalanffy growth model.
 
 \textbf{i. Maturity equation}\\
  \begin{equation}
-    maturity\_vb(r) = \dfrac{1}{1+e^{32.93-1.45*\mu_{age}(r)}}
+    maturity\_vb(r) = \dfrac{1}{1+e^{32.93-1.45.\mu_{age}(r)}}
 \end{equation}
 \begin{itemize}
     \item $maturity\_vb(r)$ is the proportion of mature species at lenght $\mu_{age}(r)$.
@@ -747,9 +747,9 @@ It uses normal Distribution to model the probability of the random variable $X_a
 \begin{equation}
     P(l-0.5\leq X_a\leq l+0.5 ) = P\left(\dfrac{(l-0.5)-\mu_a}{\sigma_a}\leq Z\leq\dfrac{(l+0.5)-\mu_a}{\sigma_a}\right)
 \end{equation}
-$P(l-0.5\leq X_a\leq l+0.5 )$, is the probability that the number of fish at age $a$ varies in lenght between  $l-0.5$ and $l+0.5$. \\
-The right expression is the normalization for $X_a$ because $X_a$ is a random variable with normal distribution, mean $\mu_a$ and  standard deviation $\sigma_a$ where it is calculated from $\sigma_{a}=sdage(r)*\mu_{age}(r)$).\\
-Let $P\_age2len(r)$ the matrix such that $Cl(1,nyears,1,nlenght)=C(1,nyears,1,nages)*P\_age2lenght$ where $Cl$ is the matrix composition for lenghts that we want to obtein and $C$ is the matrix composition for ages.
+$P(l-0.5\leq X_a\leq l+0.5 )$, is the probability that the number of fish at age "$a$" varies in lenght between  $l-0.5$ and $l+0.5$. \\
+The right expression is the normalization for $X_a$ because $X_a$ is a random variable with normal distribution, mean $\mu_a$ and  standard deviation $\sigma_a$ where it is calculated from $\sigma_{a}=sdage(r).\mu_{age}(r)$).\\
+Let $P\_age2len(r)$ the matrix such that $Cl(1,nyears,1,nlenght)=C(1,nyears,1,nages).P\_age2lenght$ where $Cl$ is the matrix composition for lenghts that we want to obtein and $C$ is the matrix composition for ages.
 \begin{equation}
     P\_age2len(a,j) = \dfrac{P(l_j-0.5\leq X_a\leq l_j+0.5 )}{\sum_{a}P(l_j-0.5\leq X_a\leq l_j+0.5 )}.
 \end{equation}
@@ -1689,6 +1689,83 @@ The parameters of the model are chosen so that this value obj\_comp is minimized
 \begin{equation*}
     sum(sel\_like\_ind)+sum(rec\_like)+sum(fpen)+sum(post\_priors\_indp)+sum(post\_priors).
 \end{equation*}
+
+\textbf{Cat\_Like}\\
+\begin{itemize}
+    \item if $current\_phase()>3$
+    \begin{equation}
+        catch\_like(k)\leftarrow catch\_like(k)+\sum_{y=y_0}^{y_N}\dfrac{1}{2}\dfrac{(log(catch\_bio(k,y)+.0001) - log(pred\_catch(k,y)+.0001) )^2}{catch\_bio\_lva(k,y)}
+    \end{equation}
+    \item Else
+    \begin{equation}
+        catch\_like(k) \leftarrow catch\_like(k)+catchbiomass\_pen.norm2(log(catch\_bio(k)   
+                      +.000001) - log(pred\_catch(k) +.000001)).
+    \end{equation}
+    Finally
+    \begin{equation}
+        catch\_like\leftarrow catch\_like.catch\_pen.
+    \end{equation}  
+\end{itemize}
+
+\textbf{Rec\_Like}\\
+\textbf{Compute\_priors}\\
+
+
+
+
+\textbf{Fmort\_Pen}\\
+\begin{itemize}
+    \item if ($current\_phase()<3$)
+    \begin{equation}
+        fpen(1)+=norm2(F-0.2)
+    \end{equation}
+    \item else
+    \begin{equation}
+        fpen(1)+=0.0001.norm2(F-0.2).
+    \end{equation}
+\end{itemize}
+
+\textbf{Sel\_Like}\\
+
+
+
+
+\textbf{Srv\_Like}\\
+\begin{equation}
+    ind\_like(k)=\sum_{i=1}^{nyrs\_ind(k)}\dfrac{(log(obs\_ind(k,i)) - log(pred\_ind(k,i)) )^2}{(2.obs\_lse\_ind^2
+    (k,i)}
+\end{equation}
+
+
+
+\textbf{Age\_Like}\\
+\begin{equation}
+    age\_Like\_fsh(k)= \left(\sum_{i=1}^{nyrs\_fsh\_age(k)}-n\_sample\_fsh\_age(k,i).(oac\_fsh(k,i)+0.001).log(eac\_fsh(k,i)+0.001)\right)
+\end{equation}
+\begin{equation*}
+    -offset\_fsh(k).
+\end{equation*}
+\begin{equation}
+    lenght\_like \_fsh(k)=\left(\sum_{i=1}^{nyrs\_fsh\_lenght(k)}-n\_sample\_fsh\_lenght(k,i).(olc\_fsh(k,i)+0.001).log(elc\_fsh(k,i)+0.001)\right)
+\end{equation}
+\begin{equation*}
+    -offset\_lfsh(k).
+\end{equation*}
+\begin{equation}
+    length\_like\_ind(k)=\left(\sum_{i=1}^{nyrs\_ind\_lenght(k)}-n\_sample\_ind\_lenght(k,i).(olc\_ind(k,i)+0.001).log(elc\_ind(k,i)+0.001)\right)
+\end{equation}
+\begin{equation*}
+    -offset\_lind(k).
+\end{equation*}
+\begin{equation}
+    age\_like\_ind(k)=\left(\sum_{i=1}^{nyrs\_ind\_age(k)}-n\_sample\_ind\_age(k,i).(oac\_ind(k,i)+0.001).log(eac\_ind(k,i)+0.001)\right)
+\end{equation}
+\begin{equation*}
+    -offset\_ind(k).
+\end{equation*}
+
+
+
 
 \subsection{Models for stock structure hypothesis}
 
