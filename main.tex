@@ -20,12 +20,12 @@
 \usepackage{mathrsfs}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
-\title{JJM user manual}
+\title{The JJM model: an user manual}
 
 \date{\parbox{\linewidth}{\centering%
   \skip
   Mirian GERONIMO \hspace*{3cm} Criscely LUJAN \endgraf\medskip
-  Instituto del Mar del Perú IMARPE}
+  Instituto del Mar del Perú (IMARPE)}
   }
 \setcounter{tocdepth}{2}
 \begin{document}
@@ -36,11 +36,13 @@
 
 \section*{Abstract} 
 % Model description
-This paper provides a detailed and comprehensive specification of the joint jack mackerel model (JJM), including the algebraic specifications of the assessment model, tables with the input data and key parameters for the assessment. In addition a case study has been used to illustrate the use of the JJM model. This paper aims to provide an illustrative description of the JJM which can serve as support and guidance to users.
+[work on it] \\
+This document provides a detailed and comprehensive specification of the joint jack mackerel model (JJM), including the algebraic specifications of the assessment model, tables with the input data and key parameters for the assessment. In addition a case study has been used to illustrate the use of the JJM model. This paper aims to provide an illustrative description of the JJM which can serve as support and guidance to users.
 
 \section{Introduction} 
 
 % Model description
+[work on it] \\
 This paper gives a full algebraic description of the JJM model which is used for the Jack mackerel assessment in the South Pacific Regional Fisheries Management Organisation \href{https://www.sprfmo.int/}{SPRFMO}. For this work, we provide a set of data that is used as part of a case study (see \nameref{section:AppendixA}). This information is used as data input to simulate an assessment (see results in \nameref{section:AppendixB}). Part of the concepts of the JJM model presented here come from \href{https://www.sprfmo.int/assets/Meetings/SC/10th-SC-2022/Report-and-Annexes/Annex-8-JM-Technical-Advice-CV_2.pdf}{SPRFMO SC10 Report-Annex 10- Jack Mackerel Technical Annex}.
 
 \section{JJM model}
@@ -57,7 +59,7 @@ This JJM model, implemented in AD Molder Builder (\href{https://www.admb-project
 
 \textbf{Algorithm sections}\\
 
-There are three obligatory and important sections in the JJM code:
+There are three important sections in the JJM code:
 
 \begin{itemize}
     \item Data section: data reading from a document with init prefix
@@ -743,15 +745,16 @@ For the fish growth the JJM uses the von Bertalanffy growth model.
 
 \textbf{j. Age composition to length composition}\\
 
-It uses normal Distribution to model the probability of the random variable $X_a$, 
+It uses normal Distribution to calculate the probability of the random variable $X_a$, 
 \begin{equation}
-    P(l-0.5\leq X_a\leq l+0.5 ) = P\left(\dfrac{(l-0.5)-\mu_a}{\sigma_a}\leq Z\leq\dfrac{(l+0.5)-\mu_a}{\sigma_a}\right)
+    P(l-0.5\leq X_a\leq l+0.5 ) = P\left(\dfrac{(l-0.5)-\mu_a}{\sigma_a}\leq Z\leq\dfrac{(l+0.5)-\mu_a}{\sigma_a}\right),
 \end{equation}
 $P(l-0.5\leq X_a\leq l+0.5 )$, is the probability that the number of fish at age "$a$" varies in lenght between  $l-0.5$ and $l+0.5$. \\
-The right expression is the normalization for $X_a$ because $X_a$ is a random variable with normal distribution, mean $\mu_a$ and  standard deviation $\sigma_a$ where it is calculated from $\sigma_{a}=sdage(r).\mu_{age}(r)$).\\
-Let $P\_age2len(r)$ the matrix such that $Cl(1,nyears,1,nlenght)=C(1,nyears,1,nages).P\_age2lenght$ where $Cl$ is the matrix composition for lenghts that we want to obtein and $C$ is the matrix composition for ages.
+The right expression is the normalization for $X_a$ since $X_a$ is (assumed) a random variable with normal distribution, mean $\mu_a$ and  standard deviation $\sigma_a$ where it is calculated from $\sigma_{a}=sdage(r).\mu_{age}(r)$).\\
+
+Let $P\_age2len_r$ the matrix such that $Cl(1,nyears,1,nlenght)=C(1,nyears,1,nages).P\_age2lenght$ where $Cl$ is the matrix composition for lenghts that we want to obtain and $C$ is the matrix composition for ages. The elements of $P\_age2len_r$ are calculates as:
 \begin{equation}
-    P\_age2len(a,j) = \dfrac{P(l_j-0.5\leq X_a\leq l_j+0.5 )}{\sum_{a}P(l_j-0.5\leq X_a\leq l_j+0.5 )}.
+    P\_age2len_r(a,j) = \dfrac{P(l_j-0.5\leq X_a\leq l_j+0.5 )}{\sum_{a}P(l_j-0.5\leq X_a\leq l_j+0.5 )}.
 \end{equation}
 
 \begin{itemize}
@@ -763,14 +766,15 @@ Let $P\_age2len(r)$ the matrix such that $Cl(1,nyears,1,nlenght)=C(1,nyears,1,na
 \end{itemize}
 
 \textbf{Survey Predictions}\\
+
 Prediction from the index number k in year y, with y between $1\leq y \leq nyrs\_ind(k)$, where $nyrs\_ind(k)$ is the number of years of observation for survey number $k$ (is located on line 138 of the .dat file).\\
-Let us first calculate $q\_ind(k,y)$ for each survey $1\leq k \leq nind$ and each year of observation $1\leq y \leq nyrs\_ind(k)$.
+Let us first calculate $q\_ind(k,y)$ for each survey $1\leq k \leq nind$ and each year of observation $1\leq y \leq nyrs\_ind(k)$,
 \begin{equation}
     q\_ind(k,y)=e^{log\_q\_ind(k,y)}
 \end{equation}
 for $1\leq y < yrs\_rw\_q(k,1)-yrs\_ind(k,1)+1$.\\
 
-Let $2\leq i \leq 1+npars\_rw\_q(k)$ and $p_i=yrs\_rw\_q(k,i-1)-yrs\_ind(k,1)+1$:
+Let $i\in\mathbb{N}$ such that $2\leq i \leq 1+npars\_rw\_q(k)$ and $p_i=yrs\_rw\_q(k,i-1)-yrs\_ind(k,1)+1$:
 \begin{equation}
      q\_ind(k,p_i)  = q\_ind(k,p_i-1)*e^{log\_rw\_q\_ind(k,1)},
 \end{equation}
@@ -779,7 +783,7 @@ Let $2\leq i \leq 1+npars\_rw\_q(k)$ and $p_i=yrs\_rw\_q(k,i-1)-yrs\_ind(k,1)+1$
 \end{equation}
 for $p_i+1\leq iyr \leq nyrs\_ind(k).$
 \begin{itemize}
-    \item log\_q\_ind is a parameter to be estimated. It is initialized.
+    \item log\_q\_ind is a parameter to be estimated. It is initialized with $log\_qprior$.
     \item $yrs\_rw\_q(k,i-1)$ is input, line 95 of .ctl file.
     %  yrs_ind(k)  = yrs_ind_in(k)(1,nyrs_ind(k)), yrs_ind_in es input linea 141 del dat
     \item $yrs\_ind(k,1)$ is the first year of observation for the survey number $k$.
@@ -1629,8 +1633,13 @@ where
 \end{equation}
 and 
 \begin{equation}
-    {N_{fut}}^s_{y_N,1}=SRecruit(SB^s_{y_N-rec\_age},cum\_reg(s)+yy\_sr(s,y_N)).e^{\epsilon^s_{y_N}}.
+    {N_{fut}}^s_{y,1}=0 \ \ 
 \end{equation}
+with y=styr\_fut and iscen=1. For the rest of iscenarios only change 
+\begin{equation}
+    
+\end{equation}
+
 
 Then for $styr\_fut+1 \leq y \leq endyr\_fut$
 \begin{equation}
