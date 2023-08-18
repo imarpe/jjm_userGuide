@@ -330,7 +330,7 @@ N^s_{y_0,m}=N^s_{y_0-1,m-1}e^{-M^s_{y_0,m-1}}+N^s_{y_0-1,m}e^{-M^s_{y_0,m}}
 
 \textbf{b. Spawning stock biomass}
 
-The spawning stock biomass (SSB) is the total biomass of fish of reproductive age during the breeding season of a stock. SSB is calculated from the first year of spawning (styr\_sp) until $y_N+1$ as follows:
+The spawning stock biomass (SSB) is the total biomass of fish of reproductive age during the breeding season of a stock. SSB is calculated from the first year of spawning ($ssb_0$) until $y_N+1$ as follows:
 
 %\textbf{Biomasa desovante (sp\_biom)}\\
 %Obtención de la biomasa desovante desde el primer año de desove $\left(styr\_sp\right)$ hasta el primer año de observación ($y_0$).
@@ -345,9 +345,9 @@ The spawning stock biomass (SSB) is the total biomass of fish of reproductive ag
 %styr_rec=r_0
 
 \begin{equation}
-    SSB^s_y=wt\_{mat}^s_1 e^{-(M^s_{y_0,1})(s_f)} R^s_0 +  
-            \sum_{a=2}^{m-1}wt\_{mat}^s_a e^{-(M^s_{y_0,a}) (s_f)} R^s_0\prod_{l=1}^{a-1}e^{-M^s_{y_0,l}} + 
-            {wt\_mat}^s_{m} e^{-(M^s_{y_0,m}) (s_f)} \dfrac{R^s_0}{1-e^{-(M^s_{y_0,m})}}\prod_{l=1}^{m-1}e^{-M^s_{y_0,l}}
+    SSB^s_y=wt\_{mat}^s_1 e^{-M^s_{y_0,1}s_f} R^s_0 +  
+            \sum_{a=2}^{m-1}wt\_{mat}^s_a e^{-M^s_{y_0,a}s_f} R^s_0\prod_{l=1}^{a-1}e^{-M^s_{y_0,l}} + 
+            {wt\_mat}^s_{m} e^{-M^s_{y_0,m}s_f} \dfrac{R^s_0}{1-e^{-M^s_{y_0,m}}}\prod_{l=1}^{m-1}e^{-M^s_{y_0,l}}
 \end{equation}
   
 where:
@@ -367,7 +367,7 @@ where:
 
 \begin{itemize}
   
-   \item $SSB^s_y$ is the spawning stock biomass for stock s in year y, when  $styr\_sp\leq y \leq r_0$;
+   \item $SSB^s_y$ is the spawning stock biomass for the stock s in the year y, when  $ssb_0\leq y \leq r_0$;
    
    \item $r_0$ is the first year of recruitment;
    
@@ -389,43 +389,39 @@ where:
 
 \hfill
 
-Also, the SSB is calculated for the years $r_0+1 \leq y \leq y_0 - 1$ and when $1\leq i \leq y_0-r_0$. First, the $natagetmp$ is calculated as follows:\\
+Also, the SSB is calculated for the years $r_0+1 \leq y \leq y_0 - 1$ and when $1\leq i \leq y_0-r_0$. First, the $nat_{age}$ is calculated as follows:\\
 
 \begin{equation}
-natagetmp^s_{y=r_0+i,a}= e^{\epsilon^s_{r_0+i+1-a}+\mu^s_{R,r_0+i+1-a}}\prod_{t=1}^{a-1}e^{-M^s_{y_0,t}}, \ \ and \ \ 2\leq a \leq i+1
+{nat_{age}}_{y=r_0+i,a}^s= e^{\epsilon^s_{r_0+i+1-a}+\mu^s_{R,r_0+i+1-a}}\prod_{t=1}^{a-1}e^{-M^s_{y_0,t}}, \ \ and \ \ 2\leq a \leq i+1
 \end{equation}
-
 
 \begin{equation}
-natagetmp^s_{y=r_0+i,a}=R^s_0\prod_{t=1}^{a-1}e^{-M^s_{y_0,t}}, \ \ i+2\leq  a \leq m-1
+{nat_{age}}_{y=r_0+i,a}^s=R^s_0\prod_{t=1}^{a-1}e^{-M^s_{y_0,t}}, \ \ i+2\leq  a \leq m-1
 \end{equation}
-
 
 \begin{equation}
-natagetmp^s_{y=r_0+i,m}=natagetmp^s_{r_0+i-1,m-1}
-+natagetmp^s_{r_0+i-1,m}e^{-M^s_{m}}, \ \ a=m
+{nat_{age}}_{y=r_0+i,m}^s={nat_{age}}_{r_0+i-1,m-1}^s
++{nat_{age}}_{r_0+i-1,m}^s e^{-M^s_{m}}, \ \ a=m
 \end{equation}
-
 
 With these previous calculations, the SSB is obtained:
 
 \begin{equation}
-    SSB^s_y=\sum_{a=2}^{m}natagetmp^s_{y,a}e^{-M^s_{y_0}s_f}.wt\_{mat}^s_a,
+    SSB^s_y=\sum_{a=2}^{m}{nat_{age}}_{y,a}^s e^{-M^s_{y_0}s_f} wt\_{mat}^s_a, \ \ r_0 + 1 \leq y \leq y_0 - 1
 \end{equation}
 
-
-After having calculated the numbers at age for each year and the survival rate (both depending on the choice of popes, if true or false), the SSB is calculated for the stock s in the year y:
+After having calculated the numbers at age for each year and the survival rate (both depending on the choice of Popes, if true or false), the SSB is calculated for the stock s in the year y:
 
 \begin{equation}
 SSB^s_y=\sum_{a=1}^{m}N^s_{y,a}{(S^s_{y,a})}^{s_f}{wt\_{mat}}^s_a, \ \ y_0 \leq y \leq y_N
 \end{equation}
-
 
 % \begin{itemize}
 %     \item $wt\_pop^s_j$: es input, línea 140 del ctl. Peso a la edad $j$ de la población para cada stock $s$.
 %     \item $maturity^s_j:$ es input, línea 143 del ctl. Madurez a la edad $j$ para cada stock $s$.
 % \end{itemize}
 %Calculo de la biomasa desovante para el año j=endyr+1.\\
+
 Now for the year $y=y_N+1$:
 
 \begin{equation}
@@ -1238,10 +1234,10 @@ where
 \end{equation}
 and
 \begin{equation}
-    ssb3=-1000.\left(log\left(\dfrac{repl\_ssb(F_3^s,s)}{SB^s_{y_N}}\right)\right)^2,
+    ssb3=-1000.\left(log\left(\dfrac{repl\_ssb(F_3^s,s)}{SB^s_{y_N}}\right)\right)^2.
 \end{equation}
 The numerical solution ($F_1^s$) is the  FMSY for each stock s.\\
-Finally:
+Finally we get
 \begin{equation}
     repl\_F(s) = F1^s,
 \end{equation}
@@ -1258,11 +1254,11 @@ In addition, this section also calculates:
 \begin{equation}
     sumF(s)=\sum_{k_s}\sum_{l=1}^m F^{k_s}_{y_N,l}, \  \text{with} \ 1\leq s \leq nstk,
 \end{equation}
-where the $k_s$ are the numbers of fisheries belonging to stock number s, and
+where $\sum k_s$ denotes the sum over the fisheries belonging to stock s, and
 \begin{equation}
     Fratio(k)=\dfrac{\sum_{l=1}^mF^k_{y_N,l}}{sumF(s_k)}, \  \text{with} \ 1\leq k  \leq nfsh,
 \end{equation}
-where $s_k$ is the stock number where fishery number k belongs to.
+where $s_k$ is the stock where fishery number k belongs to.
 
 \textbf{Function repl\_ssb(F, s):}\\
 It is calculated from:
@@ -1341,7 +1337,7 @@ finally we obtain
 \end{equation}
 The msy\_stuff(4) (SPR) is calculated from
 \begin{equation}
-    msy\_stuff(4)=\dfrac{phi}{phizero^s_{y_N}}
+    msy\_stuff(4)=\dfrac{phi}{phizero(t)}, \ t=cum\_regs(s)+yy\_sr(s,y_N)
 \end{equation}
 where 
 \begin{equation}
@@ -1349,7 +1345,7 @@ where
 \end{equation}
 and 
 \begin{equation}
-    phizero(r)=\dfrac{Bzero(r)}{Rzero(r)}, \ 1\leq r \leq nregs.
+    phizero(r)=\dfrac{B_0(r)}{Rzero(r)}, \ 1\leq r \leq nregs.
 \end{equation}
 The msy\_stuff(3) (Eq Recruitment) is calculated from
 \begin{equation}
@@ -1358,11 +1354,11 @@ The msy\_stuff(3) (Eq Recruitment) is calculated from
 where $Requil(phi,y_N,s)$ is a function that depends on the choice of SrType, that is, let $ireg=cum\_regs(s)+yy\_sr(s,y_N)$:\\
 If $SrType=1$
 \begin{equation}
-    Requil(phi,y_N,s)=Bzero(ireg) * \dfrac{(alpha(ireg) + log(phi) - log(phizero(ireg)) )}  {(alpha(ireg)*phi)}.
+    Requil(phi,y_N,s)=B_0(ireg) * \dfrac{(\alpha(ireg) + log(phi) - log(phizero(ireg)) )}  {(\alpha(ireg)*phi)}.
 \end{equation}
 If $SrType=2$
 \begin{equation}
-Requil(phi,y_N,s)=\dfrac{(phi-alpha(ireg))}{(beta(ireg)*phi)}.
+Requil(phi,y_N,s)=\dfrac{(phi-\alpha(ireg))}{(\beta(ireg)*phi)}.
 \end{equation}
 If $SrType=3$
 \begin{equation}
@@ -1370,14 +1366,14 @@ If $SrType=3$
 \end{equation}
 If $SrType=4$
 \begin{equation}
-    Requil(phi,y_N,s)=\dfrac{(log(phi)+alpha(ireg))}{(beta(ireg)*phi)}.
+    Requil(phi,y_N,s)=\dfrac{(log(phi)+\alpha(ireg))}{(\beta(ireg)*phi)}.
 \end{equation}
 \\
 The msy\_stuff(2) (MSY) is calculated from
 \begin{equation}
     msy\_stuff(2)=\left(\sum_{k_s}\sum_{a=1}^m wt\_fsh^{k_s}_{y_N,a}Ntmp_a.Fratio(k_s).Ftmp.sel\_fsh_a(k_s,y_N)\dfrac{1-survtmp_a}{Ztmp_a}\right).msy\_stuff(3).
 \end{equation}
-Note that the first sum of equation 130 is about the indexes of fisheries belonging to stock s.\\
+Note that the first sum of equation 129 is about the indexes of fisheries belonging to stock s.\\
 Finally, the msy\_stuff(1) (Bmsy) is calculated from
 \begin{equation}
     msy\_stuff(1)=phi.(msy\_stuff(3)).
@@ -1386,24 +1382,25 @@ Finally, the msy\_stuff(1) (Bmsy) is calculated from
 %calc_dependent_vars
 \textbf{Get MSY}\\
 
-Calculate MSY, FMSY, MSY, Bmsy for the last year of observation ($y_N$). 
+This function calculates MSY, FMSY, and Bmsy in the last year of observation ($y_N$). 
 Use Newton Raphson method with 4 iterations to find the root of
 \begin{equation}
         dyld=\dfrac{yld2-yld3}{df}
     \end{equation}
-    for each stock.
-    Let 
+    for each stock.\\
+    
+    The iterations are
     \begin{equation}
         F_2^s \leftarrow F_1^s + df*0.5, \ \text{with}  \ df=1.e-05,
     \end{equation}
     \begin{equation}
-        F_3^s\leftarrow F_2^s-df.
+        F_3^s\leftarrow F_2^s-df,
     \end{equation}
-Iteration on
+and
 \begin{equation}
-    F_1^s\leftarrow F_1^s-\dfrac{dyld}{dyldp}, \ \text{with initial } \ F_1^s=0.8*natmortprior(mort\_map(s,1))
+    F_1^s\leftarrow F_1^s-\dfrac{dyld}{dyldp}, \ \text{with initial value } \ F_1^s=0.8*natmortprior(mort\_map(s,1)),
 \end{equation}
-    here $dyldp$ is the derivative expression of $dyld$, that is
+    here $dyldp$ is the derivative of $dyld$, that is
 \begin{equation}
     dyldp=\dfrac{yld2+yld3 - 2.yld1}{0.25*df*df}
 \end{equation}
@@ -1419,9 +1416,9 @@ where
 \end{equation}
 The function $yield(Fratio,F^s,s)$ is calculated in the next section.\\
 
-After obtaining the numerical solution $F1^s$ (FMSY) for each stock $s$, this uses the function $yld(Fratio, F1,s)$ (from previous section) in the last year ($y_N$):
+After obtaining the numerical solution $F_1^s$ (FMSY) for each stock $s$, this uses the function $yld(Fratio, F1,s)$ (from previous section) in the last year ($y_N$) to get:
 \begin{equation}
-    Fmsy(s)=F_1,
+    Fmsy(s)=F_1^s,
 \end{equation}
 \begin{equation}
     Rtmp(s)=msy\_stuff(3),
@@ -1433,7 +1430,7 @@ After obtaining the numerical solution $F1^s$ (FMSY) for each stock $s$, this us
     Bmsy(s)=msy\_stuff(1),
 \end{equation}
 \begin{equation}
-    MSYL(s)=\dfrac{msy\_stuff(1)}{Bzero^s_{y_N}},
+    MSYL(s)=\dfrac{msy\_stuff(1)}{B_0(t)},\ with \ t=cum\_regs(s)+yy\_sr(s,endyr),
 \end{equation}
 %Bzero^s_{y_N}=Bzero(cum_regs(s)+yy_sr(s,endyr)).
 exploitation fraction relative to total biomass:
@@ -1449,7 +1446,7 @@ It is also calculated
     FFtmp_s=\sum_{k_s}\left(\dfrac{1}{m}\sum_{a=1}^mF^{k_s}_{y_N,a}\right),
 \end{equation}
 \begin{equation}
-    Fcur\_Fmsy(s)= \dfrac{FFtmp}{Fmsy(s)},
+    Fcur\_Fmsy(s)= \dfrac{FFtmp_s}{Fmsy(s)},
 \end{equation}
 and finally
 \begin{equation}
@@ -1481,7 +1478,7 @@ We also need
 \end{equation}
 and
 \begin{equation}
-    Req=Requil(phi,y_N,s) \  \text{(as eq.130 to eq. 133)}\,
+    Req=Requil(phi,y_N,s) \  \text{(as eq.125 to eq. 128)}\,
 \end{equation}
 and finally we obtein
 \begin{equation}
