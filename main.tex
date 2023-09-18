@@ -19,6 +19,7 @@
 \usepackage{bbm}
 \usepackage{mathrsfs}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{algorithm,algcompatible,amsmath}
 
 \title{The JJM model: an user manual}
 
@@ -146,7 +147,7 @@ To apply a statistical catch-at-age models, specific data are needed for each ag
 
 \subsection{Mathematical Model details}
 
-This catch-at-age model is used as the underlying assessment model able to fit to CPUE indices as well as catch-at-age and length data. The assessment process involves developing a model of the resource dynamics and conditioning its output to the available data by minimizing a log-likelihood function.
+This catch-at-age model is used as the underlying assessment model able to fit to CPUE indices as well as catch-at-age and length data. The assessment process involves developing a model of the resource dynamics and conditioning its output to the available data by maximising a log-likelihood function.
 
 \subsubsection{Population dynamics}
 
@@ -161,13 +162,14 @@ N^s_{y,a=1}=e^{\mu_R+\epsilon_{y}}  \ \ \ \ \ , y_{1}\leq y \leq y_{N}
 
 where:
 \begin{itemize}
-    \item $s$ is a fish stock, $a$ the age and $y$ the year;
+    \item $s$ is a fish stock with $1\leq s \leq n_{stk}$, where $n_{stk}$ is the total number of stocks; 
+    \item $a$ the group age and $y$ the year;
     
     \item the simulation period ${y \in \{y_{0}, y_1, y_2,..., y_{N}\}}$;   
   
-    \item $N^s_{y,a=1}$ is the numbers of fish of age $a=1$ and stock $s$ in year $y$;
+    \item $N^s_{y,a=1}$ is the numbers of fish of group age $a=1$ and stock $s$ in year $y$;
     
-    \item $\mu_R$ is the mean recruitment;
+    \item $\mu_R$ is the mean  of the logarithm of recruitment;
     %\item $\mu_R$: $mean\_log\_rec(cum\_regs(s)+yy\_sr(s,y))$;
 
     \item $\epsilon_{y}$ is the annual deviation of recruitment.
@@ -178,7 +180,7 @@ where:
 The JJM uses the Pope approximation, a variant of the statistical catch-at-age. This fixes the predicted catches to the observed catches using Pope's approximation to calculate the annual exploitation rate in the midpoint of the year. In this case:
 
 \begin{equation}
-N^{s}_{y+1,a+1}=N^s_{y,a}e^{-M^s_y}-C^s_{y,a}e^{-M^s_y 0.5}, \ \ \ \ \ 1\leq a \leq m-2
+N^{s}_{y+1,a+1}=N^s_{y,a}e^{-M^s_y}-C^s_{y,a}e^{-M^s_y 0.5}, \ \ \ \ \ 1\leq a \leq m-2,
 \end{equation}
     
 \begin{equation}
@@ -187,15 +189,16 @@ N^s_{y+1,m}=N^s_{y,m-1}e^{-M^s_y}-C^s_{y,m-1}e^{-M^s_y 0.5}+N^s_{y,m}e^{-M^s_y}-
 
 where:
 \begin{itemize}
-    \item $m$ is the maximum age considered;
+    \item $\ y_1\leq y \leq y_N+1$
+    \item $m$ is the number of age groups considered, it is calculated from $m=o_a-r_a+1$ where $r_a$ is the age at recruitment and $o_a$ is the oldest age;
     
-    \item $N^{s}_{y+1,a+1}$ is the number of fish at age $a+1$ for the stock $s$ in the year $y+1$;
+    \item $N^{s}_{y+1,a+1}$ is the number of fish at age group $a+1$ for the stock $s$ in the year $y+1$;
 
-    \item $N^{s}_{y+1,m}$ is the number of fish at age $m$ for the stock $s$ in the year $y+1$;
+    \item $N^{s}_{y+1,m}$ is the number of fish at age group $m$ for the stock $s$ in the year $y+1$;
 
     \item $M^{s}_{y}$ denotes the natural mortality rate on fish of stock $s$ in the year $y$;
 
-    \item $C^s_{y,a}$ and $C^s_{y,m}$ denotes the total catch of stock $s$ in the year $y$ at age $a$ and $m$ respectively.
+    \item $C^s_{y,a}$ and $C^s_{y,m}$ denotes the total catch of stock $s$ in the year $y$ at age group $a$ and $m$ respectively.
     
 \end{itemize}
 
@@ -214,9 +217,9 @@ F^s_{y,m}=log\left(\dfrac{N^s_{y,m-1}+N^s_{y,m}}{N^s_{y+1,m}}\right)-M^s_y
 where:
 
 \begin{itemize}
-    \item $F^s_{y,a}$ is the fishing mortality for the stock $s$ at the age $a$ in the year $y$;
+    \item $F^s_{y,a}$ is the fishing mortality for the stock $s$ at the age group $a$ in the year $y$;
 
-    \item $F^s_{y,m}$ is the fishing mortality for the stock $s$ at the maximum age $m$ considered in the year $y$.
+    \item $F^s_{y,m}$ is the fishing mortality for the stock $s$ at the maximum age group $m$ considered in the year $y$.
 \end{itemize}
 
 \hfill
@@ -237,11 +240,11 @@ where:
     
     \item $1\leq k \leq n_{fsh}$ where $n_{fsh}$ is the total number of fisheries;
    
-    \item $F^k_{y,a}$ is the fishing mortality for fishery $k$ at age $a$ in the year $y$;
+    \item $F^k_{y,a}$ is the fishing mortality for fishery $k$ at age group $a$ in the year $y$;
 
-    \item $Cat^k_{y,a}$ is the catch at age $a$ for fishery $k$ in the year $y$ (see bellow);
+    \item $Cat^k_{y,a}$ is the catch at age group $a$ for fishery $k$ in the year $y$ (see bellow);
     
-    \item $S^s_{y,a}$ is the survival rate for the stock $s$ at age $a$ in the year $y$.
+    \item $S^s_{y,a}$ is the survival rate for the stock $s$ at age group $a$ in the year $y$.
 \end{itemize}
 
 \hfill
@@ -255,6 +258,7 @@ N^s_{y+1,a+1}=N^s_{y,a}S^s_{y,a}, \ \ \ \ \ 1\leq a \leq m-2
 \begin{equation}
 N^s_{y+1,m}=N^s_{y,m-1}S^s_{y,m-1}+N^s_{y,m}S^s_{y,m}, \ \ \ \ a = m
 \end{equation}
+with $\ y_1\leq y \leq y_N+1$.\\
 
 Defining the fishing mortality for the stock, the survival rate, and the fishing mortality for the fishery as:
 
@@ -262,7 +266,7 @@ Defining the fishing mortality for the stock, the survival rate, and the fishing
 F^s_{y,a} = \sum_{k_s}F^{k_s}_{y,a}, 
 \end{equation}
 
-where the sum is over all fisheries $k_s$ belonging to stock s.
+where the sum is over all fisheries $k_s$ belonging to stock s;
 
 \begin{equation}
 S^s_{y,a}=e^{-(F^s_{y,a}+M^{s}_{y})},
@@ -279,41 +283,41 @@ where:
     %\item $sel\_map$ is a selectivity map,  se refiere al número de stock al que pertenece la pesquería número $k$, notemos que $1\leq k \leq nfsh$ donde $nfsh$ es la cantidad total de pesquerías.
     
     \item $Fmort^k_y$ is the annual mortality for the fishery $k$ in the year $y$;
-    \item $Se^k_{y,a}$ is the fishing selectivity for the fishery $k$ in the year $y$ at the age $a$.
+    \item $Se^k_{y,a}$ is the fishing selectivity for the fishery $k$ in the year $y$ at the age group $a$.
 
 \end{itemize}
 
 \hfill
 
-The numbers at age when $y_0$ for the stock $s$ at the age $a$ is calculated as following:
-
+The numbers at age for the year $y_0$ at the stock number $s$ at the age group  $a$ is calculated as following:
+%it is calculated in function get_bzero
 \begin{equation}
-N^s_{y_0,a=1}=e^{\mu^s_{R,y_0} + \epsilon^s_{y_0}}
+N^s_{y_0,a=1}=e^{\mu^s_{R,y_0} + \epsilon^s_{y_0}}.
 \end{equation}
-
-If $r_0 = y_0-m+r_a$, where $r_0$ is the first year of recruitment and $r_a$ is the age at recruitment. For this case $r_a=1$:
+Now for all other age groups.\\
+    Let $r_0 = y_0-m+r_a$ the first year of recruitment. If $r_a=1$:
 
 \begin{equation}
 N^s_{y_0,a}=e^{\mu_{R,y_0-a+1}^s + \epsilon^s_{y_0-a+1}}
-            \prod_{j=1}^{a-1}e^{-M^s_{y_0,j}}, \ 1<a<m
+            \prod_{j=1}^{a-1}e^{-M^s_{y_0,j}}, \ 1<a<m.
 \end{equation}
 %M^s=_{y_0,j}=M^s_{y_0}, ya que la mortalidad natural es constante
-If $r_0 = y_0-m+r_a$, where $r_a>1$:
+Otherwise if $r_a>1$:
 
 \begin{equation}
-N^s_{y_0,a}=e^{\mu_{R,y_0-a+1}^s + \epsilon^s_{y_0-a+1}}                          \prod_{j=1}^{a-1}e^{-M^s_{y_0,j}}, \ 1<a\leq m-r_a+1
+N^s_{y_0,a}=e^{\mu_{R,y_0-a+1}^s + \epsilon^s_{y_0-a+1}}                          \prod_{j=1}^{a-1}e^{-M^s_{y_0,j}}, \ 1<a\leq m-r_a+1,
 \end{equation}
 
 \begin{equation}
-N^s_{y_0,a}=R_0^s\prod_{j=1}^{a-1}e^{-M^s_{y_0,j}}, \ m-r_a+1<a\leq m-1
+N^s_{y_0,a}=R_0^{s,1}\prod_{j=1}^{a-1}e^{-M^s_{y_0,j}}, \ m-r_a+1<a\leq m-1
 \end{equation}
 
-where $R_0^s$ is the recruitment for the first regime of stock $s$.
+where $R_0^{s,1}$ is the recruitment for the first regime of stock $s$.
 
-Finally, the number at age when the age is the maximum age (i.e. m) considered in the population:
+Finally, the number at age for the maximum age group (i.e. m) considered in the population is:
 
 \begin{equation}
-N^s_{y_0,m}=N^s_{y_0-1,m-1}e^{-M^s_{y_0,m-1}}+N^s_{y_0-1,m}e^{-M^s_{y_0,m}}
+N^s_{y_0,m}=N^s_{y_0-1,m-1}e^{-M^s_{y_0,m-1}}+N^s_{y_0-1,m}e^{-M^s_{y_0,m}}.
 \end{equation}
 
 \hfill
@@ -374,7 +378,7 @@ where:
    
    \item $wt\_{mat}^s_a$ is the proportion of mature females (in weight) at each age $a$ in each stock $s$ that is calculated as a product of the population weight at age ($wt\_pop^s_a$) and the maturity ($maturity^s_a$) as follows:
     \begin{equation}
-        wt\_{mat}^s_a=wt\_pop^s_a maturity^s_a, \ \ \ 1\leq a \leq m 
+        wt\_{mat}^s_a=wt\_pop^s_a *maturity^s_a, \ \ \ 1\leq a \leq m 
     \end{equation}
         
     \item $M^s_{y_0,m}$ is the natural mortality for stock s at age m in the year $y_0$;
@@ -383,9 +387,9 @@ where:
 
     % \item spmo\_frac exponent of the survival rate ($S^s_{i,j}$), is computed as 
     % $spmo\_frac=\dfrac{spawnmo-1}{12}$.
-    \item $s_f$ is computed as $s_f=\dfrac{spawnmo-1}{12}$.
+    \item $s_f$ is computed as $s_f=\dfrac{s_p-1}{12}$, where $s_p$ is the spawning month.
     %\item spawnmo is input of file .dat, line 278.
-
+    \item according to the equation (35), $SSB^s_y$ is iqual to virgen biomass $B^{s,1}_0$ for the years $ssb_0\leq y \leq r_0$.
 \end{itemize}
 
 \hfill
@@ -414,7 +418,7 @@ With these previous calculations, the SSB is obtained:
 After having calculated the numbers at age for each year and the survival rate (both depending on the choice of Popes, if true or false), the SSB is calculated for the stock s in the year y:
 
 \begin{equation}
-SSB^s_y=\sum_{a=1}^{m}N^s_{y,a}{(S^s_{y,a})}^{s_f}{wt\_{mat}}^s_a, \ \ y_0 \leq y \leq y_N
+SSB^s_y=\sum_{a=1}^{m}N^s_{y,a}{(S^s_{y,a})}^{s_f}{wt\_{mat}}^s_a, \ \ y_0 \leq y \leq y_N.
 \end{equation}
 
 % \begin{itemize}
@@ -429,10 +433,10 @@ Now for the year $y=y_N+1$:
     SSB^s_{y_N+1}=e^{\mu^s_{R,y_N+1}}(S^{s}_{y_N,1})^{s_f}{wt\_{mat}}^s_1+\sum_{a=2}^{m-1}(N^{s}_{y_N,a-1}S^{s}_{y_N,a-1})(S^s_{y_N,a})^{s_f}wt\_{mat}^s_a
 \end{equation}
 \begin{equation*}
- +(N^{s}_{y_N,m-1}S^s_{y_N,m-1}+N^s_{y_N,m}S^s_{y_N,m})(S^s_{y_N,m})^{s_f}wt\_{mat}^s_{m}
+ +(N^{s}_{y_N,m-1}S^s_{y_N,m-1}+N^s_{y_N,m}S^s_{y_N,m})(S^s_{y_N,m})^{s_f}wt\_{mat}^s_{m}.
 \end{equation*}
 
-The SSB ($SSB^s_{y_N+1}$) is also projected over the time when the number of projected years is $nproj\_yrs>0$ as function of futures numbers at age ($N^s_{fut}$) and survival rate ($S^s_{fut}$): 
+But if the number of projected years is $nproj\_yrs>0$ then the SSB for the next year ($SSB^s_{y_N+1}$) is also projected over the time as function of futures numbers at age ($N^s_{fut}$) and survival rate ($S^s_{fut}$): 
 
 \begin{equation}
     SSB^s_{y_N+1}= \sum_{a=1}^m wt\_{mat}^s_a{N_{fut}}^s_{y_N+1,a}({{S_{fut}}^s_{y_N+1,a}})^{s_f}
@@ -442,13 +446,14 @@ where:
 
 \begin{itemize}
 
-    \item ${S_{fut}}^s_{y_N+1,a} = e^{-M^s_{y_N}}$
+    \item ${S_{fut}}^s_{y_N+1,a} = e^{-M^s_{y_N}}$, is the survival rate future for iscen i=5.
 
     \item ${N_{fut}}^s_{y_N+1,a} = N^s_{y_N,a-1}S^s_{y_N,a-1}, \ \ 2\leq a \leq m-1$
     
     \item ${N_{fut}}^s_{y_N+1,m} = N^s_{y_N,m-1}S^s_{y_N,m-1}+N^s_{y_N,m}S^s_{y_N,m}$, \ \ a = m 
     
-    \item ${N_{fut}}^s_{y_N,1} = SRecruit(SSB^s_{y_N-rec\_age},cum\_reg(s)+yy\_sr(s,y_N))e^{\epsilon^s_{y_N}}$, where $SRecruit$ is a function of  spawning biomass and the number of regimen (see section Recruitment).
+    \item ${N_{fut}}^s_{y_N,1} = SRecruit(SSB^s_{y_N+1-r_a},cum\_regs(s)+yy\_sr(s,y_N))*e^{\epsilon^s_{y_N+1}}$, where $SRecruit$ is a function of  spawning biomass and the number of regimen (for this function see Recruitment section).
+    \item $\epsilon^s_{y_N+1}$ in this case is the future annual (for the year $y_N+1$) recruitment deviation for the stock s. 
     
 \end{itemize}
 
@@ -458,7 +463,7 @@ where:
 
 \textbf{c. Catches}\\
 
-When the model is using the Popes's approximation, the total catch of stock ($C^s_{y,a}$) is calculated as a function of ${C_{tmp}}^{k_s}_{y,a}$ for each stock $s$ ($1\leq s \leq n_{stk}$) at age $a$ in the year $y$ ($y_0 \leq y \leq y_N$): 
+When the model is using the Popes's approximation, the total catch of stock ($C^s_{y,a}$) is calculated as a function of ${C_{tmp}}^{k_s}_{y,a}$ for each stock $s$ ($1\leq s \leq n_{stk}$) at age group $a$ in the year $y$ ($y_0 \leq y \leq y_N$): 
 
 \begin{equation}
 {C_{tmp}}^{k_s}_{y,a}=N^s_{y,a}e^{-0.5M^s_{y,a}} Se_{y,a}^{k_s} \dfrac{c_{tmp}}{v_{bio}}, \ \  1\leq a \leq m, \ \ where
@@ -469,7 +474,7 @@ When the model is using the Popes's approximation, the total catch of stock ($C^
 %    \end{equation}
 
 \begin{equation}
-v_{bio}=\sum_{a=1}^mN^s_{y,a}e^{-0.5M^s_{y,a}} Se_{y,a}^{k_s} w_{y,a}^{k_s}, \ \ and 
+v_{bio}^{k_s}=\sum_{a=1}^mN^s_{y,a}e^{-0.5M^s_{y,a}} Se_{y,a}^{k_s} w_{y,a}^{k_s}, \ \ and 
 \end{equation}
     %\item If $popes=TRUE$, then pentmp=0. Let  $k_s$ the fisheries that correspond to the stock $s$:
     
@@ -480,8 +485,10 @@ v_{bio}=\sum_{a=1}^mN^s_{y,a}e^{-0.5M^s_{y,a}} Se_{y,a}^{k_s} w_{y,a}^{k_s}, \ \
 %    and 
 
 \begin{equation}
-c_{tmp} = v_{bio}-posfun\left(\frac{v_{bio} - {C_{obs}}_{k_s,y}}{v_{bio}} , 0.1 , pen_{tmp}=0 \right).v_{bio}
+c_{tmp}^{k_s} = v_{bio}-posfun\left(\frac{v_{bio} - {C_{obs}}_{k_s,y}}{v_{bio}} , 0.1 , pen_{tmp}=0 \right).v_{bio},
 \end{equation}
+
+ $k_s$ denotes the fisheries that correspond to the stock $s$.
 
 %        \begin{equation}
 %        catch\_tmp=vbio-posfun\left(\frac{(vbio - catch\_bio(k_s)_y)}{vbio} , 0.1 , pentmp \right).vbio,
@@ -499,7 +506,7 @@ C^s_{y,a}=\sum_{k_s}{C_{tmp}}^{k_s}_{y,a}
 %catage(k,i)=Ctmp
 Cat^{k_s}_{y,a}={C_{tmp}}^{k_s}_{y,a},  \  \  \ 1\leq a \leq m
 \end{equation}
-
+and in the last optimization phase the predicted catch for the fishery $k_s$ in the year $y$ is calculated as follows 
 \begin{equation}
 {C_{pred}}^{k_s}_y=\sum_{a=1}^{m}{C_{tmp}}^{k_s}_{y,a} w_{y,a}^{k_s}
 \end{equation} 
@@ -542,7 +549,7 @@ Cat^{k_s}_{y,a}=\dfrac{F^{k_s}_{y,a}}{F^s_{y,a}+M^{s}_{y}}\left(1-S^s_{y,a}\righ
 %\end{equation}
 
 \begin{equation}
-{C_{pred}}^{k}_y=\sum_{a=1}^{m}Cat^{k}_{y,a} w_{y,a}^{k}.
+{C_{pred}}^{k_s}_y=\sum_{a=1}^{m}Cat^{k_s}_{y,a}*w_{y,a}^{k_s}.
 \end{equation}
 
 %\begin{equation}
@@ -566,26 +573,26 @@ The zero biomass (also called virgin biomass) is calculated for each regime $1\l
 % \end{equation}
 
 \begin{equation}
-    B^{s,1}_0=wt\_{mat}^s_1e^{(-M^s_{y_0,1})(s_f)}R^s_0
-  +\sum_{a=2}^{m-1}wt\_{mat}^s_ae^{(-M^s_{y_0,a})(s_f)}R^s_0\prod_{l=1}^{a-1}e^{-M^s_{y_0,l}} 
-+ wt\_{mat}^s_{m}e^{(-M^s_{y_0,m})(s_f)}\frac{R^s_0}{1-e^{-M^s_{y_0,m}}}\prod_{l=1}^{m-1}e^{-M^s_{y_0,l}}
+    B^{s,1}_0=wt\_{mat}^s_1*e^{(-M^s_{y_0,1})(s_f)}*R^{s,1}_0
+  +\sum_{a=2}^{m-1}wt\_{mat}^s_a*e^{(-M^s_{y_0,a})(s_f)}*R^{s,1}_0\prod_{l=1}^{a-1}e^{-M^s_{y_0,l}} 
++ wt\_{mat}^s_{m}*e^{(-M^s_{y_0,m})(s_f)}\frac{R^{s,1}_0}{1-e^{-M^s_{y_0,m}}}\prod_{l=1}^{m-1}e^{-M^s_{y_0,l}},
 \end{equation}
 
-% \begin{equation}
-%     B^{s,r}_0 = Sp\_Biom(s,reg\_shift(s,r-1)-rec\_age)
-% \end{equation}
+and for the rest of regimes
 \begin{equation}
-    B^{s,r}_0 = SSB^s_{reg\_shift(s,r-1)-a_R}, \ \ \ 2\leq r \leq n_{regs}
+    B^{s,r}_0 = SSB^s_{reg\_shift(s,r-1)-r_a}, \ \ \ 2\leq r \leq n_{reg_s}
 \end{equation}
 
 where: 
 \begin{itemize}
-    \item $n_{regs}$ is the number of regimes of stock number s;
+    \item $n_{regs}$ is the total number of regimes, that is the sum of the number of regimes of all stocks;
+    \item $n_{reg_s}$ is the number of regimes of stock number s;
     \item %Bzero(cum\_regs(s)+1) es la biomasa virgen en el primer régimen del stock s.
     $B^{s,1}_0$ is the virgin biomass for the first regime belonging to the stock s;
     \item  %Bzero(cum\_regs(s)+r) es la biomasa virgen en el régimen r del stock s.
-    $B^{s,r}_0$ is the virgin biomass for regime r belonging to stock s with $2\leq r \leq n_{regs}$;
-    \item reg\_shift(s,r-1) is input, line 41 of .ctl file, for each stock s and regime number $r$.
+    $B^{s,r}_0$ is the virgin biomass for regime r belonging to stock s with $2\leq r \leq n_{reg_s}$;
+    \item $R_0^{s,1}$ is the recruitment for the first regime belonging to the stock s, It is obtained from equation (42);
+    \item $reg\_shift(s,r-1)$ year of regime change, is input in line 41 of .ctl file, for each stock s and regime number $r$.
     %\item $a_R$ rec\_age$ is the age at which recruitment is feasible.
 \end{itemize}
 
@@ -594,32 +601,32 @@ where:
 \textbf{e. Stock-Recruitment Parameters}\\
 
 %Let $r$ be a given regime number, that is, $1\leq r \leq nregs$.\\
-The parameters of the recruitment curve ($\alpha$, $\beta$) are calculated according to the specified stock-recruitment relationship type (sr\_type). Also, they are parameterized in terms of the steepness of the stock-recruitment relationship (h), the recruitment to the first regime of stock ($R_0$), and the virgin biomass ($B_0$).\\
+The parameters of the recruitment curve ($\alpha^r$, $\beta^r$ for each regimen $r$ i.e $1\leq r \leq n_{regs}$) are calculated according to the specified stock-recruitment relationship type (sr\_type). Also, they are parameterized in terms of the steepness of the stock-recruitment relationship (h), the recruitment to the first regime of stock ($R_0$), and the virgin biomass ($B_0$).\\
 
 Using the Ricker stock-recruitment relationship (sr\_type = 1):
 
 \begin{equation}
-\alpha = log\left(\dfrac{-4h}{h-1}\right).
+\alpha^r = log\left(\dfrac{-4h}{h-1}\right).
 \end{equation}
 
 Using the Beverton-Holt stock-recruitment relationship (sr\_type = 2):
 
 \begin{equation}
-\alpha = \dfrac{B^{s,r}_0}{R^{s,r}_0}\left(\dfrac{1 - h}{4h}\right),  
+\alpha^r = \dfrac{B^{r}_0}{R^{r}_0}\left(\dfrac{1 - h}{4h}\right),  
 \end{equation}
 
 \begin{equation}
-\beta = \dfrac{5h-1}{4hR^{s,r}_0}
+\beta^r = \dfrac{5h-1}{4hR^{r}_0}.
 \end{equation}
 
 When sr\_type = 4:
 
 \begin{equation}
-\alpha = log\left(\dfrac{R^{s,r}_0}{B^{s,r}_0}\right)+\beta B^{s,r}_0, 
+\alpha^r = log\left(\dfrac{R^{r}_0}{B^{r}_0}\right)+\beta*B^{r}_0, 
 \end{equation}
 
 \begin{equation}
-\beta = log\left(\dfrac{5h}{0.8B^{s,r}_0}\right)
+\beta^r = log\left(\dfrac{5h}{0.8*B^{r}_0}\right)
 \end{equation}
 
 where:
@@ -627,9 +634,13 @@ where:
 \begin{itemize}
 % \item Rzero(r) es el reclutamiento en el régimen número $r$, donde $1\leq r \leq nregs.$
 
-\item $R^{s,r}_0$ is the recruitment to the first regime $r$ of stock $s$, where $1\leq r \leq n_{regs}$;
+\item $R^{r}_0$ is the recruitment for regimen number $r$, where $1\leq r \leq n_{regs}$, it is obtained from 
+\begin{equation}
+    R^r_0=e^{log\_Rzero^r},
+\end{equation}
+$log\_Rzero$ is a parameter to be estimated.
 
-\item $B^{s,r}_0$ is the virgin biomass for regime $r$ belonging to the stock $s$.
+\item $B^{r}_0$ is the virgin biomass for regime number $r$ where $1\leq r \leq n_{regs}$, this was calculated in section $d$.
 
 %\item $irec=rec\_map(stk\_reg\_map(1,r),stk\_reg\_map(2,r))$, where $rec\_map$ is the recruitment matrix, it is input in the line 23 of .ctl file.
 
@@ -642,7 +653,7 @@ where:
 
 %(considerar escribir desde Von Bertalanfy hasta Age composition to length composition antes de numeros a la edad, así luego de reclutamiento iría selectividad).\\
 
-The number of recruits is calculated for each year $y$, where $y_0\leq y \leq y_N$:
+The number of recruits is calculated for each year $y$, where $y_0\leq y \leq y_N$ and stock $s$ ($1\leq s \leq n_{stk}$):
 
 \begin{equation}
     recruits^s_y =N^s_{y,a = 1}, \ \text{and}
@@ -654,41 +665,42 @@ The number of recruits is calculated for each year $y$, where $y_0\leq y \leq y_
 %     recruits(s,endyr+1)=e^{\mu_{R,cum\_regs(s)+yy\_sr(s,endyr+1)}}.
 % \end{equation}
 \begin{equation}
-    recruits^s_{y_{N+1}}=e^{\mu^s_{R,y_N+1}}, \ when \ y = y_{N+1}
+    recruits^s_{y}=e^{\mu^s_{R,y_N+1}}, \ when \ y = y_{N+1}.
 \end{equation}
 
-Besides, the number of recruits is calculated according to the specified curve type of the stock-recruitment relationship. Besides, the recruits will depend on the virgin biomass of the stock ($stock_i^r$), as follows:
+Besides, the recruitment is calculated according to the specified curve type of the stock-recruitment relationship. Also to graph the stock-recruitment curve i.e $stock^r_i$ vs $SRecruit(stock^r_i, r)$, It will depend on the virgin biomass of the stock ($stock_i^r$), as follows:
 
 \begin{equation}
-stock^r_i=\dfrac{iB^{s,r}_0}{250}, \ \ 1\leq i \leq 300
+stock^r_i=\dfrac{2i*B^{r}_0}{250}, \ \ 1\leq i \leq 300, \ 1\leq r \leq n_{regs},
 \end{equation}
 
+$SRecruit(stmp, r)$ is the recruitment depending of stock (stmp) and regime r, with $1\leq r \leq n_{regs}$, defined by:
 \begin{itemize}
 
 \item When $sr_{type}=1$ (Ricker form from Dorn):
 
     \begin{equation}
-    recruits^{s,r} = \dfrac{R^{s,r}_0 stock^r_i}{B^{s,r}_0}e^{\alpha \left(1-\dfrac{stock^r_i}{B^{s,r}_0}\right)}
+    SRecruit(stmp, r) = \dfrac{R^{r}_0* stmp}{B^{r}_0}*e^{\alpha^r \left(1-\dfrac{stmp}{B^{r}_0}\right)}
     \end{equation}
 
 \item When $sr_{type}=2$ (Beverton-Holt form):
 
     \begin{equation}
-    recruits^{s,r} = \dfrac{stock^r_i}{\alpha+\beta stock^r_i}
+    SRecruit(stmp, r) = \dfrac{stmp}{\alpha^r+\beta^r* stmp}
     \end{equation}
 
 \item When $sr_{type}=3$ (mean recruitment):
 
     \begin{equation}
-    recruits^{s,r} = e^{\mu_{R,r}},
+    SRecruit(stmp, r) = e^{\mu_{R,r}},
     \end{equation}
 
-    where $\mu_{R,r}$ is the average recruitment in the regime $r$ ($1\leq r \leq n_{regs}$).
+    where $\mu_{R,r}$ is the average recruitment in the regime $r$.
 
 \item When $sr_{type}=4$ (old Ricker form):
 
     \begin{equation}
-    recruits^{s,r} =  stock^r_i e^{\alpha-stock^r_i \beta}
+    SRecruit(stmp, r) =  stmp *e^{\alpha^r-stmp *\beta^r}
     \end{equation}
 
 \end{itemize}
@@ -708,8 +720,8 @@ For the fish growth the JJM uses the von Bertalanffy growth model.
     \mu_{age}(r,i)=Linf(r)(1-e^{-{k\_coeff(r)}})+\mu_{age}(r,i-1)(e^{-k\_{coeff(r)}}).
 \end{equation}
  \begin{itemize}
-    \item $\mu_{age}(r,i)$ is the mean lenght for each age $i$.
-     \item $r$ is a entire number between $1\leq r \leq ngrowth$(maximum of the Growth map matrix values). 
+    \item $\mu_{age}(r,i)$ is the mean lenght for each age group $i$.
+     \item $r$ is a integer between $1\leq r \leq ngrowth$ (maximum of the Growth map matrix values). 
      \item $Linf(r)$ is the maximum lenght.
      \item $k\_coeff(r)$ is the parameter curvature.
      \item $L_0(r)$ is the lenght initial.
@@ -720,10 +732,10 @@ For the fish growth the JJM uses the von Bertalanffy growth model.
 
 \textbf{h. Equation weight at lenght}\\
 \begin{equation}
-     wt\_age\_vb(r) = lw\_a . \left(\mu_{age}(r)\right)^{lw\_b}
+     wt\_age\_vb(r,i) = lw\_a * \left(\mu_{age}(r,i)\right)^{lw\_b}
  \end{equation}
  \begin{itemize}
-     \item $wt\_age\_vb(r)$ is the weight vector at lenght vector $\mu_{age}(r)$.
+     \item $wt\_age\_vb(r,i)$ is the weight at lenght $\mu_{age}(r,i)$ for $1\leq i \leq m$.
      \item $lw\_a$, $lw\_b$ are growth parameters given by  $lw\_a=0.007778994e-3$ and $lw\_b=3.089248476$ in the model.
  \end{itemize}
 
@@ -731,67 +743,66 @@ For the fish growth the JJM uses the von Bertalanffy growth model.
 
 \textbf{i. Maturity equation}\\
  \begin{equation}
-    maturity\_vb(r) = \dfrac{1}{1+e^{32.93-1.45.\mu_{age}(r)}}
+    maturity\_vb(r,i) = \dfrac{1}{1+e^{32.93-1.45.\mu_{age}(r,i)}}
 \end{equation}
 \begin{itemize}
-    \item $maturity\_vb(r)$ is the proportion of mature species at lenght $\mu_{age}(r)$.
+    \item $maturity\_vb(r,i)$ is the proportion of mature species at lenght $\mu_{age}(r,i)$ for $1\leq i \leq m$.
 \end{itemize}
 
 \hfill
 
 \textbf{j. Age composition to length composition}\\
 
-It uses normal Distribution to calculate the probability of the random variable $X_a$, 
+It uses normal Distribution to calculate the probability 
 \begin{equation}
     P(l-0.5\leq X_a\leq l+0.5 ) = P\left(\dfrac{(l-0.5)-\mu_a}{\sigma_a}\leq Z\leq\dfrac{(l+0.5)-\mu_a}{\sigma_a}\right),
 \end{equation}
-$P(l-0.5\leq X_a\leq l+0.5 )$, is the probability that the number of fish at age "$a$" varies in lenght between  $l-0.5$ and $l+0.5$. \\
-The right expression is the normalization for $X_a$ since $X_a$ is (assumed) a random variable with normal distribution, mean $\mu_a$ and  standard deviation $\sigma_a$ where it is calculated from $\sigma_{a}=sdage(r).\mu_{age}(r)$).\\
+where $P(l-0.5\leq X_a\leq l+0.5 )$ is the probability that the number of fish at age group "$a$" varies in lenght between  $l-0.5$ and $l+0.5$.\\Be the fixed integer $r$ such that $1\leq r \leq ngrowth$.
+The right expression in (54) is the normalization for $X_a$ since $X_a$ is (assumed) a random variable with normal distribution, mean $\mu_a:=\mu_{age}(r,a)$ and  standard deviation $\sigma_a$ where It is calculated from $\sigma_{a}=sd_{age}(r).\mu_{age}(r,a)$.\\
 
-Let $P\_age2len_r$ the matrix such that $Cl(1,nyears,1,nlenght)=C(1,nyears,1,nages).P\_age2lenght$ where $Cl$ is the matrix composition for lenghts that we want to obtain and $C$ is the matrix composition for ages. The elements of $P\_age2len_r$ are calculates as:
+Let $P\_age2len_r$ the matrix such that $Cl(1,nyears,1,nlenght)=C(1,nyears,1,m).P\_age2lenght$ where $Cl$ is the matrix composition for lenghts that we want to obtain and $C$ is the matrix composition for ages. The elements of $P\_age2len_r$ are calculates as:
 \begin{equation}
-    P\_age2len_r(a,j) = \dfrac{P(l_j-0.5\leq X_a\leq l_j+0.5 )}{\sum_{a}P(l_j-0.5\leq X_a\leq l_j+0.5 )}.
+    P\_age2len_r(a,j) = \dfrac{P(l_j-0.5\leq X_a\leq l_j+0.5 )}{\displaystyle\sum_{a=1}^mP(l_j-0.5\leq X_a\leq l_j+0.5 )}.
 \end{equation}
 
 \begin{itemize}
-    \item $P\_age2len$ is a array with dimensions  $(1,ngrowth,1,nages,1,nlength)$.
+    \item $P\_age2len$ is a array with dimensions  $(1,ngrowth,1,m,1,nlength)$.
 \end{itemize}
 \begin{itemize}
-    \item $l_j$ is the lenght $jth$ considered from the vector $len\_bins$ ($lengthbin$ is in the .dat file in
-    line 10).
+    \item $l_j$ is the lenght $jth$ considered from the vector $len\_bins$ (i.e $lengthbin$ line 10 in the .dat file).
 \end{itemize}
 
-\textbf{Survey Predictions}\\
+\textbf{k. Survey Predictions}\\
 
-Prediction from the index number k in year y, with y between $1\leq y \leq nyrs\_ind(k)$, where $nyrs\_ind(k)$ is the number of years of observation for survey number $k$ (is located on line 138 of the .dat file).\\
-Let us first calculate $q\_ind(k,y)$ for each survey $1\leq k \leq nind$ and each year of observation $1\leq y \leq nyrs\_ind(k)$,
+Prediction from the index number k in year y, with y between $1\leq y \leq nyrs_{ind}^k$, where $nyrs_{ind}^k$ is the number of years of observation for survey number $k$ (is located on line 138 of the .dat file).\\
+Let us first calculate $q\_ind(k,y)$ for each survey $1\leq k \leq n_{ind}$ and each year of observation $1\leq y \leq nyrs_{ind}^k$ by cases as follows
 \begin{equation}
-    q\_ind(k,y)=e^{log\_q\_ind(k,y)}
+q\_ind(k,y)=e^{log\_q\_ind(k,y)}, \ for \ 1\leq y < yrs\_rw\_q(k,1)-yrs\_ind(k,1)+1;
 \end{equation}
-for $1\leq y < yrs\_rw\_q(k,1)-yrs\_ind(k,1)+1$.\\
+%for $1\leq y < yrs\_rw\_q(k,1)-yrs\_ind(k,1)+1$.\\
 
-Let $i\in\mathbb{N}$ such that $2\leq i \leq 1+npars\_rw\_q(k)$ and $p_i=yrs\_rw\_q(k,i-1)-yrs\_ind(k,1)+1$:
+now let $i\in\mathbb{N}$ such that $2\leq i \leq 1+npars\_rw\_q(k)$ and $p_i=yrs\_rw\_q(k,i-1)-yrs\_ind(k,1)+1$:
 \begin{equation}
-     q\_ind(k,p_i)  = q\_ind(k,p_i-1)*e^{log\_rw\_q\_ind(k,1)},
+     q\_ind(k,p_i)  = q\_ind(k,p_i-1)*e^{log\_rw\_q\_ind(k,i-1)};
 \end{equation}
+and for the last case
 \begin{equation}
-    q\_ind(k,iyr)  = q\_ind(k,p_i), 
+    q\_ind(k,iyr)  = q\_ind(k,p_i), \ for \ p_i+1\leq iyr \leq nyrs_{ind}^k.
 \end{equation}
-for $p_i+1\leq iyr \leq nyrs\_ind(k).$
+
 \begin{itemize}
-    \item log\_q\_ind is a parameter to be estimated and defined as $log\_q\_ind(1,nind,phase\_q)$. It is initialized with $log\_qprior=log(qprior)$.
-    \item $yrs\_rw\_q(k,i-1)$ is input, line 95 of .ctl file.
+    \item log\_q\_ind is a parameter to be estimated and defined as $log\_q\_ind(1,n_{ind},phase\_q)$. It is initialized with $log\_qprior=log(qprior)$.
     %  yrs_ind(k)  = yrs_ind_in(k)(1,nyrs_ind(k)), yrs_ind_in es input linea 141 del dat
     \item $yrs\_ind(k,1)$ is the first year of observation for the survey number $k$.
     \item yrs\_rw\_q is input, line 95 of .ctl file.
     \item yrs\_ind(k) is the set of years of observation of survey number k. 
-    \item log\_rw\_q\_ind is a parameter to be estimated and defined as $log\_rw\_q\_ind(1,nind,1,npars\_rw\_q,phase\_rw\_q) $.
+    \item log\_rw\_q\_ind is a parameter to be estimated and defined as $log\_rw\_q\_ind(1,n_{ind},1,npars\_rw\_q,phase\_rw\_q) $.
 \end{itemize}
 
 
-Now we calculate the prediction for the survey number k in the year $1\leq i \leq nyrs\_ind(k)$:
+Now we calculate the prediction for the survey number k in the year $1\leq y \leq nyrs_{ind}^k$:
 \begin{equation}
-    pred\_ind(k,i)=q\_ind(k,i).
+    pred\_ind(k,y)=q\_ind(k,y)*
 \end{equation}
 % \begin{equation}
 %     \left(\left(\sum_{age \ j}natage_j(istk,iyr).S(istk,iyr)_j^{ind\_month\_frac(k)}sel\_ind_j(k,iyr).wt\_ind_j(k,iyr)\right)\right)^{q\_power\_ind(k)}
@@ -799,44 +810,42 @@ Now we calculate the prediction for the survey number k in the year $1\leq i \le
 \begin{equation}
     \left(\left(\sum_{j=1}^mN^{istk}_{iyr,j}.{S^{istk}_{iyr,j}}^{ind\_month\_frac(k)}sel\_ind_j(k,iyr).wt\_ind_j(k,iyr)\right)\right)^{q\_power\_ind(k)},
 \end{equation}
-with $iyr=yrs\_ind(k,i)$.
+with $iyr=yrs\_ind(k,y)$.
 \begin{itemize}
-\item nind is the number of index.
+\item $n_{ind}$ is the total number of index.
+\item $yrs\_ind(k,y)$ is the $yth$ year belonging to the set $yrs\_ind(k)$.
 
     %\item $ind\_month\_frac$ es un vector de dimensiones (1,nind) y se calcula como $ind\_month\_frac(k)=\dfrac{mo\_ind(k)-1}{12}$, donde $mo\_ind(k)$, para cada pesquería número $k$, está en la línea 144 del archivo dat.
-    \item $ind\_month\_frac$ is calculated as $ind\_month\_frac(k)=\dfrac{mo\_ind(k)-1}{12}$, where $mo\_ind(k)$ (for each fishery number $k$) is on line 144 of the .dat file.
-    \item $istk=sel\_map(1,k+nfsh)$ 
+    \item $ind\_month\_frac$ is calculated for each fishery $k$ as $ind\_month\_frac(k)=\dfrac{mo_{ind}(k)-1}{12}$, where $mo_{ind}$ is on line 144 of the .dat file.
+    \item $istk=sel\_map(1,k+n_{fsh})$ 
 i.e., it is the stock number corresponding to the survey number $k$.
     %\item $iyr=yrs\_ind(k,i)$, índice número $k$ y año número $i$.
     \item $sel\_ind_j(k,iyr)$ 
 is the selectivity index of survey number k in year iyr at age j.
     \item $wt\_ind_j(k,iyr)$ 
-weight composition at age j in year iyr of survey number $k$. It is input, line 171 of the .dat file.
+weight composition at age group j in year iyr of survey number $k$. It is input, line 171 of the .dat file.
     \end{itemize}
-    Now calculate the expected age composition from the index (i.e eac\_ind(1,nind,1,nyrs\_ind\_age,1,nages)).\\
+    Now calculate the expected age composition from the index (i.e eac\_ind(1,$n_{ind}$,1,nyrs\_ind\_age,1,m)).\\
 Let $i$ be the index of the year for which age data are available for survey $k$, that is, $1\leq i \leq nyrs\_ind\_age(k)$:
 \begin{itemize}
         \item [i.] If $use\_age\_err$=TRUE then: 
     \begin{equation}
-        eac\_ind(k,i)_j=age\_err*\dfrac{tmp\_n_j}{\sum_{j=1}^mtmp\_n_j}
+        eac\_ind_j(k,i)=\sum_{l=1}^m \left(age\_err(j,l)*\dfrac{tmp\_n_l}{\sum_{j=1}^mtmp\_n_j}\right),
     \end{equation}
         \item [ii.] If $use\_age\_err$=FALSE :
-        \begin{equation}eac\_ind(k,i)_j=\dfrac{tmp\_n_j}{\sum_{j=1}^mtmp\_n_j}
+        \begin{equation}eac\_ind_j(k,i)=\dfrac{tmp\_n_j}{\sum_{j=1}^mtmp\_n_j}
     \end{equation}
-%     donde \begin{equation}
-%     tmp\_n_j= S_j(istk,iyr)^{ind\_month\_frac(k)}sel\_ind(k,iyr)_j.natage(istk,iyr)_j
-% \end{equation}.
+
 where \begin{equation}
-    tmp\_n_j= {S^{istk}_{iyr,j}}^{ind\_month\_frac(k)}sel\_ind(k,iyr)_j.N^{istk}_{iyr,j},
+    tmp\_n_j= {S^{istk}_{iyr,j}}^{ind\_month\_frac(k)}.sel\_ind_j(k,iyr).N^{istk}_{iyr,j},
 % \end{equation}.
 \end{equation}
-
-and  $iyr=yrs\_ind\_age(k,i)$ y $1\leq j\leq m$.
+ $iyr=yrs\_ind\_age(k,i)$ and $1\leq j\leq m$.
     \end{itemize}
 
-Now the expected size composition (i.e elc\_ind(1,nind,1,nyrs\_ind\_length,1,nlength)) is calculated from the index. Let $i$ be the index of the year for which size data are available for survey $k$, i.e.   $1\leq i \leq nyrs\_ind\_length(k)$:
+Now the expected size composition (i.e elc\_ind(1,$n_{ind}$,1,nyrs\_ind\_length,1,nlength)) is calculated from the index. Let $i$ be the index of the year for which size data are available for survey $k$, i.e.   $1\leq i \leq nyrs\_ind\_length(k)$:
 \begin{equation}
-    elc\_ind(k,i)_l=\sum_{j=1}^m\dfrac{tmp\_n_j}{\sum_{j=1}^mtmp\_n_j}*P\_age2len(igrowth,j,l)
+    elc\_ind_l(k,i)=\sum_{j=1}^m\dfrac{tmp\_n_j}{\left(\displaystyle\sum_{j=1}^mtmp\_n_j\right)}*P\_age2len_{igrowth}(j,l), \ 1\leq l \leq nlength
 \end{equation}
 where
 
@@ -851,7 +860,7 @@ and
 \begin{itemize}
     %\item tmp\_n es un vector de dimensiones (1,nages).
     \item growth\_map is the growth matrix, It is input located in line 43 of file .ctl.
-    \item P\_age2len(igrowth,j,l) is the element of the respective matrix at age $j$ and size $l$.
+    \item $P\_age2len_{igrowth}(j,l)$ is the element of the respective matrix at age group $j$ and size $l$.
     \item iyr=$yrs\_ind\_length(k,i)$, year of index i for which survey $k$ length data are available.
     
     %año de índice i para el cuál se tienen datos de longitud del survey $k$.
@@ -862,7 +871,7 @@ Index predicted for the next year of the survey $k$ is calculated from:
     pred\_ind\_nextyr(k)=q\_ind(k,nyrs\_ind(k)) * 
 \end{equation}
 \begin{equation*}
-    \left( SRecruit. {S^{istk}_{y_N,i}}^{ind\_month\_frac(k)} sel\_ind_i(k,y_N)  wt\_ind_i(k,y_N)\right.
+    \left( SRecruit. {S^{istk}_{y_N,1}}^{ind\_month\_frac(k)} sel\_ind_1(k,y_N)  wt\_ind_1(k,y_N)\right.
 \end{equation*}
 % \begin{equation}
 % \left(\sum_inatagetmp_iS(istk,endyr)_i^{ind\_month\_frac(k)} sel\_ind_i(k,endyr)  wt\_ind_i(k,endyr)\right)^{q\_power\_ind(k)}.
@@ -872,17 +881,20 @@ Index predicted for the next year of the survey $k$ is calculated from:
 +\sum_{i=2}^{m-1}S^{istk}_{y_N,i-1}N^{istk}_{y_N,i-1}{S^{istk}_{y_N,i}}^{ind\_month\_frac(k)} sel\_ind_i(k,y_N)  wt\_ind_i(k,y_N)+
 \end{equation}
 \begin{equation*}
-  \left. (S^{istk}_{y_N,m-1}.N^{istk}_{y_N,m-1}+N^{istk}_{y_N,m}S^{istk}_{y_N,m}){S^{istk}_{y_N,i}}^{ind\_month\_frac(k)} sel\_ind_i(k,y_N)  wt\_ind_i(k,y_N) \right)^{q\_power\_ind(k)},
+  \left. (S^{istk}_{y_N,m-1}.N^{istk}_{y_N,m-1}+N^{istk}_{y_N,m}S^{istk}_{y_N,m}){S^{istk}_{y_N,m}}^{ind\_month\_frac(k)} sel\_ind_m(k,y_N)  wt\_ind_m(k,y_N) \right)^{q\_power\_ind(k)},
 \end{equation*}
 with
+%\begin{equation}
+%    SRecruit=SRecruit(Sp\_Biom(istk,y_N+1-r_a),cum\_regs(istk)+yy\_sr(istk,styr\_fut)).
+%\end{equation}
+
 \begin{equation}
-    SRecruit=SRecruit(Sp\_Biom(istk,endyr+1-rec\_age),cum\_regs(istk)+yy\_sr(istk,styr\_fut)).
+    SRecruit=SRecruit(SSB^{istk}_{y_N+1-r_a},cum\_regs(istk)+yy\_sr(istk,styr\_fut)).
 \end{equation}
 
 
-
-\textbf{Fishery Predictions}\\
-Calculate the expected age composition (i.e eac\_fsh(1,nfsh,1,nyrs\_fsh\_age,1,nages)) for fisheries. Let $y$ a positive integer with $1\leq y \leq nyrs\_fsh\_length(k)$:
+\textbf{l. Fishery Predictions}\\
+Calculate the expected age composition (i.e eac\_fsh(1,$n_{fsh}$,1,nyrs\_fsh\_age,1,m)) for fisheries. Let $y$ be the index of the year for which size data are available for fishery $k$, i.e.   $1\leq y \leq nyrs\_fsh\_length(k)$ and the age group $a$:
 %catage_a(k,i):Cat_a(k,y)
 \begin{itemize}
 %     \item [i.] If $use\_age\_err=TRUE$:
@@ -891,7 +903,7 @@ Calculate the expected age composition (i.e eac\_fsh(1,nfsh,1,nyrs\_fsh\_age,1,n
 % \end{equation}
 \item [i.] If $use\_age\_err=TRUE$:
     \begin{equation}
-    eac\_fsh_a(k,y)=age\_err.\dfrac{Cat_a(k,yrs\_fsh\_age(k,y))}{\displaystyle\sum_{a=1}^mCat_a(k,yrs\_fsh\_age(k,y))}
+    {eac{fsh}}_a(k,y)=age\_err.\dfrac{Cat_{yrs\_fsh\_age(k,y),a}^k}{\displaystyle\sum_{a=1}^mCat_{yrs\_fsh\_age(k,y),a}^k}
 \end{equation}
 % \item [ii.] If $use\_age\_err=FALSE$:
 % \begin{equation}
@@ -899,37 +911,37 @@ Calculate the expected age composition (i.e eac\_fsh(1,nfsh,1,nyrs\_fsh\_age,1,n
 % \end{equation}
 \item [ii.] If $use\_age\_err=FALSE$:
 \begin{equation}
-    eac\_fsh_a(k,y)=\dfrac{Cat_a(k,yrs\_fsh\_age(k,y))}{\displaystyle\sum_{a=1}^mCat_a(k,yrs\_fsh\_age(k,y)))},
+    eacfsh_a(k,y)=\dfrac{Cat_{yrs\_fsh\_age(k,y),a}^k}{\displaystyle\sum_{a=1}^mCat_{yrs\_fsh\_age(k,y),a}^k},
 \end{equation}
 \end{itemize}
 for $1\leq a \leq m$.
 After calculate eac\_fsh as:
 \begin{equation}
-    eac\_fsh_a(k,y)=\dfrac{eac\_fsh_a(k,y)}{\displaystyle\sum_{a=1}^meac\_fsh_a(k,y)}, \ 1\leq a \leq m.
+    eac\_fsh_a(k,y)=\dfrac{eacfsh_a(k,y)}{\displaystyle\sum_{a=1}^m eacfsh_a(k,y)}, \ 1\leq a \leq m.
 \end{equation}
-Now for the lenghts. Calculate the expected length composition (i.e elc\_fsh(1,nfsh,1,nyrs\_fsh\_length,1,nlength)) for fisheries from: 
+Now for lenghts. Calculate the expected length composition (i.e elc\_fsh(1,$n_{fsh}$,1,nyrs\_fsh\_length,1,nlength)) for fisheries from: 
 % \begin{equation}
 % elc\_fsh(k,i)=catage(k,yrs\_fsh\_length(k,i))*P\_age2len(igrowth^{istk}_{iyr}),
 % \end{equation}
 \begin{equation}
-elc\_fsh_a(k,y)=Cat_a(k,yrs\_fsh\_length(k,y)).P\_age2len(igrowth^{istk}_{iyr}),
+elcfsh_l(k,y)=\sum_{a=1}^m Cat_{yrs\_fsh\_length(k,y),a}^k*P\_age2len_{igrowth^{istk}_{iyr}}(a,l),
 \end{equation}
 finally
 \begin{equation}
-elc\_fsh_a(k,y)=\dfrac{elc\_fsh_a(k,y)}{\displaystyle\sum_{l=1}^melc\_fsh_l(k,y)},
+elc\_fsh_l(k,y)=\dfrac{elcfsh_l(k,y)}{\displaystyle\sum_{l=1}^{nlength} elcfsh_l(k,y)},
 \end{equation}
-for $1\leq y \leq nyrs\_fsh\_length(k)$ and \\
+where $1\leq y \leq nyrs\_fsh\_length(k)$ and \\
 \begin{itemize}
     \item $igrowth^{istk}_{iyr}=growth\_map(istk,yy\_sr(istk,iyr))$, where $istk$ is the stock number corresponding to fishery number $k$, $iyr$ is the index year i for which fishery k has data available and $growth\_map$ is input on line 43 of .ctl file.
 \end{itemize}
 
-\textbf{Selectivity}\\
+\textbf{m. Selectivity}\\
 - The treatment of selectivity patterns and how they are shared among fisheries and indices need to be specified. Also the selectivity for each fleet, and depending on the model configuration, some growth functions were employed inside the model to convert model-predicted age compositions to length compositions, in order to fit the model to the length composition data.\\
 
 Let $k$ the number of fishery and $y$ is the year between $y_0$ and $y_N$.
 Depending on which values $fsh\_sel\_opt$ takes in order to calculate the logarithm of fishery selectivity $log\_sel\_fsh$:
 \begin{itemize}
-\item $fsh\_sel\_opt=1:$\\
+\item If $fsh\_sel\_opt=1:$\\
 % \begin{equation}
 %        log\_sel\_fsh(k,i)(1,nselages\_fsh(k))=sel\_coffs\_tmp
 %    \end{equation}
@@ -939,7 +951,7 @@ Depending on which values $fsh\_sel\_opt$ takes in order to calculate the logari
 %    \begin{equation}
 %        log\_sel\_fsh(k,i)-=log(mean(e^{log\_sel\_fsh(k,i)}))
 %    \end{equation}
-Se asume $y_0$ como el primer año de cambio de selectividad, es decir $yrs\_sel\_ch\_fsh(k,1)=y_0$, luego se toma en cuenta el resto de años de cambio de selectividad $yrs\_sel\_ch\_fsh(k,y)$, para $2\leq y \leq n\_sel\_ch\_fsh(k)$, introducidos en el archivo .ctl en la línea 116.
+Se asume $y_0$ como el primer año de cambio de selectividad, es decir $yrs\_sel\_ch\_fsh(k,1)=y_0$, luego se toma en cuenta el resto de años de cambio de selectividad $yrs\_sel\_ch\_fsh(k,y)$, para $2\leq y \leq n\_sel\_ch\_fsh(k)$, dados en el archivo .ctl en la línea 116.
 \begin{itemize}
     \item $yrs\_sel\_ch\_fsh(k)$ contiene los años de cambio de selectividad para cada pesquería número k.
     \item $n\_sel\_ch\_fsh(k)$ es el número de cambios de selectividad para la pesquería $k$.
@@ -972,26 +984,27 @@ Se asume $y_0$ como el primer año de cambio de selectividad, es decir $yrs\_sel
 %     \end{equation}
 % for $1\leq l \leq nselages\_in\_fsh(k)$ and $1\leq jj \leq n\_sel\_ch\_fsh(k)$.\\
 
-Calculamos la selectividad de la pesquería $k$ en el año $y$. Sea $A$ el conjunto de años de cambio de selectividad ( i.e $A= yrs\_sel\_ch\_fsh(k)$, además se incluye $y_0$) y $p_k\in A$  algún elemento de $A$ ($p_{k+1}$ vendría ser el siguiente año de cambio de selectividad):
+Calculamos la selectividad de la pesquería $k$ en el año $y_0\leq y \leq y_N$ and each age group $a$. Sea $A$ el conjunto de años de cambio de selectividad para determinada pesquería k ( i.e $A= yrs\_sel\_ch\_fsh(k)$, como se dijo anteriormente se incluye $y_0$) y $p_i\in A$  algún elemento de $A$ ($p_{i+1}$ es el siguiente año de cambio de selectividad):
  \begin{equation}
-        log\_sel\_fsh(k,y)_a=log\_selcoffs\_fsh(k,jj_{p_k})_a-log\left(\dfrac{1}{m}.\left(\sum_{i=1}^{nselages\_fsh(k)}e^{log\_selcoffs\_fsh(k,jj_{p_k})_i}+\right.\right.
+        log\_sel\_fsh_a(k,y)=log\_selcoffs\_fsh_a(k,jj_{p_i})-log\left(\dfrac{1}{m}.\left(\sum_{i=1}^{nselages\_fsh(k)}e^{log\_selcoffs\_fsh_i(k,jj_{p_i})}+\right.\right.
     \end{equation}
     \begin{equation*}
-       \left. \left.\sum_{i=nselages\_fsh(k)+1}^{m}e^{log\_selcoffs\_fsh(k,jj_{p_k})_{nselages\_fsh(k)}}\right)\right), 
+       \left. \left.\sum_{i=nselages\_fsh(k)+1}^{m}e^{log\_selcoffs\_fsh_{nselages\_fsh(k)}(k,jj_{p_i})}\right)\right), 
     \end{equation*}
    for $\ 1\leq a \leq nselages\_fsh(k)$.\\
    
   Now for the remaining ages:
     \begin{equation}
-         log\_sel\_fsh(k,y)_a=log\_selcoffs\_fsh(k,jj_{p_k})_{nselages\_fsh(k)}-log\left(\dfrac{1}{nages}.\left(\sum_{i=1}^{nselages\_fsh(k)}e^{log\_selcoffs\_fsh(k,jj_{p_k})_i}+\right.\right.
+         log\_sel\_fsh_a(k,y)=log\_selcoffs\_fsh_{nselages\_fsh(k)}(k,jj_{p_i})-log\left(\dfrac{1}{m}.\left(\sum_{i=1}^{nselages\_fsh(k)}e^{log\_selcoffs\_fsh_i(k,jj_{p_i})}+\right.\right.
     \end{equation}
  \begin{equation*}
-       \left. \left.\sum_{i=nselages\_fsh(k)+1}^{m}e^{log\_selcoffs\_fsh(k,jj_{p_k})_{nselages\_fsh(k)}}\right)\right), 
+       \left. \left.\sum_{i=nselages\_fsh(k)+1}^{m}e^{log\_selcoffs\_fsh_{nselages\_fsh(k)}(k,jj_{p_i})}\right)\right), 
     \end{equation*}
-    for $nselages\_fsh(k)\leq a \leq m$ where $p_k\leq y < p_{k+1}$.
+    where $nselages\_fsh(k)\leq a \leq m$ and $p_i\leq y < p_{i+1}$.
     \begin{itemize}
-        \item $jj_{p_k}$ es el número de cambio que le corresponde al año de cambio $p_k\in A$.
-        \item $log\_selcoffs\_fsh$ es parámetro a estimar, se inicializa en función de $log\_selcoffs\_fsh\_in$ si $phase\_selcoff\_fsh(k)<0$.
+        \item $jj_{p_i}$ es el número de cambio que le corresponde al año de cambio $p_i\in A$.
+        \item $log\_selcoffs\_fsh$ es parámetro a estimar, se inicializa en función de $log\_selcoffs\_fsh\_in$ si $phase\_selcoff\_fsh(k)<0$ y está definido como $log\_selcoffs\_fsh(1,n_{fsh},1,n\_sel\_ch\_fsh,1,nselages\_fsh,phase\_selcoff\_fsh)$.
+        \item $nselages\_fsh(k)=nselages\_in\_fsh(k)$, where $nselages\_in\_fsh(k)$ is input for each fishery $k$.
     \end{itemize}
 
 
@@ -1030,104 +1043,110 @@ Calculamos la selectividad de la pesquería $k$ en el año $y$. Sea $A$ el conju
     %    sel\_fsh\_tmp_j=sel\_fsh\_tmp(nselages\_in\_fsh(k)), \ nselages\_in\_fsh(k)+1\leq j \leq nages.
     %    \end{equation}
     
-\item $fsh\_sel\_opt=2:$ 
-Sea $p_k$ como antes, 
+\item If $fsh\_sel\_opt=2:$ 
+Sea $p_i$ como antes y  $p_i\leq y < p_{i+1}$
 \begin{equation}
-            log\_sel\_fsh(k,y)_a=-log( 1.0 + e^{(-1.sel\_slope\_fsh(k,jj_{p_k}) . ( age\_vector_a - sel50\_fsh(k,jj_{p_k})) )})
+            log\_sel\_fsh_a(k,y)=-log( 1.0 + e^{(-1.sel\_slope\_fsh(k,jj_{p_i}) * ( age\_vector_a - sel50\_fsh(k,jj_{p_i})) )})
         \end{equation}
-        for $1\leq a \leq nselages\_fsh(k)$.
+        for $1\leq a \leq nselages\_fsh(k)$;
         \begin{equation}
-            log\_sel\_fsh(k,y)_a=log\_sel\_fsh(k,y)_{nselages\_fsh(k))},
+            log\_sel\_fsh_a(k,y)=log\_sel\_fsh_{nselages\_fsh(k))}(k,y),
         \end{equation}
-        for $nselages\_fsh(k) \leq a \leq m$ where $p_k\leq y < p_{k+1}$.
+        for $nselages\_fsh(k) \leq a \leq m$.
         \begin{itemize}
-            \item $sel\_slope\_fsh(k,jj_{p_k}) = e^{logsel\_slope\_fsh(k,jj_{p_k})}$.
+            \item $sel\_slope\_fsh(k,jj_{p_i}) = e^{logsel\_slope\_fsh(k,jj_{p_i})}$.
             \item logsel\_slope\_fsh and sel50\_fsh are parameters to be estimated.
+            \item $age\_vector$ is calculated as follows: $age\_vector_a=2*(a+r_a-1)$, $1\leq a \leq m$  and defined by $age\_vector(1,nages)$.
         \end{itemize}
-\item $fsh\_sel\_opt=3:$ Sea $p_k$ como antes,
+
+
+        
+\item If $fsh\_sel\_opt=3:$ Sea $p_i$ como antes,
  \begin{equation}
-        log\_sel\_fsh(k,y)_a     = \left( -log(1.0 + e^{(\frac{-2.9444389792}{du}.( age\_vector_a - bu) )}) \right.
+        log\_sel\_fsh_a(k,y)     = \left( -log(1.0 + e^{(\frac{-2.9444389792}{du}.( age\_vector_a - bu) )}) \right.
     \end{equation}
     \begin{equation*}
-         \left.+log\left(1 - \dfrac{1}{1 + e^{(\frac{-2.9444389792}{dd} ( age\_vector_a - bd))}} \right) \right)+0.102586589 
+         \left.+log\left(1 - \dfrac{1}{1 + e^{\left(\frac{-2.9444389792}{dd} ( age\_vector_a - bd)\right)}} \right) \right)+0.102586589 
     \end{equation*}
       for $1\leq a \leq nselages\_fsh(k)$.\\
       Now for the remaining ages:
     \begin{equation}
-        log\_sel\_fsh(k,y)_a = log\_sel\_fsh(k,y)_{nselages\_fsh(k)},
+        log\_sel\_fsh_a(k,y) = log\_sel\_fsh_{nselages\_fsh(k)}(k,y),
     \end{equation}
     for $nselages\_fsh(k)\leq a \leq m$.
     \begin{itemize}
-        \item %$bu = sel\_p1\_fsh(k,jj_{p_k})$
-        $bu = e^{logsel\_p1\_fsh(k,jj_{p_k})}$
+        \item %$bu = sel\_p1\_fsh(k,jj_{p_i})$
+        $bu = e^{logsel\_p1\_fsh(k,jj_{p_i})}$
         \item 
-        $du = e^{logsel\_p2\_fsh(k,jj_{p_k})}$
+        $du = e^{logsel\_p2\_fsh(k,jj_{p_i})}$
         %$du = sel\_p2\_fsh(k,jj_{p_k})$
         \item
-        $dd = e^{logsel\_p3\_fsh(k,jj_{p_k})}$
-        %$dd = sel\_p3\_fsh(k,jj_{p_k})$
+        $dd = e^{logsel\_p3\_fsh(k,jj_{p_i})}$
+        %$dd = sel\_p3\_fsh(k,jj_{p_i})$
         \item $bd = bu + du + dd$.
         \item $logsel\_p1\_fsh$, $logsel\_p2\_fsh$ and $logsel\_p3\_fsh$ are parameters to be estimated.
     \end{itemize}
     
     \end{itemize}
 
-For the surveys:\\
+Now for the surveys. Calculamos la selectividad del index survey $k$ en el año $y$, $y_0\leq y \leq y_N$, y para cada grupo de edad $a$:\\
 \begin{itemize}
 
-\item $ind\_sel\_opt=1:$
-Calculamos la selectividad del crucero $k$ en el año $y$. Sea $B$ el conjunto de años de cambio de selectividad ( i.e $B= yrs\_sel\_ch\_ind(k)$, además se incluye $y_0$) y $p_k\in A$, algún elemento de $B$:
+\item If $ind\_sel\_opt=1$:
+Sea $B$ el conjunto de años de cambio de selectividad para un determinado índice k (i.e $B= yrs\_sel\_ch\_ind(k)$, además $y_0\in B$) y $p_i\in B$, algún elemento de $B$:
 \begin{equation}
-    sel\_tmp_{y,a} = log\_selcoffs\_ind(k,jj_{p_k})_a
+    sel\_tmp_{y,a} = log\_selcoffs\_ind_a(k,jj_{p_i})
 \end{equation}
 for $1\leq a \leq nselages\_ind(k)$.
 Now for remaining ages
 \begin{equation}
-    sel\_tmp_{y,a}= log\_selcoffs\_ind(k,jj_{p_k})_{nselages\_ind(k)},
+    sel\_tmp_{y,a}= log\_selcoffs\_ind_{nselages\_ind(k)}(k,jj_{p_i}),
 \end{equation}
 for $nselages\_ind(k)\leq a \leq m$. \\
 
-Now we calculate $log\_sel\_ind$
+Now we calculate $log\_sel\_ind$ as
      \begin{equation}
-        log\_sel\_ind(k,y)_a=sel\_tmp_{y,a}-log\left(\dfrac{1}{q\_age\_max(k)-q\_age\_min(k)+1}\sum_{i=q\_age\_min(k)}^{q\_age\_max(k)}sel\_tmp_{y,i}\right)
+        log\_sel\_ind_a(k,y)=sel\_tmp_{y,a}-log\left(\dfrac{1}{q\_age\_max(k)-q\_age\_min(k)+1}\sum_{i=q\_age\_min(k)}^{q\_age\_max(k)}sel\_tmp_{y,i}\right)
     \end{equation}
-    for $1\leq a \leq m$ and $p_k\leq y < p_{k+1}$.\\ 
+    for $1\leq a \leq m$ and $p_i\leq y < p_{i+1}$.\\ 
 \begin{itemize}    
-    \item $jj_{p_k}$ es el número de cambio que le corresponde al año de cambio $p_k\in B$.
+    \item $jj_{p_i}$ es el número de cambio que le corresponde al año de cambio $p_i\in B$.
     \item $log\_selcoffs\_ind$ es parámetro a estimar.
+     \item $nselages\_ind(k)=nselages\_in\_ind(k)$, where $nselages\_in\_ind(k)$ is input for each index survey $k$.
+     \item $q\_age\_max$, $q\_age\_min$ are input and $q\_age\_min(k) \leftarrow  q\_age\_min(k) - r_a + 1$.
 \end{itemize}
 
     
-    \item $ind\_sel\_opt=2:$
-    Sea $p_k$ como antes, 
+    \item If $ind\_sel\_opt=2:$
+    Sea $p_i$ como antes, 
 \begin{equation}
-            log\_sel\_ind(k,y)_a = - log( 1.0 + e^{(-sel\_slope\_ind(k,jj_{p_k}) . ( age\_vector_a - sel50\_ind(k,jj_{p_k})) )}).
+            log\_sel\_ind_a(k,y) = - log( 1.0 + e^{(-sel\_slope\_ind(k,jj_{p_i}) . ( age\_vector_a - sel50\_ind(k,jj_{p_i})) )}).
         \end{equation}
         for $1\leq a \leq m
-$ where $p_k\leq y < p_{k+1}$.
+$ where $p_i\leq y < p_{i+1}$.
         \begin{itemize}
-            \item $sel\_slope\_ind(k,jj_{p_k}) = e^{logsel\_slope\_ind(k,jj_{p_k})}$.
+            \item $sel\_slope\_ind(k,jj_{p_i}) = e^{logsel\_slope\_ind(k,jj_{p_i})}$.
             \item logsel\_slope\_ind and sel50\_ind are parameters to be estimated.
         \end{itemize}
 
-    \item $ind\_sel\_opt=3:$
+    \item If $ind\_sel\_opt=3:$
      \begin{equation}
-        log\_sel\_ind(k,y)_a     = ( -log(1.0 + e^{(\frac{-2.9444389792}{p1} . ( age\_vector_a - i1) )}) 
+        log\_sel\_ind_a(k,y)     =  -log(1.0 + e^{(\frac{-2.9444389792}{p1} . ( age\_vector_a - i1) )}) 
 \end{equation}
     \begin{equation}
-          +log\left(1 - \frac{1}{(1 + e^{(\frac{-2.9444389792}{p3} . ( age\_vector_a - i2))})} ) \right)+0.102586589 
+          +log\left(1 - \frac{1}{(1 + e^{(\frac{-2.9444389792}{p3} . ( age\_vector_a - i2))})}  \right)+0.102586589 
     \end{equation}
 for $1\leq a \leq nselages\_ind(k).$ \\
 
     Now for remaining ages
     \begin{equation}
-         log\_sel\_ind(k,y)_a = log\_sel\_ind(k,y)_{nselages\_ind(k)},
+         log\_sel\_ind_a(k,y) = log\_sel\_ind_{nselages\_ind(k)}(k,y),
     \end{equation}
-    for $nselages\_ind(k)\leq a \leq m$ where $p_k\leq y < p_{k+1}$.
+    for $nselages\_ind(k)\leq a \leq m$ where $p_i\leq y < p_{i+1}$.
 \begin{itemize}
-    \item $p1 = e^{logsel\_p1\_ind(k,jj_{p_k})}$
-    \item $p2 = sel\_p2\_ind(k,jj_{p_k})$
-    \item $p3 = e^{logsel\_p3\_ind(k,jj_{p_k})}$
+    \item $p1 = e^{logsel\_p1\_ind(k,jj_{p_i})}$
+    \item $p2 = sel\_p2\_ind(k,jj_{p_i})$
+    \item $p3 = e^{logsel\_p3\_ind(k,jj_{p_i})}$
     \item $i1 = p1 + p2$
     \item $i2 = p1 + i1 + p3$
     \item logsel\_p1\_ind, sel\_p2\_ind y logsel\_p3\_ind are parameters to be estimated.
@@ -1146,19 +1165,19 @@ Ahora veamos el cambio de selectividades de los índices:
 \begin{itemize}
     \item Si $sel\_map(2,k) \neq 2$:
     \begin{equation}
-        log\_sel\_ind(k-nfsh)=log\_sel\_fsh(sel\_map(3,k))
+        log\_sel\_ind(k-n_{fsh})=log\_sel\_fsh(sel\_map(3,k))
     \end{equation}
-    \item Si $sel\_map(2,k) = 2$ y $sel\_map(3,k) \neq k-nfsh$:
+    \item Si $sel\_map(2,k) = 2$ y $sel\_map(3,k) \neq k-n_{fsh}$:
     \begin{equation}
-        log\_sel\_ind(k-nfsh) = log\_sel\_ind(sel\_map(3,k)).
+        log\_sel\_ind(k-n_{fsh}) = log\_sel\_ind(sel\_map(3,k)).
     \end{equation}
 \end{itemize}
 
    
 \end{itemize}
-Finally we get the selectivites from:
+Finally we get the fishery and index selectivity respectively from:
 \begin{equation}
-    sel\_fsh=e^{log\_sel\_fsh}
+    sel\_fsh=e^{log\_sel\_fsh},
 \end{equation}
 \begin{equation}
     sel\_ind=e^{log\_sel\_ind}.
@@ -1202,15 +1221,41 @@ In the last phase, the model calculate the Replacement Yield.\\
 
 \textbf{Replacement Yield}\\
 It is the volume by weight that can be removed from a fish stock without increasing or decreasing the biomass of the stock.
-For calculate the Replacement Yield for each stock  number $s$ It uses Newton method for 4 iterations to find the root of 
+For calculate the Replacement Yield for each stock  number $"s"$ It uses Newton method for 4 iterations to find the root of 
 \begin{equation}
     dssb   = \dfrac{ssb2 - ssb3}{df}, \ \text{with} \  df=1.e-3.
 \end{equation}
 
+\begin{algorithm}
+	\caption{{\bf \textit{Replacement Yield}}}
+	1.  $\  \ $Let $F_1=0.1$, $df=1.e-3$, $breakout=1$. \\
+	2.  $\  \ $For $s=1,2,...,n_{stk}$, Do\\
+    3.  $\  \ \quad$ For $ii=1,...,4$, Do \\
+	4.  $\  \ \qquad$ If $(mceval\_phase()\&\&(F_1>5||F_1< -5)) $\\
+	5.  $\  \ \qquad$$\quad$ $ii=8$\\
+	6.  $\  \ \qquad$$\quad$  If ($F_1>5$): $F_1=5.0$\\
+	7.  $\  \ \qquad$$\quad$   Else: $F_1=-5.0$\\
+	8.  $\  \ \qquad$$\quad$   breakout = 1. \\
+	9.  $\  \ \qquad$   $F_2 = F_1+df*0.5$\\
+	10. $\qquad$  $F_3 = F_2 -df$\\
+	11. $\quad$ $\quad$  $ssb1=-1000.\left(log\left(\dfrac{repl\_ssb(F_1,s)}{SSB^s_{y_N}}\right)\right)^2,$\\
+    12. $\quad$ $\quad$  $ssb2=-1000.\left(log\left(\dfrac{repl\_ssb(F_2,s)}{SSB^s_{y_N}}\right)\right)^2,$\\
+    13. $\quad$ $\quad$  $ssb3=-1000.\left(log\left(\dfrac{repl\_ssb(F_3,s)}{SSB^s_{y_N}}\right)\right)^2.$\\
+    14. $\quad$$\quad$   $dssb   = \dfrac{ssb2 - ssb3}{df},$\\
+    15. $\quad$$\quad$   $dssbp  = \dfrac{(ssb2 + ssb3 - 2.*ssb1)}{(.25*df*df)}$.\\
+    16. $\quad$$\quad$   If $(breakout=0)$ $F_1=F_{1}-\dfrac{dssb}{dssbp}$\\
+    17. $\quad$$\quad$   Else \\
+    18. $\qquad$$\quad$   If ($F_1>5$) print "Frepl v. high". \\
+    19. $\qquad$$\quad$   Else print "Frepl v. low". \\
+    20. $\quad$ EndDo\\
+    21. $\quad$ $repl\_F(s) = F1$\\
+    22. $\quad$ $repl\_SSB(s) = repl\_ssb(F1,s)$.\\
+    23. $\  \ $EndDo.
+    
+\end{algorithm}
+
 The iteration is on
-% \begin{equation}
-%     F_{i+1}=F_{i}-\dfrac{dssb}{dssbp}, \ 0\leq  i \leq 3,
-% \end{equation}
+
 \begin{equation}
     F_{1}^s\leftarrow F_{1}^s-\dfrac{dssb}{dssbp}, \ \text{with initial $F_{1}^s=0.1$}.
 \end{equation}
@@ -1222,69 +1267,70 @@ Other variables are
     F_3^s \leftarrow F_2^s -df.
 \end{equation}
 
-Here $dssp$ is the second derivative of $dssb$:
+Here $dssp$ is the second derivative of $dssb$ and defined by:
 \begin{equation}
     dssbp  = \dfrac{(ssb2 + ssb3 - 2.*ssb1)}{(.25*df*df)},
 \end{equation}
 where
 \begin{equation}
-    ssb1=-1000.\left(log\left(\dfrac{repl\_ssb(F_1^s,s)}{SB^s_{y_N}}\right)\right)^2,
+    ssb1=-1000.\left(log\left(\dfrac{repl\_ssb(F_1^s,s)}{SSB^s_{y_N}}\right)\right)^2,
 \end{equation}
 \begin{equation}
-    ssb2=-1000.\left(log\left(\dfrac{repl\_ssb(F_2^s,s)}{SB^s_{y_N}}\right)\right)^2,
+    ssb2=-1000.\left(log\left(\dfrac{repl\_ssb(F_2^s,s)}{SSB^s_{y_N}}\right)\right)^2,
 \end{equation}
 \begin{equation}
-    ssb3=-1000.\left(log\left(\dfrac{repl\_ssb(F_3^s,s)}{SB^s_{y_N}}\right)\right)^2.
+    ssb3=-1000.\left(log\left(\dfrac{repl\_ssb(F_3^s,s)}{SSB^s_{y_N}}\right)\right)^2.
 \end{equation}
-The numerical solution ($F_1^s$) is the  FMSY for each stock s.\\
+The numerical solution $F_1^s$ is the  FMSY for each stock s.\\
 Finally we get
 \begin{equation}
-    repl\_F(s) = F1^s,
+    repl\_F(s) = F_1^s,
 \end{equation}
 \begin{equation}
-    repl\_SSB(s) = repl\_ssb(F1^s,s).
+    repl\_SSB(s) = repl\_ssb(F_1^s,s)
 \end{equation}
+where
 \begin{itemize}
-    \item $repl\_ssb(F,s)$ is a function calculated for each F and each stock s. (See the next section).
-    \item $repl\_F(s)$ is the FMSY for each stock s.
+    \item $repl\_ssb(F,s)$ is a function calculated for each F and each stock s  (see the next section);
+    \item $repl\_F(s)$ is the FMSY for each stock s;
     \item $repl\_SSB(s)$ is the yield for each stock s.
 \end{itemize}
 
 In addition, this section also calculates:
 \begin{equation}
-    sumF(s)=\sum_{k_s}\sum_{l=1}^m F^{k_s}_{y_N,l}, \  \text{with} \ 1\leq s \leq nstk,
+    sumF(s)=\sum_{k_s}\sum_{l=1}^m F^{k_s}_{y_N,l}, \  \text{with} \ 1\leq s \leq n_{stk},
 \end{equation}
 where $\sum k_s$ denotes the sum over the fisheries belonging to stock s, and
 \begin{equation}
-    Fratio(k)=\dfrac{\sum_{l=1}^mF^k_{y_N,l}}{sumF(s_k)}, \  \text{with} \ 1\leq k  \leq nfsh,
+    Fratio(k)=\dfrac{\sum_{l=1}^mF^k_{y_N,l}}{sumF(s_k)}, \  \text{with} \ 1\leq k  \leq n_{fsh},
 \end{equation}
 where $s_k$ is the stock where fishery number k belongs to.
 
 \textbf{Function repl\_ssb(F, s):}\\
-It is calculated from:
+This function has as input F and s, and returns:
 
 \begin{equation}
-    repl\_ssb(F,s)=\sum_{a=1}^m ntmp_a. Stmp^{spmo\_frac}_a.wt\_mature^s_a,
+    repl\_ssb(F,s)=\sum_{a=1}^m ntmp_a. (Stmp_a)^{s_f}.wt\_mat^s_a,
 \end{equation}
 where
 \begin{equation}
-    Ztmp_a=M^s_{y_N}+\sum_{k_s}F.Fratio(k_s), \ \text{Fratio as defined in eq. 108},
+    Ztmp_a=M^s_{y_N}+\sum_{k_s}F.Fratio(k_s), \ \text{Fratio as defined in eq. (104)},
 \end{equation}
 \begin{equation}
     Stmp_a=e^{-Ztmp_a}, \ \text{with} \ 1\leq a \leq m,
 \end{equation}
 and
 \begin{equation}
-    ntmp_1 = \dfrac{\displaystyle\sum_{i=styr\_rec}^{y_N} {mod\_rec}(s,i)}{{y_N}-r_0+1},
+    ntmp_1 = \dfrac{\displaystyle\sum_{i=r_0}^{y_N} {mod\_rec}(s,i)}{{y_N}-r_0+1},
 \end{equation}
 \begin{equation}
     ntmp_a=Stmp_{a-1}.N^s_{y_N+1,{a-1}}, \ 2\leq a\leq m-1,
 \end{equation}
 \begin{equation}
-    ntmp_{m}=Stmp_{m-1}.N^s_{y_N+1,m-1}+N^s_{y_N+1,m}.Stmp_{m}.
+    ntmp_{m}=Stmp_{m-1}.N^s_{y_N+1,m-1}+(Stmp_{m-1}.N^s_{y_N+1,m-1}).Stmp_{m}.
 \end{equation}
 \begin{itemize}
-    \item Here $mod\_rec(s,i)$ is the recruitment as estimated by model. It is calculated, from year $styr\_rec$ to year $y_N$, for each stock $s$ as
+    \item  $mod\_rec(s,i)$ is the recruitment as estimated by model. It is calculated, from year $r_0$ to year $y_N$, for each stock $s$ as
      \begin{equation}
         mod\_rec(s,i)=e^{\epsilon^s_i+\mu^s_{R,i}}, \ r_0\leq i \leq y_0-1,
     \end{equation}
@@ -1303,7 +1349,7 @@ and
 \end{itemize}
 In this section is also calculated
 \begin{equation}
-    repl\_yld(s)=\sum_{a=1}^m Ctmp,
+    repl\_yld(s)=\sum_{a=1}^m Ctmp_a,
 \end{equation}
 where
 \begin{equation}
@@ -1312,20 +1358,13 @@ where
 
 \textbf{Function yld (Fratio, Ftmp, s)}\\
 
-This function returns msy\_stuff(i) for $i$ positive integer with $1\leq i \leq 5$. \\
-The msy\_stuff(5) ( BmsyTot) is calculated from
+This function has as inputs Fratio, Ftmp and s, and returns msy\_stuff(i) for $i$ positive integer with $1\leq i \leq 5$. \\
+
+The msy\_stuff(5) (BmsyTot) is calculated from
 \begin{equation}
     msy\_stuff(5)=\left(\sum_{a=1}^m Ntmp_a.wt\_pop^s_a\right).msy\_stuff(3),
 \end{equation}
-where
-\begin{equation}
-    Ztmp_a=M^s_{y_0}+\sum_{k_s}Fratio(k)*Ftmp*sel\_fsh_a(k_s,y_N), \ 1\leq a \leq m, 
-\end{equation}
-where $k_s$ are the indexes of the fisheries belonging to the stock s, then let
-\begin{equation}
-    survtmp_a=e^{-Ztmp_a}, \ 1\leq a \leq m,
-\end{equation}
-finally we obtain
+where $Ntmp_a$ for each age group $"a"$ is obtained from 
 \begin{equation}
     Ntmp_1=1,
 \end{equation}
@@ -1333,20 +1372,28 @@ finally we obtain
     Ntmp_{j+1}=Ntmp_j.survtmp_j, \ 1\leq j \leq m-2,
 \end{equation}
 \begin{equation}
-    Ntmp_m=\dfrac{Ntmp_{m-1}.survtmp_{m-1}}{1-survtmp_m}.
+    Ntmp_m=\dfrac{Ntmp_{m-1}.survtmp_{m-1}}{1-survtmp_m}
 \end{equation}
-The msy\_stuff(4) (SPR) is calculated from
+with
 \begin{equation}
-    msy\_stuff(4)=\dfrac{phi}{phizero(t)}, \ t=cum\_regs(s)+yy\_sr(s,y_N)
+    survtmp_a=e^{-Ztmp_a}, \ 1\leq a \leq m,
 \end{equation}
-where 
+and
 \begin{equation}
-    phi= \sum_{a=1}^m Ntmp_a(survtmp_a)^{spmo\_frac}.wt\_mature^s_a,
+    Ztmp_a=M^s_{y_0}+\sum_{k_s}Fratio(k)*Ftmp*Se^{k_s}_{y_N,a}, \ 1\leq a \leq m, 
+\end{equation}
+$k_s$ are the indexes of the fisheries belonging to the stock s.\\
+
+Let 
+\begin{equation}
+    phi= \sum_{a=1}^m Ntmp_a(survtmp_a)^{s_f}.wt\_mat^s_a,
 \end{equation}
 and 
 \begin{equation}
-    phizero(r)=\dfrac{B_0(r)}{Rzero(r)}, \ 1\leq r \leq nregs.
+    phizero(r)=\dfrac{B_0^r}{R_0^r}, \ 1\leq r \leq nregs.
 \end{equation}
+
+
 The msy\_stuff(3) (Eq Recruitment) is calculated from
 \begin{equation}
     msy\_stuff(3)  = Requil(phi,y_N,s),
@@ -1354,42 +1401,72 @@ The msy\_stuff(3) (Eq Recruitment) is calculated from
 where $Requil(phi,y_N,s)$ is a function that depends on the choice of SrType, that is, let $ireg=cum\_regs(s)+yy\_sr(s,y_N)$:\\
 If $SrType=1$
 \begin{equation}
-    Requil(phi,y_N,s)=B_0(ireg) * \dfrac{(\alpha(ireg) + log(phi) - log(phizero(ireg)) )}  {(\alpha(ireg)*phi)}.
+    Requil(phi,y_N,s)=B_0(ireg) * \dfrac{(\alpha^{ireg} + log(phi) - log(phizero(ireg)) )}  {(\alpha^{ireg}*phi)};
 \end{equation}
 If $SrType=2$
 \begin{equation}
-Requil(phi,y_N,s)=\dfrac{(phi-\alpha(ireg))}{(\beta(ireg)*phi)}.
+Requil(phi,y_N,s)=\dfrac{(phi-\alpha^{ireg})}{(\beta^{ireg}*phi)};
 \end{equation}
 If $SrType=3$
 \begin{equation}
-    Requil(phi,y_N,s)=e^{\mu^s_{R,y_N}}.
+    Requil(phi,y_N,s)=e^{\mu^s_{R,y_N}};
 \end{equation}
 If $SrType=4$
 \begin{equation}
-    Requil(phi,y_N,s)=\dfrac{(log(phi)+\alpha(ireg))}{(\beta(ireg)*phi)}.
+    Requil(phi,y_N,s)=\dfrac{(log(phi)+\alpha^{ireg})}{(\beta^{ireg}*phi)}.
 \end{equation}
-\\
-The msy\_stuff(2) (MSY) is calculated from
+
+The msy\_stuff(4) (SPR) is calculated from:
 \begin{equation}
-    msy\_stuff(2)=\left(\sum_{k_s}\sum_{a=1}^m wt\_fsh^{k_s}_{y_N,a}Ntmp_a.Fratio(k_s).Ftmp.sel\_fsh_a(k_s,y_N)\dfrac{1-survtmp_a}{Ztmp_a}\right).msy\_stuff(3).
+    msy\_stuff(4)=\dfrac{phi}{phizero(t)}, \ t=cum\_regs(s)+yy\_sr(s,y_N)
 \end{equation}
-Note that the first sum of equation 129 is about the indexes of fisheries belonging to stock s.\\
+The msy\_stuff(2) (MSY) is calculated from:
+\begin{equation}
+    msy\_stuff(2)=\left(\sum_{k_s}\sum_{a=1}^m wt\_fsh^{k_s}_{y_N,a}Ntmp_a.Fratio(k_s).Ftmp.Se^{k_s}_{y_N,a}\left(\dfrac{1-survtmp_a}{Ztmp_a}\right)\right).msy\_stuff(3).
+\end{equation}
+Note that the sum $\displaystyle\sum_{k_s}$ in equation 130 is about the indexes of fisheries belonging to stock s.\\
 Finally, the msy\_stuff(1) (Bmsy) is calculated from
 \begin{equation}
-    msy\_stuff(1)=phi.(msy\_stuff(3)).
+    msy\_stuff(1)=phi*(msy\_stuff(3)).
 \end{equation}
 \\
 %calc_dependent_vars
 \textbf{Get MSY}\\
 
 This function calculates MSY, FMSY, and Bmsy in the last year of observation ($y_N$). 
-Use Newton Raphson method with 4 iterations to find the root of
+Use Newton Raphson method with 8 iterations to find the root of
 \begin{equation}
         dyld=\dfrac{yld2-yld3}{df}
     \end{equation}
     for each stock.\\
+    \begin{algorithm}
+	\caption{{\bf \textit{Get MSY}}}
+	1.  $\  \ $Let $F_1=0.8*natmortprior(mort\_map(s,1))$, $df=1.e-05$. \\
+	2.  $\  \ $For $s=1,2,...,n_{stk}$, Do\\
+    3.  $\  \ \quad$  $breakout=0$\\
+    3.  $\  \ \quad$ For $ii=1,...,8$, Do \\
+	4.  $\  \ \qquad$ If $(mceval\_phase()\&\&(F_1>5||F_1< 0.01)) $\\
+	5.  $\  \ \qquad$$\quad$ $ii=8$\\
+	6.  $\  \ \qquad$$\quad$  If ($F_1>5$): $F_1=5.0$\\
+	7.  $\  \ \qquad$$\quad$   Else: $F_1=0.001$\\
+	8.  $\  \ \qquad$$\quad$   breakout = 1. \\
+	9.  $\  \ \qquad$   $F_2 = F_1+df*0.5$\\
+	10. $\qquad$  $F_3 = F_2 -df$\\
+	11. $\quad$ $\quad$  $yld1 = yield(Fratio, F_1,s),$\\
+    12. $\quad$ $\quad$  $yld2=yield(Fratio,F_2,s),$\\
+    13. $\quad$ $\quad$  $yld3=yield(Fratio,F_3,s).$\\
+    14. $\quad$$\quad$   $dyld=\dfrac{(yld2-yld3)}{df},$\\
+    15. $\quad$$\quad$   $dyldp=\dfrac{(yld2+yld3-2*yld1)}{(0.25*df*df)}$.\\
+    16. $\quad$$\quad$   If $(breakout=0)$ $F_1=F_{1}-\dfrac{dyld}{dyldp}$\\
+    17. $\quad$$\quad$   Else \\
+    18. $\qquad$$\quad$   If ($F_1>5$) print "Fmsy v. high". \\
+    19. $\qquad$$\quad$   Else print "Fmsy v. low". \\
+    20. $\quad$ EndDo\\
+    21. $\  \ $EndDo.
     
-    The iterations are
+\end{algorithm}
+
+    The iterations are on
     \begin{equation}
         F_2^s \leftarrow F_1^s + df*0.5, \ \text{with}  \ df=1.e-05,
     \end{equation}
@@ -1430,7 +1507,7 @@ After obtaining the numerical solution $F_1^s$ (FMSY) for each stock $s$, this u
     Bmsy(s)=msy\_stuff(1),
 \end{equation}
 \begin{equation}
-    MSYL(s)=\dfrac{msy\_stuff(1)}{B_0(t)},\ with \ t=cum\_regs(s)+yy\_sr(s,endyr),
+    MSYL(s)=\dfrac{msy\_stuff(1)}{B_0^t},\ with \ t=cum\_regs(s)+yy\_sr(s,endyr),
 \end{equation}
 %Bzero^s_{y_N}=Bzero(cum_regs(s)+yy_sr(s,endyr)).
 exploitation fraction relative to total biomass:
@@ -1439,7 +1516,7 @@ exploitation fraction relative to total biomass:
 \end{equation}
 and
 \begin{equation}
-    Bcur\_Bmsy(s)= \dfrac{SB^s_{y_N}}{Bmsy(s)}.
+    Bcur\_Bmsy(s)= \dfrac{SSB^s_{y_N}}{Bmsy(s)}.
 \end{equation}
 It is also calculated
 \begin{equation}
@@ -1456,13 +1533,13 @@ and finally
 
 Let
 \begin{equation}
-    Ztmp_a=M^s_{y_0}+\sum_{k_s}Fratio(k)*Ftmp*sel\_fsh_a(k_s,y_N), \ 1\leq a \leq m, 
+    Ztmp_a=M^s_{y_0}+\sum_{k_s}Fratio(k)*Ftmp*Se^{k_s}_{y_N,a}, \ 1\leq a \leq m, 
 \end{equation}
-where $k_s$ are the indexes of the fisheries belonging to the stock s, then let
+where $k_s$ are the indexes of the fisheries belonging to the stock s,
 \begin{equation}
     survtmp_a=e^{-Ztmp_a}, \ 1\leq a \leq m,
 \end{equation}
-and
+
 \begin{equation}
     Ntmp_1=1,
 \end{equation}
@@ -1470,244 +1547,254 @@ and
     Ntmp_{j+1}=Ntmp_j.survtmp_j, \ 1\leq j \leq m-2,
 \end{equation}
 \begin{equation}
-    Ntmp_m=\dfrac{Ntmp_{m-1}.survtmp_{m-1}}{1-survtmp_m}.
+    Ntmp_m=\dfrac{Ntmp_{m-1}.survtmp_{m-1}}{1-survtmp_m},
 \end{equation}
-We also need
 \begin{equation}
-    phi=\sum_{a=1}^m Ntmp_a(sruvtmp_a)^{spmo\_frac}.wt\_mature^s_a
+    phi=\sum_{a=1}^m Ntmp_a(sruvtmp_a)^{s_f}.wt\_mat^s_a
 \end{equation}
 and
 \begin{equation}
-    Req=Requil(phi,y_N,s) \  \text{(as eq.125 to eq. 128)}\,
+    Req=Requil(phi,y_N,s) \  \text{(as eq.125 to eq. 128)}.
 \end{equation}
-and finally we obtein
+This function returns
 \begin{equation}
-    yield(Fratio, F^s,s)=\left(\sum_{k_s}\sum_{a=1}^m wt\_fsh^{k_s}_{y_N,a}Ntmp_a.Fratio(k_s).Ftmp.sel\_fsh_a(k_s,y_N)\dfrac{1-survtmp_a}{Ztmp_a}\right).Req.
+    yield(Fratio, F^s,s)=\left(\sum_{k_s}\sum_{a=1}^m wt\_fsh^{k_s}_{y_N,a}Ntmp_a.Fratio(k_s).Ftmp.sel\_fsh_a(k_s,y_N)\dfrac{1-survtmp_a}{Ztmp_a}\right)*Req.
 \end{equation}
 
 %Calc_Dependent_Vars
 \textbf{N\_NoFsh}\\
 %Let the array $N\_NoFsh$ with dimensions $(1,nstk,styr,endyr\_fut,1,nages)$.\\
-Let $s$ the number stock,  that is $1\leq s \leq nstk$.
+Let $s$ a number stock,  that is $1\leq s \leq n_{stk}$. In this section is calculated the unfished abundance $N\_NoFsh^s_{y,a}$ for each stock s, year $y$ with $y_0\leq y \leq endyr\_fut$ and each age group $"a"$. \\
+
+For $y=y_0$ It is calculated as 
 \begin{equation}
-N\_NoFsh_j(s,styr)=N^s_{y_0,j}, \ 1\leq j \leq m,
+N\_NoFsh^s_{y_0,a}=N^s_{y_0,a}, \ 1\leq a \leq m,
 \end{equation}
-and for $styr\_sp \leq i \leq styr$ 
+and unfished biomass $SSB\_NoFish^s_y$ for $styr\_sp \leq y < y_0$ as
 \begin{equation}
-    Sp\_Biom\_NoFish_j(s,i)=SB^s_{i,j}, \ 1\leq j \leq m.
+    SSB\_NoFish^s_y=SSB^s_{y}.
+\end{equation}
+
+
+Now for $y_0\leq y \leq y_N$, the number of recruits from stock $s$ in year $y$ is asumed equal to the number of individuals of stock $s$ in year $y$ at age 1 i.e $recruits^s_y=N^s_{y,1}$ .\\ 
+
+For $y$ with $y_0 < y \leq y_N$ the unfisehd abundance is calculated as 
+\\
+\begin{equation}
+    N\_NoFsh^s_{y,1}=recruits^s_y*\dfrac{SRecruit(SSB\_NoFish^s_{y-r_a},cum\_regs(s)+yy\_sr(s,y))}{SRecruit(SSB^s_{y-r_a},cum\_regs(s)+yy\_sr(s,y))}, \ a=1
+\end{equation}
+\\
+\begin{equation}
+    N\_NoFsh^s_{y,a}=N\_NoFsh^s_{y-1,a-1}.e^{-M^s_{y-1, a-1}}, \ 2\leq a \leq m-1, 
+\end{equation}
+% now for the maximum age group $m$:
+\\
+\begin{equation}
+    N\_NoFsh^s_{y,m}=N\_NoFsh^s_{y-1,m-1}.e^{-M^s_{y-1,m-1}}+N\_NoFsh^s_{y-1,m}.e^{-M^s_{y-1,m}}, \ a=m.
+\end{equation}
+\\
+SRecruit() is a function defined in eq. 46-49.
+
+Then total unfished biomass $totbiom\_NoFish^s_y$  for each stock s and year y with $y_0 \leq y \leq y_N$ is calculated as follow:
+\begin{equation}
+    totbiom\_NoFish^s_y=\sum_{a=1}^m N\_NoFsh^s_{y,a}.wt\_pop^s_a,
+\end{equation}
+and the total biomass $totbiom^s_y$ 
+\begin{equation}
+    totbiom^s_y=\sum_{a=1}^m N^s_{y,a}.wt\_pop^s_a.
+\end{equation}
+Also is calculated for $y_0 \leq y \leq y_N$ and $1\leq s \leq n_{stk}$
+\begin{equation}
+SSB\_NoFish^s_y=\sum_{j=1}^m N\_NoFsh^s_{y,a}*e^{-M^s_{y,a}*s_f}*wt\_mat^s_a,
+\end{equation}
+\begin{equation}
+    Sp\_Biom\_NoFishRatio^s_y=\dfrac{SSB^s_y}{SSB\_NoFish^s_y},
+\end{equation}
+\begin{equation}
+    depletion^s=\dfrac{totbiom^s_{y_N}}{totbiom^s_{y_0}},
+\end{equation}
+\begin{equation}
+    depletion\_dyn^s=\dfrac{totbiom^s_{y_N}}{totbiom\_NoFish^s_{y_N}}.
 \end{equation}
 \begin{itemize}
-    \item $N\_NoFsh$
-    \item $Sp\_Biom\_NoFish$
-    
-\end{itemize}
-Now for $styr\leq i \leq endyr$, the number of recruits from stock $s$ in year $i$ is equal to the number of individuals of stock $s$ in year $i$ at age 1 i.e $recruits(s,i)=N^s_{i,1}$ .\\ Let $i$ positive integer with $y_0\leq i \leq y_N$.
-Si $i>y_0$:
-\begin{equation}
-    N\_NoFsh(s,i,1)=recruits(s,i)*\dfrac{SRecruit(Sp\_Biom\_NoFish(s,i-r_a),cum\_regs(s)+yy\_sr(s,i))}{SRecruit(SB^s_{i-a_R},cum\_regs(s)+yy\_sr(s,i))}
-\end{equation}
-\begin{itemize}
-    \item recruits:
-    \item $SRecruit$:
-    \item $r_a$: age recruitment.
-    \item $cum\_regs$
-    \item $yy\_sr$
-\end{itemize}
-\begin{equation}
-    N\_NoFsh(s,i)_j=N\_NoFsh(s,i-1)_{j-1}.e^{-M^s_{i-1, j-1}}
-\end{equation}
-for $2\leq j \leq m-1.$ Now for the maximum age $m$:
-\begin{equation}
-    N\_NoFsh(s,i)_m=N\_NoFsh(s,i-1)_{m-1}.e^{-M^s_{i-1,m-1}}+N\_NoFsh(s,i-1)_m.e^{-M^s_{i-1,m}}
-\end{equation}
-Then for $ y_0\leq i \leq y_N$ it is calculated totbiom\_NoFish as follow:
-\begin{equation}
-    totbiom\_NoFish(s,i)=\sum_{j=1}^mN\_NoFsh(s,i)_j.wt\_pop^s_j.
-\end{equation}
-\begin{equation}
-    totbiom(s,i)=\sum_{j=1}^mN^s_{i,j}.wt\_pop^s_j.
-\end{equation}
-\begin{equation}
-Sp\_Biom\_NoFish(s,i)=\sum_{j=1}^m N\_NoFsh(s,i)_j.e^{-M^s_{i,j}.spmo\_frac}wt\_mature^s_j
-\end{equation}
-\begin{equation}
-    Sp\_Biom\_NoFishRatio(s,i)=\dfrac{SB^s_i}{Sp\_Biom\_NoFish(s,i)}
-\end{equation}
-\begin{equation}
-    depletion(s)=\dfrac{totbiom(s,y_N)}{totbiom(s,y_0)}
-\end{equation}
-\begin{equation}
-    depletion\_dyn(s)=\dfrac{totbiom(s,y_N)}{totbiom\_NoFish(s,y_N)}
-\end{equation}
-\begin{itemize}
-    \item totbim\_NoFish
-    \item totbiom
-    \item Sp\_Biom\_NoFish
     \item Sp\_Biom\_NoFishRatio
     \item depletion\_dyn
 \end{itemize}
 
+For $y=y_N+1$, $totbiom^s_y$ is calculated as
+\begin{equation}
+totbiom^s_{y_N+1}=\sum_{a=1}^m Nnext^s_a*wt\_pop^s_a
+\end{equation}
+where 
 \begin{equation}
 %calculado en Spawning stock biomass
-Nnext(s)_j=N^s_{y_N,j-1}.S^s_{y_N,j-1}, \ for \ 2\leq j\leq m-1,
+Nnext^s_j=N^s_{y_N,j-1}.S^s_{y_N,j-1}, \ for \ 2\leq j\leq m-1,
 \end{equation}
 \begin{equation}
-Nnext(s)_m=N^s_{y_N,m-1}.S^s_{y_N,m-1}+N^s_{y_N,m}.S^s_{y_N,m},
+Nnext^s_m=N^s_{y_N,m-1}.S^s_{y_N,m-1}+N^s_{y_N,m}.S^s_{y_N,m},
 \end{equation}
 % Calcula la SSB(biomasa desovante) para el siguiente año usando el reclutamiento medio  para la edad 1 y el mismo survival (S) como en $y_N$:
 % \begin{equation}
 %     Nnext(s,1)=e^{mean\_log\_rec(cum\_regs(s)+yy\_sr(s,endyr+1))}
 % \end{equation}
 \begin{equation}
-    Nnext(s,1)=e^{\mu^s_{R,y_N+1}},
+    Nnext^s_1=e^{\mu^s_{R,y_N+1}},
 \end{equation}
 % \begin{equation}
 %     Sp\_Biom(s,endyr+1)=\sum_{age \ j}Nnext(s)_jS(s,endyr)^{spmo\_frac}.wt\_mature(s)_j
 % \end{equation}
-and then
+finally recruits at stock s and year $y=y_N+1$ is
 \begin{equation}
-recruits(s,endyr+1)=Nnext(s,1),
+recruits^s_{y_N+1}=e^{\mu^s_{R,y_N+1}}.
 \end{equation}
-\begin{equation}
-totbiom(s,endyr+1)=\sum_{j=1}^mNnext(s)_j.wt\_pop(s)_j.
-\end{equation}
+
 \begin{itemize}
-    \item $Nnext(s)_j$ abundancia del siguinte año para cada stock $s$ y edad $j$.
+    \item $Nnext_a(s)$ is the following year's abundance for each stock $s$ and each age group $a$.
 
 \end{itemize}
 Now OFL for the next year:
 \begin{equation}
-    OFL(s) =\sum_{k_s} \sum_{j=1}^mwt\_fsh^{k_s}_{y_N,j} . Nnext(s)_j * Fatmp(k_s,j) * \dfrac{(1 - e^{-Ztmp^s_j})}{Ztmp^s_j}, \ 1\leq s \leq nstk,
+    OFL(s) =\sum_{k_s} \left(\sum_{a=1}^mwt\_fsh^{k_s}_{y_N,a} \left(Nnext_a(s) * Fatmp_a(k_s) * \dfrac{(1 - e^{-Ztmp^s_a})}{Ztmp^s_a}\right)\right), \ 1\leq s \leq n_{stk},
 \end{equation}
-where for $1\leq k \leq nfsh$ 
+where for $1\leq k \leq n_{fsh}$ 
 \begin{equation}
-    Fatmp_j(k)=Fratio(k).Fmsy(s_k).sel\_fsh_j(k,endyr), \  1\leq j \leq m,
+    Fatmp_a(k)=Fratio(k).Fmsy(s_k).Se^k_{y_N,a}, \  1\leq a \leq m
 \end{equation}
 \begin{equation}
-    Ztmp_j(s)=M^s_{y_0,j}+ \sum_{k_s}Fatmp(k_s).
+    Ztmp_a(s)=M^s_{y_0,a}+ \sum_{k_s}Fatmp_a(k_s).
 \end{equation}
 \begin{itemize}
     \item OFL(s)
 \end{itemize}
 
+
 \textbf{Get Future Fs:}\\
-Let stock s, a positive integer i and some iscenario.\\
-Depending the value of iscenario:
+Let stock s, the year $y$ and some scenario called iscenario.\\
+Depending the value of iscenario $F\_fut\_tmp_a$ is calculated first, and then future fishing mortality $F_{fut}$, future total mortality $Z_{fut}$ and future survival rate $S_{fut}$ are calculated based on it.
 \begin{itemize}
-    \item Caso iscenario=1. \begin{equation}
-        F\_fut\_tmp_a(k)=F^k_{y_N,a},
+    \item Case iscenario=1. \begin{equation}
+        F\_fut\_tmp_a(k)=F^k_{y_N,a}, 
+        \end{equation}
+    \item Case iscenario=2.  \begin{equation}
+        F\_fut\_tmp_a(k) = F^k_{y_N,a}*0.75,  
     \end{equation}
-    \item Caso iscenario=2.  \begin{equation}
-        F\_fut\_tmp_a(k) = F^k_{y_N,a}*0.75,
+    \item Case iscenario=3.  \begin{equation}
+        F\_fut\_tmp_a(k) = F^{k}_{y_N,a}*1.25, 
     \end{equation}
-    \item Caso iscenario=3.  \begin{equation}
-        F\_fut\_tmp_a(k) = F^{k}_{y_N,a}*1.25,
-    \end{equation}
-    \item Caso iscenario=4.
+    \item Case iscenario=4.
     \begin{equation}
-        F\_fut\_tmp_a(k)=sel\_fsh_a(k,y_N)*Fratio(k)*Fmsy(s),
+        F\_fut\_tmp_a(k)=Se^k_{y_N,a}*Fratio(k)*Fmsy(s),
     \end{equation}
     
-    \item Caso iscenario=5.
+    \item Case iscenario=5.
     \begin{equation}
-        F\_fut\_tmp = 0.0
+        F\_fut\_tmp_a(k) = 0.0,
     \end{equation}
 \end{itemize}
-for $1\leq a \leq m$ and  $1\leq k \leq nfsh$.\\
-It also calculates
+for $1\leq a \leq m$ and  $1\leq k \leq n_{fsh}$.\\
+
+Then we obtein
 \begin{equation}
-    {F_{fut}}^k_{i,a}   = F\_fut\_tmp_a(k)
+    {F_{fut}}^{k_s}_{y,a}   = F\_fut\_tmp_a({k_s}),
 \end{equation}
 \begin{equation}
-    {Z_{fut}}^s_{i,a}=M^s_{y_N,a}+\sum_{k_s}F\_fut\_tmp_a(k_s)
+    {Z_{fut}}^s_{y,a}=M^s_{y_N,a}+\sum_{k_s}F\_fut\_tmp_a(k_s)
 \end{equation}
-and the survival rate as
+and the future survival rate as
 \begin{equation}
-    {S_{fut}}^s_{i,a}=e^{-{Z_{fut}}^s_{i,a}}.
+    {S_{fut}}^s_{y,a}=e^{-{Z_{fut}}^s_{y,a}}.
 \end{equation}
 
 
 \textbf{Future Projections}\\
-Here we calculate the future biomass $Sp\_Biom\_future^s_{y}$ for each stock s with $1 \leq s \leq nstk$ and $styr\_fut-r_a\leq y \leq endyr\_fut$, and different scenarios iscen with $1\leq iscen \leq 5$, where $styr\_fut=y_N+1$ if $nproj\_yrs>0$ and else $styr\_fut=y_N$, and $endyr\_fut=y_N+nproj\_yrs$
-\begin{equation}
-    Sp\_Biom\_future^s_y=\sum_{a=1}^mwt\_{mat}^s_a N^s_{y,a}(S^s_{y,a})^{s_f}, 
-\end{equation}
-$\ styr\_fut-r_a\leq y \leq styr\_fut-1.$\\
 
-Now for $y=styr\_fut$
+Here we calculate the future biomass $SSB\_fut^{s,iscen}_{y}$ for each stock s with $1 \leq s \leq n_{stk}$ and year y with $styr\_fut-r_a\leq y \leq endyr\_fut$, and different scenarios iscen with $1\leq iscen \leq 5$, where $styr\_fut=y_N+1$ if $nproj\_yrs>0$ otherwise $styr\_fut=y_N$, and $endyr\_fut=y_N+nproj\_yrs$.\\
+
+For $\ styr\_fut-r_a\leq y \leq styr\_fut-1$:
 \begin{equation}
-    Sp\_Biom\_future^s_{styr\_fut}= \sum_{a=1}^mwt\_{mat}^s_a.{N_{fut}}^s_{y,a}.({{S_{fut}}^s_{y,a}})^{s\_f}
+    SSB\_fut^{s,iscen}_y=\sum_{a=1}^m wt\_{mat}^s_a* N^s_{y,a}*(S^s_{y,a})^{s_f}. 
+\end{equation}
+
+
+Now for $y=styr\_fut$ 
+\begin{equation}
+    SSB\_fut^{s,iscen}_{styr\_fut}= \sum_{a=1}^mwt\_{mat}^s_a*{N_{fut}}^{s,iscen}_{y,a}*({{S_{fut}}^{s,iscen}_{y,a}})^{s\_f},
 \end{equation}
 where 
-% \begin{equation}
-%     {S_{fut}}^s_{y,a}=M^s_{y_N}, (cuando iscen = 5)
-% \end{equation}
 \begin{equation}
-    {N_{fut}}^s_{y,a}=N^s_{y_N,a-1}.S^s_{y_N,a-1}, \ 2\leq a \leq m-1,
+    {N_{fut}}^{s,iscen}_{y,a}=N^s_{y_N,a-1}.S^s_{y_N,a-1}, \ 2\leq a \leq m-1,
 \end{equation}
 \begin{equation}
-    {N_{fut}}^s_{y,m}=N^s_{y_N,m-1}.S^s_{y_N,m-1}+N^s_{y_N,m}.S^s_{y_N,m},
+    {N_{fut}}^{s,iscen}_{y,m}=N^s_{y_N,m-1}.S^s_{y_N,m-1}+N^s_{y_N,m}.S^s_{y_N,m},
 \end{equation}
 and 
 \begin{equation}
-    {N_{fut}}^s_{y,1}=0 \ \ 
-\end{equation}
-with y=styr\_fut and iscen=1. For the rest of iscenarios only change(completar) 
-\begin{equation}
-    
+{N_{fut}}^{s,iscen}_{y,1}=SRecruit( SSB\_fut^{s,iscen}_{y-a_R},cum\_regs(s)+yy\_sr(s,y_N) ) * e^{rec\_dev\_future(s,y)}. 
 \end{equation}
 
 
-Then for $styr\_fut+1 \leq y \leq endyr\_fut$
+For the rest of years y with  $styr\_fut < y \leq endyr\_fut$
 \begin{equation}
-    Sp\_Biom\_future^s_y = \sum_{a=1}^m wt\_mat^s_{a}.{N_{fut}}^s_{y,a}.({S_{fut}}^s_{y,a})^{s_f}
+    SSB\_fut^{s,iscen}_y = \sum_{a=1}^m wt\_mat^s_{a}*{N_{fut}}^{s,iscen}_{y,a}*({S_{fut}}^{s,iscen}_{y,a})^{s_f}
 \end{equation}
 where
 \begin{equation}
-   {N_{fut}}^s_{y,a}={N_{fut}}^s_{y-1,a-1}.{S_{fut}}^s_{y-1,a-1},  \ 2\leq a \leq m-1,
+   {N_{fut}}^{s,iscen}_{y,a}={N_{fut}}^{s,iscen}_{y-1,a-1}.{S_{fut}}^{s,iscen}_{y-1,a-1},  \ 2\leq a \leq m-1,
 \end{equation}
 \begin{equation}
-    {N_{fut}}^s_{y,m}={N_{fut}}^s_{y-1,m-1}.{s_{fut}}^s_{y-1,a-1} + {N_{fut}}^s_{y,m}.{S_{fut}}^s_{y,m},
+    {N_{fut}}^{s,iscen}_{y,m}={N_{fut}}^{s,iscen}_{y-1,m-1}.{S_{fut}}^{s,iscen}_{y-1,a-1} + {N_{fut}}^{s,iscen}_{y,m}.{S_{fut}}^{s,iscen}_{y,m},
+\end{equation}
+\begin{equation}
+    {N_{fut}}^{s,iscen}_{y,1}=SRecruit(SSB\_fut^{s,iscen}_{y-r_a},cum\_reg(s)+yy\_sr(s,y_N)).e^{rec\_dev\_future(s,y)}
+\end{equation}
+and ${S_{fut}}^{s,iscen}_{y-1,a-1}$ is obtained in section Get Future Fs for respective iscen. \\
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+On the other hand for the first scenario i.e if $iscen=1$ $N\_NoFsh^s_{y,a}$ and $SSB\_NoFish^s_y$ are calculated for $y_N+1\leq y \leq endyr\_fut$, $1\leq a \leq m$ and each stock s, as follows
+
+\begin{equation}
+    N\_NoFsh^{s}_{y,1}={N_{fut}}^s_{y,1}*\dfrac{SRecruit(SSB\_NoFish^s_{y-r_a},cum\_regs(s)+yy\_sr(s,y_N))}{ SRecruit(SSB\_fut^s_{y-r_a},cum\_regs(s)+yy\_sr(s,y_N))},
+\end{equation}
+\begin{equation}
+    N\_NoFsh^{s}_{y,a}=N\_NoFsh^s_{y-1,a-1}*e^{-mean(natmort(s))}, \ 2\leq a\leq m-1,
+\end{equation}
+\begin{equation}
+    N\_NoFsh^s_{y,m}=N\_NoFsh^s_{y-1,m-1}*e^{-mean(natmort(s))}+N\_NoFsh^s_{y-1,m}*e^{-mean(natmort(s))},
 \end{equation}
 and
 \begin{equation}
-    {N_{fut}}^s_{y,1}=SRecruit(SB^s_{y-r_a},cum\_reg(s)+yy\_sr(s,y_N)).e^{\epsilon^s_{y}}.
+    SSB\_NoFish^s_y   = \sum_{a=1}^mN\_NoFsh^s_{y,a}*(e^{-mean(natmort(s))})^{s_f} * wt\_{mat}^s_a.
 \end{equation}
 
-%falta rec_dev_future
-
-On the other hand if $iscen=1$, $N\_NoFsh^s_{y,a}$ and $Sp\_Biom\_NoFish^s_y$ are calculated for $y_N+1\leq y \leq endyr\_fut$, $1\leq a \leq m$ and each stock s, as follows
-
+Now get future catch at group ages that is with $styr\_fut \leq y \leq endyr\_fut$ only for the first four scenarios ($iscen\neq 5$):
 \begin{equation}
-    N\_NoFsh^{s}_{y,1}={N_{fut}}^s_{y,1}.\dfrac{SRecruit(Sp\_Biom\_NoFish(s,y-r_a),cum\_regs(s)+yy\_sr(s,y_N))}{ SRecruit(Sp\_Biom\_future(s,y-r_a),cum\_regs(s)+yy\_sr(s,y_N))},
-\end{equation}
-\begin{equation}
-    N\_NoFsh^{s}_{y,a}=N\_NoFsh^s_{y-1,a-1}.e^{-mean(natmort(s))}, \ 2\leq a\leq m-1,
-\end{equation}
-\begin{equation}
-    N\_NoFsh^s_{y,m}=N\_NoFsh^s_{y-1,m-1}.e^{-mean(natmort(s))}+N\_NoFsh^s_{y-1,m}.e^{-mean(natmort(s))},
-\end{equation}
-and
-\begin{equation}
-    Sp\_Biom\_NoFish^s_y   = \sum_{a=1}^mN\_NoFsh^s_{y,a}.(e^{-mean(natmort(s))})^{s_f}  wt\_{mat}_a(s).
-\end{equation}
-
-Now get catch at future ages i.e when $styr\_fut \leq y \leq endyr\_fut$. If $iscen \neq 5$
-\begin{equation}
-    catage\_future^s_{y,a}=\sum_{k_s} {N_{fut}}^s_{y,a}.{F_{fut}}^{k_s}_{y,a}.\dfrac{1-{S_{fut}}^s_{y,a}}{{Z_{fut}}^s_{y,a}},
+    catage\_future^{s,iscen}_{y,a}=\sum_{k_s} {N_{fut}}^{s,iscen}_{y,a}.{F_{fut}}^{k_s}_{y,a}.\dfrac{1-{S_{fut}}^{s,iscen}_{y,a}}{{Z_{fut}}^{s,iscen}_{y,a}},
 \end{equation}
 
 \begin{equation}
-    catch\_future(s,iscen,y)=\sum_{k_s} \sum_{a=1}^m{N_{fut}}^s_{y,a}.{F_{fut}}^{k_s}_{y,a}.\dfrac{1-{S_{fut}}^s_{y,a}}{{Z_{fut}}^s_{y,a}}.wt\_fsh^s_{y_N,a}
+    catch\_future^s_{iscen,y}=\sum_{k_s} \sum_{a=1}^m{N_{fut}}^{s,iscen}_{y,a}.{F_{fut}}^{k_s}_{y,a}.\dfrac{1-{S_{fut}}^{s,iscen}_{y,a}}{{Z_{fut}}^{s,iscen}_{y,a}}.wt\_fsh^s_{y_N,a}
 \end{equation}
-where $\displaystyle\sum_{k_s}$ represents the sum is over all fisheries $k_s$ belonging to stock s.\\
+where $\displaystyle\sum_{k_s}$ represents the sum is over all fisheries $k_s$ belonging to stock s and ${F_{fut}}^{k_s}_{y,a}$ was obtained from section Get Future Fs for respective iscen.\\
 
 \textbf{The objective function obj\_fun}\\
 
 The parameters of the model are chosen so that this value obj\_comp is minimized. That is, it should be the negative of the log-likelihood.
 
 \begin{equation}
-    obj\_fun=obj\_fun+sum(catch\_like)+sum(age\_like\_fsh)+sum(lenght\_like\_fsh)+sum(sel\_like\_fsh)+
+    obj\_fun=obj\_fun+sum(Cat\_like)+sum(age\_like\_fsh)+sum(lenght\_like\_fsh)+sum(sel\_like\_fsh)+
 \end{equation}
 \begin{equation*}
     sum(ind\_like)+sum(age\_like\_ind)+sum(lenght\_like\_ind)+
@@ -1717,244 +1804,285 @@ The parameters of the model are chosen so that this value obj\_comp is minimized
 \end{equation*}
 
 \textbf{Cat\_Like}\\
+If active $fmort$ this function will work.
+Cat\_Like depends on the optimization phase. For each fishery $ 1\leq k \leq n_{fsh}$ $catch\_like^k$ is calculated from\\
 
-Cat\_Like depends on the optimization phase.
-\begin{itemize}
-    \item If $current\_phase()>3$ (i.e if if the current optimization phase is greater than 3):
+If $current\_phase()>3$ (i.e if if the current optimization phase is greater than 3):
     \begin{equation}
-        catch\_like(k) = \sum_{y=y_0}^{y_N}\dfrac{1}{2}\dfrac{(log(catch\_bio(k,y)+.0001) - log(pred\_catch(k,y)+.0001) )^2}{catch\_bio\_lva(k,y)}
+        catch\_like^k = \sum_{y=y_0}^{y_N}\dfrac{1}{2}\dfrac{(log(catch\_bio^k_y+.0001) - log(pred\_catch^k_y+.0001) )^2}{catch\_bio\_lva^k_y}
     \end{equation}
-    for each fishery number $k$ with $1\leq k \leq nfsh$.
-    \item If $current\_phase()\leq 3$:
+    
+If $current\_phase()\leq 3$:
     \begin{equation}
-        catch\_like(k) =  catchbiomass\_pen*\sum_{j=Y_0}^{y_N}(log(catch\_bio_j(k)  +.000001) - log(pred\_catch_j(k) +.000001))^2.
+        catch\_like^k =  catchbiomass\_pen*\sum_{j=y_0}^{y_N}(log(catch\_bio^k_j  +.000001) - log(pred\_catch^k_j +.000001))^2.
     \end{equation}
-    Finally, the Cat\_Like is
+    Finally, 
     \begin{equation}
-        Catch\_Like = catch\_like*catch\_pen.
+        Cat\_Like^k = catch\_like^k*catch\_pen 
     \end{equation}
+    
     \begin{itemize}
         \item $catchbiomass\_pen=200$, value given in the model.
         \item $catch\_pen$: catch\_pen=0.1 if current\_phase()=1, catch\_pen=0.5 if current\_phase()=2, catch\_pen=0.8 if current\_phase()=3, catch\_pen=1 if current\_phase()=4, catch\_pen=5 if current\_phase()=1, and in other cases catch\_pen=1.
         \item catch\_bio\_lva is the catch biomass variance (for lognormal).
-        \item $Cat\_Like$ is the catch likelihood ?¡.
+        \item $Cat\_Like^k$ is the catch likelihood for fishery $k$?¡.
     \end{itemize}
-\end{itemize}
+
 
 \textbf{Rec\_Like}\\
+This function retunr four values for each stock s i.e $rec\_like(s,i)$ with $1\leq i \leq 4$.
 This is calculated if $rec\_dev$ is active in the minimization phase.\\
 \begin{equation}
-    sigmar=e^{log\_sigmar},
+    sigmar(r)=e^{log\_sigmar(r)}, \ 1\leq r \leq n_{rec},
 \end{equation}
-% \begin{equation}
-%     sigmarsq(r)=(sigmar(rec\_map(istk,ireg)))^2, \ \ 1\leq r \leq nregs,
-% \end{equation}
+
 \begin{equation}
-    sigmarsq(r)=(sigmar^{istk}_{ireg})^2, \ \ 1\leq r \leq nregs,
+    sigmarsq^r=(sigmar^{istk}_{ireg})^2, \ \ 1\leq r \leq n_{regs},
 \end{equation}
 where
 \begin{itemize}
-    \item istk is the number of stock i.e $1\leq istk \leq nstk$;
-    \item ireg is the number of regime belonging at stock number istk. 
-    \item $sigmar^{istk}_{ireg}$ es el valor de la posición $rec\_map(istk,ireg)$ del vector $sigmar$.
+    \item $n_{rec}$ is the maximum value of the rec\_map matrix;
+    \item istk number of stock to which the regime number $r$ belongs, $1\leq istk \leq n_{stk}$;
+    \item ireg r-regime index on istk stock
+    \item $sigmar^{istk}_{ireg}=sigmar(rec\_map^{istk}_{ireg})$ i.e value of position $rec\_map^{istk}_{ireg}$ of the sigmar vector; 
     \item $log\_sigmar$ is a parameter to be estimated. It is initialized with $log\_sigmarprior$.
 \end{itemize}
-
 
 If the current optimization phase is more than 2 and in addition if it is the last phase, then
 %revisar function shift
 \begin{equation}
-    pred\_rec_{i}^s=SRecruit(Sp\_Biom^s_{i-rec\_age},cum\_regs(s)+r)
+    pred\_rec_{i}^s=SRecruit(SSB^s_{i-r_a},cum\_regs(s)+r)
 \end{equation}
-where $1\leq s \leq nstk$, $1\leq r \leq nreg(s)$ and $yy\_shift\_st(s,r)\leq i \leq yy\_shift\_end(s,r)$.\\
+where $1\leq s \leq n_{stk}$, $1\leq r \leq nreg(s)$ and $yy\_shift\_st(s,r)\leq i \leq yy\_shift\_end(s,r)$.\\
 \begin{itemize}
     \item yy\_shift\_st is such that $$yy\_shift\_st(s,1)=styr\_rec$$
     and
     \begin{equation*}
-         yy\_shift\_st(s,r) = reg\_shift(s,r-1), \ 2\leq r \leq nreg(s)
+         yy\_shift\_st(s,r) = reg\_shift(s,r-1), \ 2\leq r \leq nreg_s
     \end{equation*}
     where $reg\_shift$ is matrix input (line 41 of ctl file).
     \item yy\_shift\_end is such that
     \begin{equation*}
-        yy\_shift\_end(s,nreg(s))= y_N
+        yy\_shift\_end(s,nreg_s)= y_N
     \end{equation*}
     and
     \begin{equation*}
-        yy\_shift\_end(s,r-1)=reg\_shift(s,r-1)-1, \ 2 \leq r \leq nreg(s).
+        yy\_shift\_end(s,r-1)=reg\_shift(s,r-1)-1, \ 2 \leq r \leq nreg_s.
     \end{equation*}
 \end{itemize}
 
 On the other hand, if the current optimization phase is more than 2 but this is not the last phase, then
 \begin{equation}
-    pred\_rec^s_i = 0.1+SRecruit(Sp\_Biom^s_{i-rec\_age},cum\_regs(s)+r),
+    pred\_rec^s_i = 0.1+SRecruit(SSB^s_{i-r_a},cum\_regs(s)+r),
 \end{equation}
-where $yy\_shift\_st(s,r)\leq i \leq yy\_shift\_end(s,r)$.
-Also we calculate
+where $yy\_shift\_st(s,r)\leq i \leq yy\_shift\_end(s,r)$.\\
+
+It is also calculated for $1\leq r \leq n_{regs}$ and istk. ireg as before
 \begin{equation}
-    m\_sigmarsq(r)=\dfrac{\displaystyle\sum_{j=styr\_rec\_est(istk,ireg)}^{endyr\_rec\_est(istk,ireg)}(chi_j(istk))^2}{nrecs\_est\_shift(r)},
+    m\_sigmarsq(r)=\dfrac{SSQRec(r)}{nrecs\_est\_shift(r)},
 \end{equation}
 \begin{equation}
-    m\_sigmar(r)=\sqrt{m\_sigmarsq(r)}.
+    m\_sigmar(r)=\sqrt{m\_sigmarsq(r)}
 \end{equation}
 where 
 \begin{equation}
+    SSQRec(r)=\displaystyle\sum_{i=styr\_rec\_est(istk,ireg)}^{endyr\_rec\_est(istk,ireg)}(chi(istk,i))^2
+\end{equation}
+and
+\begin{equation}
     chi(istk,yr\_rec\_est(r,j)) = log(mod\_rec(istk,yr\_rec\_est(r,j))) - log(pred\_rec(istk,yr\_rec\_est(r,j))),
 \end{equation}
-with $1\leq j \leq nrecs\_est\_shift(r)$ and $1\leq r \leq nregs.$\\
-
-Now we calculate the rec\_like. If the current phase is more than 4 or if it is the last phase then
-
-\begin{equation}
-    rec\_like(istk,1)= \sum_{r=1}^{nregs}\left(\dfrac{\left(SSQRec(r)+ \dfrac{m\_sigmarsq(r)}{2.}\right)}{(2*sigmarsq(r))} + nrecs\_est\_shift(r)*log\_sigmar(rec\_map(istk,ireg))\right).
-\end{equation}
-Else 
-\begin{equation}
-    rec\_like(istk,1)=\sum_{r=1}^{nregs}0.1*\left(\dfrac{\left(SSQRec(r)+ \dfrac{m\_sigmarsq(r)}{2.}\right)}{(2*sigmarsq(r))} + nrecs\_est\_shift(r)*log\_sigmar(rec\_map(istk,ireg))\right).
-\end{equation}
-
-
-If the current phase is the last then
+with $1\leq j \leq nrecs\_est\_shift(r)$ and $1\leq r \leq nregs$
 
 \begin{itemize}
-    \item if $styr\_rec\_est(s,1)>styr\_rec$
-    \begin{equation}
-        rec\_like(s,4) = \sum_{s} \dfrac{1}{2}\dfrac{\displaystyle\sum_{j=styr\_rec}^{styr\_rec\_est(s,1)-1}(rec\_dev_j(s))^2}{sigmarsq(cum\_regs(s)+1)} 
-    \end{equation}
-    \begin{equation*}
-        + ((styr\_rec\_est(s,1)-1)-styr\_rec)*log(sigmar(rec\_map(s,1))).
-    \end{equation*}
-    this sum is over all stocks number $s$ such that $styr\_rec\_est(s,1)>styr\_rec$;
-    \item if $endyr > endyr\_rec\_est(s,nreg(s))$
-    \begin{equation}
-        rec\_like(s,4) = \sum_{s} \dfrac{1}{2}\dfrac{\displaystyle\left(\sum_{j=endyr\_rec\_est(s,nreg(s))+1}^{endyr}(rec\_dev_j(s) )^2\right)}{sigmarsq(cum\_regs(s)+nreg(s))} + 
-    \end{equation}
-    \begin{equation*}
-        (endyr-(endyr\_rec\_est(s,nreg(s))+1))*log(sigmar(rec\_map(s,nreg(s)))).
-    \end{equation*}
-    this sum is over the stocks number s such that $endyr > endyr\_rec\_est(s,nreg(s))$.
+    \item $yr\_rec\_est$ is matrix input line 38 in ctl file.
+    \item $nrecs\_est\_shift$ is vector input line 35 in ctl file.
+    \item $styr\_rec\_est(istk,ireg)$
+    \item $endyr\_rec\_est(istk,ireg)$
 \end{itemize}
-In addition, for $2\leq r \leq nreg(s)$ and if $styr\_rec\_est(s,r)-1) > endyr\_rec\_est(s,r-1) $
+
+Now we calculate the rec\_like.\\
+
+In addition (since $current\_phase() > 2$) If the current phase is more than 4 or if it is the last phase then for $1\leq istk \leq n_{stk}$
+
 \begin{equation}
-    rec\_like(s,4) = \sum_{s} \dfrac{1}{2}\dfrac{\displaystyle\sum_{j=endyr\_rec\_est(s,r-1)+1}^{styr\_rec\_est(s,r)-1}( rec\_dev_j(s))^2}{sigmarsq(cum\_regs(s)+(r-1))} 
+    rec\_like(istk,1)= \sum_{r=1}^{n_{reg_{istk}}}\left(\dfrac{\left(SSQRec(r)+ \dfrac{m\_sigmarsq(r)}{2.}\right)}{(2*sigmarsq(r))} + nrecs\_est\_shift(r)*log\_sigmar(rec\_map^{istk}_{ireg})\right),
+\end{equation}
+else 
+\begin{equation}
+    rec\_like(istk,1)=\sum_{r=1}^{n_{reg_{istk}}}0.1*\left(\dfrac{\left(SSQRec(r)+ \dfrac{m\_sigmarsq(r)}{2.}\right)}{(2*sigmarsq(r))} + nrecs\_est\_shift(r)*log\_sigmar(rec\_map^{istk}_{ireg})\right).
+\end{equation}
+
+
+If the current phase is the last then for each stock s ($1\leq s \leq n_{nstk}$)
+
+\begin{itemize}
+    \item if $styr\_rec\_est(s,1)>r_0$
+    \begin{equation}
+        Rec\_like(s,4) =  \dfrac{1}{2}\dfrac{\displaystyle\sum_{j=r_0}^{styr\_rec\_est(s,1)-1}(rec\_dev_j(s))^2}{sigmarsq(cum\_regs(s)+1)} 
+    \end{equation}
+    \begin{equation*}
+        + ((styr\_rec\_est(s,1)-1)-r_0)*log(sigmar(rec\_map^s_1)),
+    \end{equation*}
+    otherwise $rec\_like(s,4)=0$.
+    \item If $y_N > endyr\_rec\_est(s,n_{reg_s})$
+    \begin{equation}
+        R\_like(s,4) =  \dfrac{1}{2}\dfrac{\displaystyle\left(\sum_{j=endyr\_rec\_est(s,n_{reg_s})+1}^{y_N}(rec\_dev_j(s) )^2\right)}{sigmarsq(cum\_regs(s)+n_{reg_s})} + 
+    \end{equation}
+    \begin{equation*}
+        (y_N-(endyr\_rec\_est(s,n_{reg_s})+1))*log(sigmar(rec\_map^s_{n_{reg_s}})) + Rec\_like(s,4),
+    \end{equation*}
+    otherwise $R\_like(s,4)=Rec\_like(s,4)$.
+\end{itemize}
+In addition, for $r\in R^*$=$\{2\leq r \leq n_{reg_s}: \ styr\_rec\_est(s,r)-1) > endyr\_rec\_est(s,r-1)\}$
+\begin{equation}
+    rec\_like(s,4) =  \sum_{r\in R^*}\dfrac{1}{2}\dfrac{\displaystyle\sum_{j=endyr\_rec\_est(s,r-1)+1}^{styr\_rec\_est(s,r)-1}( rec\_dev_j(s))^2}{sigmarsq(cum\_regs(s)+(r-1))} + 
 \end{equation}
 \begin{equation*}
-    + ((styr\_rec\_est(s,r)-1)-(endyr\_rec\_est(s,r-1)+1))*log(sigmar(rec\_map(s,r-1))) .
+    + ((styr\_rec\_est(s,r)-1)-(endyr\_rec\_est(s,r-1)+1))*log(sigmar(rec\_map^s_{r-1})) + R\_like(s,4).
 \end{equation*}
 
-Else, i.e if the minimization phase is less than 2 and is not the last phase, then 
-\begin{equation}
-    rec\_like(istk,2) = \sum_{r_{istk}}\sum_{j=1}^{nrecs\_est\_shift(r)}(rec\_dev(istk,yr\_rec\_est(r,j)))^2, 
-\end{equation} 
-where $\sum_{r_{istk}}$ is the sum over all the numbers of regimens that belong  at stock istk.\\
 
-With the last information we calculate the final value of Rec\_Like(s,2):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Else, i.e if the minimization phase is less than 2 and is not the last phase, then for $1\leq s \leq n_{stk}$
 \begin{equation}
-    Rec\_Like(s,2) = rec\_like(s,2)+ \sum_{j=styr\_rec\_est(s,1)}^{y_N}( rec\_dev_j(s) )^2.
+    Rc\_like(s,2) = \sum_{r}\sum_{j=1}^{nrecs\_est\_shift(r)}(rec\_dev(s,yr\_rec\_est(r,j)))^2, 
+\end{equation} 
+where here $\sum_{r}$ is the sum over all the numbers of regimens $r$ that belong  at stock s.\\
+
+With the last information we calculate the final value of Rc\_Like(s,2) for each stock s:
+\begin{equation}
+    rec\_Like(s,2) = Rc\_like(s,2)+ \sum_{j=styr\_rec\_est(s,1)}^{y_N}( rec\_dev_j(s) )^2.
 \end{equation}
 And if the current phase is such that  $rec\_dev\_future$ is active then: 
 \begin{equation}
-    sigmar\_fut(s)=sigmar(rec\_map(s,nreg(s))),
+    sigmar\_fut(s)=sigmar(rec\_map^s_{nreg_s}),
 \end{equation}
-
+then
 \begin{equation}
-    rec\_like(s,3) = \sum_{stock \ s}\dfrac{ \displaystyle\sum_{j=styr\_fut}^{endyr\_fut}(rec\_dev\_future_j(s))}{(2*(sigmar\_fut(s))^2)} + size\_count(rec\_dev\_future(s))*log(sigmar\_fut(s)).
+    rec\_like(s,3) = \dfrac{ \displaystyle\sum_{j=styr\_fut}^{endyr\_fut}(rec\_dev\_future_j(s))}{(2*(sigmar\_fut(s))^2)} + size\_count(rec\_dev\_future(s))*log(sigmar\_fut(s)).
 \end{equation}
 
 
 
 
-\textbf{Compute\_priors}\\
+\textbf{Compute priors}\\
 
-Let index number $k$ ($1\leq k \leq nind$),\\ 
-(verificar suma y condicional if)
+Let index number $k$ ($1\leq k \leq n_{ind}$),
 \begin{itemize}
-    \item if $active(log\_q\_ind(k))$
+    \item if $log\_q\_ind(k)$ is active
     \begin{equation}
         post\_priors\_indq_1(k) = \dfrac{\left(log\left(\dfrac{q\_ind(k,1)}{qprior(k)}\right)\right)^2}{(2.cvqprior^2(k))},
     \end{equation}
     if not active then $post\_priors\_indq_1(k)$=0;
-    \item if $active(log\_q\_power\_ind(k))$
+    \item if $log\_q\_power\_ind(k)$ is active
     \begin{equation}
         post\_priors\_indq_2(k) = \dfrac{\left(log\left(\dfrac{q\_power\_ind(k)}{q\_power\_prior(k)}\right)\right)^2}{(2.cvq\_power\_prior^2(k))},
     \end{equation}
     if not active then $post\_priors\_indq_2(k)$=0;
-    \item if $active(log\_rw\_q\_ind(k))$
+    \item if $log\_rw\_q\_ind(k)$ active
     \begin{equation}
         post\_priors\_indq_3(k) = \sum_{i=1}^{npars\_rw\_q(k)}\dfrac{(log\_rw\_q\_ind(k,i))^2}{(2.sigma\_rw\_q^2(k,i))}
     \end{equation}
-    if not active then $post\_priors\_indq_1(k)$=0.\\
+    if not active then $post\_priors\_indq_3(k)$=0.\\
     
+    
+    \end{itemize}
+
     Then 
     \begin{equation}
          post\_priors\_indq(k)=post\_priors\_indq_1(k)+post\_priors\_indq_2(k)+ post\_priors\_indq_3(k).
     \end{equation}
+
     
-    \end{itemize}
-    Let $r$ such that $1\leq r \leq nmort$,
+    Let $r$ a positive integer such that $1\leq r \leq nmort$, where nmort is the maximum value of the mort\_map
     \begin{itemize}
-        \item If $active(Mest(r))$
+        \item If $Mest(r)$ is active
         \begin{equation}
-            post\_priors_1(r,1) = \dfrac{\left(\dfrac{log(Mest(r)}{natmortprior(r)}\right)^2}{(2.cvnatmortprior^2(r))}
+            post\_priors_1(r,1) = \dfrac{\left(log\left(\dfrac{Mest(r)}{natmortprior(r)}\right)\right)^2}{(2*cvnatmortprior^2(r))}
         \end{equation}
         else $post\_priors_1(r,1)=0$.
-        \item If $active(Mage\_offset(r))$
+        \item If $Mage\_offset(r)$ is active
         \begin{equation}
-            post\_priors_2(r,1) = \dfrac{norm2(Mage\_offset(r))}{(2.cvnatmortprior^2(r))}
+            post\_priors_2(r,1) = \dfrac{\displaystyle\sum_{i=1}^{npars\_Mage}(Mage\_offset_i(r))^2}{2*cvnatmortprior^2(r)}
         \end{equation}
-        else $post\_priors_2(r,1)=0$, then
+        else $post\_priors_2(r,1)=0$. 
+    \end{itemize}
+    Then
         \begin{equation}
             post\_priors(r,1)=post\_priors_1(r,1)+post\_priors_2(r,1).
         \end{equation}
-    \end{itemize}
-    Let the stock number s ($1\leq s \leq nstk$)
+    Let the stock number s ($1\leq s \leq n_{stk}$)
     \begin{itemize}
-        \item if $active(M\_rw(s))$
+        \item if $M\_rw(s)$ is active
         \begin{equation}
-             post\_priors(s,1) =  \sum_{i=1}^{npars\_rw\_M(s)}\dfrac{(M\_rw(s,i))^2}{(2.sigma\_rw\_M^2(s,i))}.
+             post\_priors(s,1) 
+ +=  \sum_{i=1}^{npars\_rw\_M(s)}\dfrac{(M\_rw(s,i))^2}{2*sigma\_rw\_M^2(s,i)}.
         \end{equation}
     \end{itemize}
-    Let r such that $1\leq r \leq nrec$
+    Let r such that $1\leq r \leq n_{rec}$
     \begin{itemize}
-        \item if $active(steepness(r))$
+        \item if $steepness(r)$ is active
         \begin{equation}
-            post\_priors(r,2) = \dfrac{\left(log\left(\dfrac{steepness(r)}{steepnessprior(r)}\right)\right)^2}{(2.cvsteepnessprior^2(r))}
+            post\_priors(r,2) = \dfrac{\left(log\left(\dfrac{steepness(r)}{steepnessprior(r)}\right)\right)^2}{2*cvsteepnessprior^2(r)},
         \end{equation}
+        else $post\_priors(r,2)=0$.
     \end{itemize}
-    Let $r$ such that $1\leq r \leq nrec$
+    Let $r$ such that $1\leq r \leq n_{rec}$
     \begin{itemize}
-        \item if $(active(log\_sigmar(r)))$
+        \item if $log\_sigmar(r)$ is active
         \begin{equation}
-            post\_priors(r,3) = \dfrac{\left(log\left(\dfrac{sigmar(r)}{sigmarprior(r)}\right)\right)^2}{(2.cvsigmarprior^2(r))}.
+            post\_priors(r,3) = \dfrac{\left(log\left(\dfrac{sigmar(r)}{sigmarprior(r)}\right)\right)^2}{2*cvsigmarprior^2(r)},
         \end{equation}
+        else $post\_priors(r,3)=0$.
     \end{itemize}
 
     Let $r$ such that $1\leq r \leq ngrowth$:
     \begin{itemize}
-        \item if $(active(log\_Linf(r)))$
+        \item if $log\_Linf(r)$ is active
         \begin{equation}
-            post\_priors(r,4) = \dfrac{(log\_Linf(r)-log\_Linfprior(r))^2}{(2.cvLinfprior^2(r))}
+            post\_priors(r,4) = \dfrac{(log\_Linf(r)-log\_Linfprior(r))^2}{2.cvLinfprior^2(r)},
         \end{equation}
-        \item if $(active(log\_k(r)))$
+        else $post\_priors(r,4)=0.$
+        \item if $log\_k(r)$ is active
         \begin{equation}
-            post\_priors(r,5) = \dfrac{(log\_k(r)-log\_kprior(r))^2}{(2.cvkprior(r))}
+            post\_priors(r,5) = \dfrac{(log\_k(r)-log\_kprior(r))^2}{2.cvkprior^2(r)},
         \end{equation}
-        \item if $(active(log\_Lo(r)))$
+        else  $post\_priors(r,5)=0$.
+        \item if $log\_Lo(r)$ is active
         \begin{equation}
-            post\_priors(r,6) = \dfrac{(log\_Lo(r)-log\_Loprior(r))^2}{(2.cvLoprior^2(r))}
+            post\_priors(r,6) = \dfrac{(log\_Lo(r)-log\_Loprior(r))^2}{2.cvLoprior^2(r)},
         \end{equation}
-        \item if $active(log\_sdage(r))$
+
+        else $post\_priors(r,6)=0$.
+        \item if $log\_sdage(r)$ is active
         \begin{equation}
-            post\_priors(r,7) = \dfrac{(log\_sdage(r)-log\_sdageprior(r))^2}{(2.cvsdageprior^2(r))}.
+            post\_priors(r,7) = \dfrac{(log\_sdage(r)-log\_sdageprior(r))^2}{2.cvsdageprior^2(r)},
         \end{equation}
+
+        else $post\_priors(r,7)=0.$
     \end{itemize}
 
 
 
 \textbf{Fmort\_Pen}\\
-
+The penalty function for fishing mortality fpen(1) is
 
 \begin{itemize}
-    \item If ($current\_phase()<3$)
+    \item If the current phase is less than 3
     \begin{equation}
         fpen(1)=\sum_{k,y,a}(F^k_{y,a}-0.2)^2
     \end{equation}
@@ -1966,178 +2094,312 @@ Let index number $k$ ($1\leq k \leq nind$),\\
 
 \textbf{Sel\_Like}\\
 
-Let the fishery number k. 
+Let the fishery number k
 
 \begin{itemize}
     \item If logsel\_p1\_fsh(k) is active: 
 
 
 \begin{equation}
-sel\_like\_fsh(k,3)= \dfrac{1}{2}(logsel\_p1\_fsh(k,1))^2+\dfrac{1}{10}(logsel\_p2\_fsh(k,1))^2+(logsel\_p3\_fsh(k,1))^2
+sel\_like\_fsh_1(k,3)= \dfrac{1}{2}(logsel\_p1\_fsh(k,1))^2+\dfrac{1}{10}(logsel\_p2\_fsh(k,1))^2+(logsel\_p3\_fsh(k,1))^2
 \end{equation}
 \begin{equation*}
     +\sum_{i}\left(\dfrac{1}{10}( logsel\_p1\_fsh(k,i))^2+\dfrac{1}{10}(logsel\_p2\_fsh(k,i))^2+ 5.0.(logsel\_p3\_fsh(k,i))^2\right),
 \end{equation*}
-where the last sum is over i such that $2 \leq i \leq n\_sel\_ch\_fsh(k)$.
+where the last sum is over i such that $2 \leq i \leq n\_sel\_ch\_fsh(k)$,
 
-On the other hand
+on the other hand
 \begin{equation}
-    sel\_like\_fsh(k,2)=\sum_{i}\dfrac{0.5*\left(\sum_{j=1}^m(log\_sel\_fsh_j(k,iyr-1)-log\_sel\_fsh_j(k,iyr))^2\right)}{(sel\_sigma\_fsh(k,i))^2}, \  2 \leq i \leq n\_sel\_ch\_fsh(k),
+    sel\_like\_fsh_1(k,2)=\sum_{2\leq i \leq n\_sel\_ch\_fsh(k)}\dfrac{0.5*\displaystyle\left(\sum_{j=1}^m(log\_sel\_fsh_j(k,yr_i-1)-log\_sel\_fsh_j(k,yr_i))^2\right)}{(sel\_sigma\_fsh(k,i))^2},
 \end{equation}
-where  $iyr=yrs\_sel\_ch\_fsh(k,i)$.
+for $2 \leq i \leq n\_sel\_ch\_fsh(k)$ 
+where  $yr_i=yrs\_sel\_ch\_fsh(k,i)$.\\
+Else $sel\_like\_fsh_1(k,3)=0$ and $sel\_like\_fsh_1(k,2)=0$.
 
 \item If log\_selcoffs\_fsh(k) is active:
 \begin{equation}
-    sel\_like\_fsh(k,1) = \sum_{iyr}curv\_pen\_fsh(k).norm2(first\_difference( first\_difference(log\_sel\_fsh(k,iyr)))),
+    sel\_like\_fsh(k,1) = \sum_{yr_i}curv\_pen\_fsh(k)*norm2(first\_difference( first\_difference(log\_sel\_fsh(k,yr_i)))),
 \end{equation}
-where $iyr = yrs\_sel\_ch\_fsh(k,i)$ for each $1\leq i \leq n\_sel\_ch\_fsh(k)$.\\
-
-If $i>1$, then:
+where $yr_i = yrs\_sel\_ch\_fsh(k,i)$ for each $1\leq i \leq n\_sel\_ch\_fsh(k)$.\\
+And
 \begin{equation}
-    sel\_like\_fsh(k,2)  = 0.5*\dfrac{\left(\sum_{j=1}^m(log\_sel\_fsh_j(k,iyr-1)-log\_sel\_fsh_j(k,iyr))^2\right)}{(sel\_sigma\_fsh(k,i))^2}. 
+    sel\_like\_fsh(k,2)  = \sum_{i\in W}0.5*\dfrac{\left(\sum_{j=1}^m(log\_sel\_fsh_j(k,yr_i-1)-log\_sel\_fsh_j(k,yr_i))^2\right)}{(sel\_sigma\_fsh(k,i))^2} + sel\_like\_fsh_1(k,2) 
 \end{equation}
+where $W=\{1\leq i \leq n\_sel\_ch\_fsh(k): \ i>1\}$.\\
+
 Now for $seldecage \leq j \leq nselages\_fsh(k)$:
 \begin{equation}
-    difftmp=log\_sel\_fsh(k,iyr,j-1)-log\_sel\_fsh(k,iyr,j), 
+    difftmp_j=log\_sel\_fsh(k,yr_i,j-1)-log\_sel\_fsh(k,yr_i,j), 
 \end{equation}
-if $difftmp>0$, then
+then
 \begin{equation}
-    sel\_like\_fsh(k,3)    += 0.5*\dfrac{( difftmp )^2}{seldec\_pen\_fsh(k)}.
+    sel\_like\_fsh(k,3)    = \sum_{j\in D}0.5*\dfrac{( difftmp_j )^2}{seldec\_pen\_fsh(k)}+sel\_like\_fsh_1(k,3),
 \end{equation}
+where $D=\{j \in \mathbb{N} : difftmp_j>0\}$
 and 
 \begin{equation}
-    obj\_fun            += 20 . (avgsel\_fsh(k,i))^2.
+    obj\_fun  =\sum_{k\in act\_selcoffs\_fsh} \sum_{i}20 * (avgsel\_fsh(k,i))^2
 \end{equation}
+where $act\_selcoffs\_fsh=\{1\leq k \leq  n_{nfsh}: \ alog\_selcoffs\_fsh(k)\  is \ active\}$.
 \end{itemize}
-Now, let index number k (i.e $1\leq k \leq nind$):
+
+\newpage
+
+
+
+
+Now, let index number k (i.e $1\leq k \leq n_{ind}$):
+
+
+
 \begin{itemize}
+    \item If $logsel\_slope\_ind(k)$ is active
+    \begin{equation}
+        sel\_like\_ind_1(k,2) = \sum _{i=2}^{n\_sel\_ch\_ind(k)} 0.5*\dfrac{\sum_{j=1}^m(log\_sel\_ind_j(k,yr_i-1)-log\_sel\_ind_j(k,yr_i))^2}{sel\_sigma\_ind^2(k,i)}
+    \end{equation} otherwise $sel\_like\_ind_1(k,2)=0$, where for the rest of this section $yr_i = yrs\_sel\_ch\_ind(k,i)$ for each $1\leq i \leq n\_sel\_ch\_ind(k)$. 
     \item If $log\_selcoffs\_ind(k)$ is active
     \begin{equation}
-sel\_like\_ind(k,1) += curv\_pen\_ind(k)*norm2(first\_difference( first\_difference(log\_sel\_ind(k,iyr))));
+sel\_like\_ind(k,1) = \sum_{i=1}^{n\_sel\_ch\_ind(k)} curv\_pen\_ind(k)*norm2(first\_difference( first\_difference(log\_sel\_ind(k,yr_i)))).
     \end{equation}
-    where $iyr = yrs\_sel\_ch\_ind(k,i)$ for each $1\leq i \leq n\_sel\_ch\_ind(k)$, and $nagestmp = nselages\_ind(k)$.\\
-    If $i>1$:
+    
+    On the other hand
     \begin{equation}
-sel\_like\_ind(k,2)    += 0.5*\dfrac{\left(\sum_{j=1}^m(log\_sel\_ind_j(k,iyr-1)-log\_sel\_ind_j(k,iyr))^2\right)}{(sel\_sigma\_ind(k,i))^2}. 
-    \end{equation}
-    Let 
-    \begin{equation}
-        difftmp = log\_sel\_ind(k,iyr,j-1)-log\_sel_ind(k,iyr,j),
-    \end{equation}
-    if $difftmp>0$ then
-    \begin{equation}
-sel\_like\_ind(k,3)    += 0.5*\dfrac{(difftmp )^2}{seldec\_pen\_ind(k)}
-    \end{equation}
-    and 
-    \begin{equation}
-obj\_fun            += 20.0 * (avgsel\_ind(k,i))^2.
+sel\_like\_ind(k,2)    =\sum_{i\in B} 0.5*\dfrac{\left(\sum_{j=1}^m(log\_sel\_ind_j(k,yr_i-1)-log\_sel\_ind_j(k,yr_i))^2\right)}{(sel\_sigma\_ind(k,i))^2} + sel\_like\_ind_1(k,2)
     \end{equation}
 
+    where $B=\{1\leq i \leq n\_sel\_ch\_ind(k):\  i>1\}$.\\
+
     
+    Let for each $j$ such that $seldecage \leq j \leq nselages\_ind(k)$
+    \begin{equation}
+        difftmp_j= log\_sel\_ind_{j-1}(k,yr_i)-log\_sel\_ind_j(k,yr_i),
+    \end{equation}
+     then
+    \begin{equation}
+sel\_like\_ind(k,3)    =\sum_{j\in M} 0.5*\dfrac{(difftmp_j )^2}{seldec\_pen\_ind(k)}
+    \end{equation}
+    where $M=\{seldecage \leq j \leq nselages\_ind(k): \ difftmp_j>0\}$
+    and 
+    \begin{equation}
+obj\_fun            += \sum_{k\in act\_selcoffs\_ind}\left(\sum_{1\leq i \leq n\_sel\_ch\_ind(k)}20 * (avgsel\_ind(k,i))^2\right)
+    \end{equation}
+    where $act\_selcoffs\_ind=\{1\leq k \leq  n_{ind}: \ alog\_selcoffs\_ind(k)\  is \ active\}$.
 \end{itemize}
+
+
+
+
+
 
 
 \textbf{Srv\_Like}\\
-\begin{equation}
-    ind\_like(k)=\sum_{i=1}^{nyrs\_ind(k)}\dfrac{(log(obs\_ind(k,i)) - log(pred\_ind(k,i)) )^2}{(2.obs\_lse\_ind^2
-    (k,i))}
+Let the index number k, using the log-normal distribution we obtain the log-likelihood function 
+\begin{equation} 
+ind\_like(k)=\sum_{i=1}^{nyrs\_ind(k)}\dfrac{(log(obs\_ind(k,i)) - log(pred\_ind(k,i)) )^2}{(2*obs\_lse\_ind^2
+    (k,i))}.
 \end{equation}
+
+\begin{itemize}
+    \item nyrs\_ind(k) is the number of years of index value k.
+    \item $obs\_lse\_ind$ is a matrix with standard errors and is calculated from $obs\_lse\_ind(k,i)=\sqrt{log\left(\left(\dfrac{obs\_se\_ind(k,i)}{obs\_ind(k,i)}\right)^2+1\right)}$ for each index k and i-th year  with $1\leq i \leq nyrs\_ind(k)$.
+    \item obs\_se\_ind values of indices serrs(i.e obs\_se\_ind\_in which is input line 150 in dat 
+ file).
+    \item obs\_ind annuals values of index value (i.e obs\_ind\_in which is input line 147 in dat file).
+\end{itemize}
+
+\textbf{Age Like}\\
+The likelihood function for fisheries and index surveys are calculated as follows.
+Let the fishery number k ($1\leq k \leq n_{fsh}$)
+\begin{equation}
+\textbf{age\_like\_fsh}(k)=\left(\sum_{i=1}^{nyrs\_fsh\_age(k)}-n\_sample\_fsh\_age(k,i)\left(\sum_{j=1}^{m}(oac\_fsh_j(k,i)+0.001)*log(eac\_fsh_j(k,i)+0.001)\right)\right)
+\end{equation}
+\begin{equation*}
+    -offset\_fsh(k),
+\end{equation*}
+\begin{itemize}
+    \item $n\_sample\_fsh\_age$ is observed age composition sample sizes from fishery
+ and is obtained from $n\_sample\_fsh\_age_j(k) = n\_sample\_fsh\_age\_in_j(k)$ for each $1\leq j \leq nyrs\_fsh\_age(k)$ if $nyrs\_fsh\_age(k)>0$ 
+ where n\_sample\_fsh\_age\_in is input  line 29 in dat file  and nyrs\_fsh\_age line 21.
+\item offset\_fsh(k) for each fishery k is calculated as follows
+\begin{equation*}
+    offset\_fsh(k)=\displaystyle\sum_{i=1}^{nyrs\_fsh\_age(k)}-n\_sample\_fsh\_age(k,i)*
+\end{equation*}
+\begin{equation*}
+   \left(\sum_{j=1}^m\left(\dfrac{oac\_fsh_j(k,i)}{\sum_{a=1}^m oac\_fsh_a(k,i)}+0.001\right)*log\left(\dfrac{oac\_fsh_j(k,i)}{\sum_{a=1}^m oac\_fsh_a(k,i)}+0.001\right)\right)
+\end{equation*}
+where oac\_fsh is the observed age composition from fishery and is calculated from $oac\_fsh_j(k,i)=oac\_fsh\_in_j(k,i)$ for each fishery k, year i and age group j. $oac\_fsh\_in$ is matrix input line 33 in .dat file.
+\end{itemize}
 
 
 
-\textbf{Age\_Like}\\
+
 \begin{equation}
-    age\_Like\_fsh(k)= \left(\sum_{i=1}^{nyrs\_fsh\_age(k)}-n\_sample\_fsh\_age(k,i).(oac\_fsh(k,i)+0.001).log(eac\_fsh(k,i)+0.001)\right)
+    \textbf{length\_like \_fsh}(k)=\left(\sum_{i=1}^{nyrs\_fsh\_length(k)}-n\_sample\_fsh\_length(k,i)\left(\sum_{j=1}^{nlength}(olc\_fsh_j(k,i)+0.001)*log(elc\_fsh_j(k,i)+0.001)\right)\right)
 \end{equation}
 \begin{equation*}
-    -offset\_fsh(k).
+    -offset\_lfsh(k),
 \end{equation*}
+\begin{itemize}
+    \item $n\_sample\_fsh\_length$ is observed length composition sample sizes from fishery
+ and is obtained from $n\_sample\_fsh\_length_j(k) = n\_sample\_fsh\_length\_in_j(k)$ for each $1\leq j \leq nyrs\_fsh\_length(k)$ if $nyrs\_fsh\_length(k)>0$ 
+ where n\_sample\_fsh\_length\_in is input  line 31 in dat file  and nyrs\_fsh\_length line 23.
+\item offset\_lfsh(k) for each fishery k is calculated as follows
+\begin{equation*}
+    offset\_lfsh(k)=\displaystyle\sum_{i=1}^{nyrs\_fsh\_length(k)}-n\_sample\_fsh\_length(k,i)*
+\end{equation*}
+\begin{equation*}
+   \left(\sum_{j=1}^{nlength}\left(\dfrac{olc\_fsh_j(k,i)}{\sum_{a=1}^{nlength} olc\_fsh_a(k,i)}+0.001\right)*log\left(\dfrac{olc\_fsh_j(k,i)}{\sum_{a=1}^{nlength} olc\_fsh_a(k,i)}+0.001\right)\right)
+\end{equation*}
+where olc\_fsh is the observed length composition from fishery and is calculated from $olc\_fsh_j(k,i)=olc\_fsh\_in_j(k,i)$ for each fishery k, year i and length group j. $olc\_fsh\_in$ is matrix input line 36 in .dat file.
+\end{itemize}
+
+
+
+Now for survey index, let the index number k ($1\leq k \leq n_{ind}$)
 \begin{equation}
-    lenght\_like \_fsh(k)=\left(\sum_{i=1}^{nyrs\_fsh\_lenght(k)}-n\_sample\_fsh\_lenght(k,i).(olc\_fsh(k,i)+0.001).log(elc\_fsh(k,i)+0.001)\right)
+    \textbf{length\_like\_ind}(k)=\left(\sum_{i=1}^{nyrs\_ind\_lenght(k)}-n\_sample\_ind\_lenght(k,i)\left(\sum_{j=1}^{nlength}(olc\_ind_j(k,i)+0.001)*log(elc\_ind_j(k,i)+0.001)\right)\right)
 \end{equation}
 \begin{equation*}
-    -offset\_lfsh(k).
+    -offset\_lind(k),
 \end{equation*}
-\begin{equation}
-    length\_like\_ind(k)=\left(\sum_{i=1}^{nyrs\_ind\_lenght(k)}-n\_sample\_ind\_lenght(k,i).(olc\_ind(k,i)+0.001).log(elc\_ind(k,i)+0.001)\right)
-\end{equation}
+
+\begin{itemize}
+    \item $n\_sample\_ind\_length$ is observed length composition sample sizes from index
+ and is obtained from $n\_sample\_ind\_length_j(k) = n\_sample\_ind\_length\_in_j(k)$ for each $1\leq j \leq nyrs\_ind\_length(k)$ if $nyrs\_ind\_length(k)>0$ 
+ where n\_sample\_ind\_length\_in is input  line 167 in .dat file  and nyrs\_ind\_length line 156.
+\item offset\_lind(k) for each fishery k is calculated as follows
 \begin{equation*}
-    -offset\_lind(k).
+    offset\_lind(k)=\displaystyle\sum_{i=1}^{nyrs\_ind\_length(k)}-n\_sample\_ind\_length(k,i)*
 \end{equation*}
+\begin{equation*}
+   \left(\sum_{j=1}^{nlength}\left(\dfrac{olc\_ind_j(k,i)}{\sum_{a=1}^{mlength} olc\_ind_a(k,i)}+0.001\right)*log\left(\dfrac{olc\_ind_j(k,i)}{\sum_{a=1}^{nlength} olc\_ind_a(k,i)}+0.001\right)\right)
+\end{equation*}
+where olc\_ind is the observed length composition from index and is calculated from $olc\_ind_j(k,i)=olc\_ind\_in_j(k,i)$ for each index k, year i and length group j. $olc\_ind\_in$ is matrix input line 169 in .dat file.
+\end{itemize}
+
+
+
+
+
+
 \begin{equation}
-    age\_like\_ind(k)=\left(\sum_{i=1}^{nyrs\_ind\_age(k)}-n\_sample\_ind\_age(k,i).(oac\_ind(k,i)+0.001).log(eac\_ind(k,i)+0.001)\right)
+    \textbf{age\_like\_ind}(k)=\left(\sum_{i=1}^{nyrs\_ind\_age(k)}-n\_sample\_ind\_age(k,i)\left(\sum_{j=1}^m(oac\_ind_j(k,i)+0.001)*log(eac\_ind_j(k,i)+0.001)\right)\right)
 \end{equation}
 \begin{equation*}
     -offset\_ind(k).
 \end{equation*}
+\begin{itemize}
+    \item $n\_sample\_ind\_age$ is observed age composition sample sizes from index
+ and is obtained from $n\_sample\_ind\_age_j(k) = n\_sample\_ind\_age\_in_j(k)$ for each $1\leq j \leq nyrs\_ind\_age(k)$ if $nyrs\_ind\_age(k)>0$ 
+ where n\_sample\_ind\_age\_in is input  line 161 in dat file  and nyrs\_ind\_age line 153.
+\item offset\_ind(k) for each index k is calculated as follows
+\begin{equation*}
+    offset\_ind(k)=\displaystyle\sum_{i=1}^{nyrs\_ind\_age(k)}-n\_sample\_ind\_age(k,i)*
+\end{equation*}
+\begin{equation*}
+   \left(\sum_{j=1}^m\left(\dfrac{oac\_ind_j(k,i)}{\sum_{a=1}^m oac\_ind_a(k,i)}+0.001\right)*log\left(\dfrac{oac\_ind_j(k,i)}{\sum_{a=1}^m oac\_ind_a(k,i)}+0.001\right)\right)
+\end{equation*}
+where oac\_ind is the observed age composition from index and is calculated from $oac\_ind_j(k,i)=oac\_ind\_in_j(k,i)$ for each index k, year i and age group j. $oac\_ind\_in$ is matrix input line 163 in .dat file.
+\end{itemize}
+
+
+
+
+
 
 \textbf{Function dvariable get\_spr\_rates(double spr\_percent,int istk)}\\
 
-Let $sel\_tmp^k_j$ for each fishery k and age j as follow:
+Let $sel\_tmp^k_j$ for each fishery k and group age j as follows:
+If fishery k belongs to stock istk
 \begin{equation}
 sel\_tmp^k_j=sel\_fsh^k_{y_N,j}
 \end{equation}
-for each fishery k belonging at stock istk. Then let
-\begin{equation}
-    Fratio(k)=\sum_{age \  j}F^k_{y_N,j},
-\end{equation}
+else $sel\_tmp^k_j=0$ for all $1\leq j \leq m$ .
 
+Then let
+% \begin{equation}
+%     Fratio(k)=\sum_{j=1}^mF^k_{y_N,j},
+% \end{equation}
 \begin{equation}
-    sumF(s)=\sum_{k_s}Fratio(k_s), 1\leq s  \leq nstk,
+    sumF(s)=\sum_{k_s}\left(\sum_{j=1}^mF^{k_s}_{y_N,j}\right), 1\leq s  \leq n_{stk},
 \end{equation}
-finally
+and
 \begin{equation}
-    Fratio(k)=\dfrac{\sum_{age \  j}F^k_{y_N,j}}{sumF(s_k)}, 1 \leq k \leq nfsh.
+    Fratio(k)=\dfrac{\sum_{j=1}^m F^k_{y_N,j}}{sumF(s_k)}, 1 \leq k \leq n_{fsh}
 \end{equation}
+where $s_k$ is stock number to which fishery k belongs.
+
+
 Use Newton Raphson method with 6 iterations to find the root of:
 \begin{equation}
     dyld=\dfrac{(yld2-yld3)}{2*df}
 \end{equation}
 with second derivative:
 \begin{equation}
-    dyldp=\dfrac{(yld3-(2*yld1)+yld2)}{df*df},
+    dyldp=\dfrac{(yld3-(2*yld1)+yld2)}{df^2},
 \end{equation}
-iterations over
+with df=1.e-3 and
+iterations on
 \begin{equation*}
-    F1=F1-\dfrac{dyld}{dyldp},
+    F1\leftarrow F1-\dfrac{dyld}{dyldp},
 \end{equation*}
 where the initial value is $F1=0.8*natmortprior(mort\_map(istk,1))$ and
 \begin{equation*}
-    F2=F1+df,
+    F2\leftarrow F1+df,
 \end{equation*}
 \begin{equation*}
-    F3=F1-df,
+    F3 \leftarrow F1-df,
 \end{equation*}
 \begin{equation*}
-    yld1=-1000*\left(log\left(\dfrac{spr\_percent}{spr\_ratio(F1, sel\_tmp,styr,istk)}\right)\right)^2,
+    yld1=-1000*\left(log\left(\dfrac{spr\_percent}{spr\_ratio(F1, sel\_tmp,y_0,istk)}\right)\right)^2,
 \end{equation*}
 \begin{equation*}
-    yld2   = -1000*\left(log\left(\dfrac{spr\_percent}{spr\_ratio(F2, sel\_tmp,styr,istk)}\right)\right)^2,
+    yld2   = -1000*\left(log\left(\dfrac{spr\_percent}{spr\_ratio(F2, sel\_tmp,y_0,istk)}\right)\right)^2,
 \end{equation*}
 \begin{equation*}
-    yld2   = -1000*\left(log\left(\dfrac{spr\_percent}{spr\_ratio(F3, sel\_tmp,styr,istk)}\right)\right)^2.
+    yld3= -1000*\left(log\left(\dfrac{spr\_percent}{spr\_ratio(F3, sel\_tmp,y_0,istk)}\right)\right)^2.
 \end{equation*}
-This function returns $F1$ after the 6 iterations.\\
+This function returns $F1$ after the 6 iterations and spr\_ratio function is defined in the next section.
+
+
+ \begin{algorithm}[H]
+	\caption{{\bf \textit{get spr rates}}}
+	1. $\  \ $Let $F_1=0.8*natmortprior(mort\_map(istk,1))$, $df=1.e-3$. \\
+    2. $\  \ $ For $ii=1,...,6$, Do \\
+	3. $\  \ \quad$   $F_2 = F_1+df$\\
+	4. $\  \ \quad$  $F_3 = F_1 -df$\\
+	5. $\  \ \quad yld1 =-1000*\left(log\left(\dfrac{spr\_percent}{spr\_ratio(F1, sel\_tmp,y_0,istk)}\right)\right)^2,$\\
+    6. $\  \ \quad yld2=-1000*\left(log\left(\dfrac{spr\_percent}{spr\_ratio(F2, sel\_tmp,y_0,istk)}\right)\right)^2,$\\
+    7. $\  \ \quad yld3=-1000*\left(log\left(\dfrac{spr\_percent}{spr\_ratio(F3, sel\_tmp,y_0,istk)}\right)\right)^2.$\\
+    8. $\  \ \quad$   $dyld=\dfrac{(yld2-yld3)}{2*df},$\\
+    9. $\  \ \quad$   $dyldp=\dfrac{yld3-(2*yld1)+yld2}{(df*df)}$.\\
+    10. $\  \ \quad$    $F_1=F_{1}-\dfrac{dyld}{dyldp}$\\
+    11. $\  \ $EndDo.
+    
+\end{algorithm}
+
+
+
 
 \textbf{FUNCTION dvariable spr\_ratio(dvariable trial\_F,dvar\_matrix sel\_tmp,int iyr,int istk)}\\
 
-Let for each age j:
+Let for each age group j:
 \begin{equation}
-    srvtmp(j)=e^{-(\sum_{k}sel\_tmp^k_j*trial\_F*Fratio^k)-M^{istk}_{iyr,j}}.
+    srvtmp(j)=e^{-(\sum_{k=1}^{n_{fsh}}sel\_tmp^k_j*trial\_F*Fratio(k))-M^{istk}_{iyr,j}}.
 \end{equation}
 Then let $Ntmp_1=1$,
 \begin{equation}
-    Ntmp_j=Ntmp_{j-1}*srvtmp_{j-1}, \  2\leq j < nages.
+    Ntmp_j=Ntmp_{j-1}*srvtmp_{j-1}, \  2\leq j < m.
 \end{equation}
-Now for $j=nages$:
+Now for $j=m$:
 \begin{equation}
-Ntmp_{nages}=Ntmp_{nages-1}*\dfrac{srvtmp(nages-1)}{(1.-srvtmp(nages))}.
+Ntmp_{m}=Ntmp_{m-1}*\dfrac{srvtmp(m-1)}{(1.-srvtmp(m))}.
 \end{equation}
 \begin{equation}
-    SBtmp=wt\_mature(istk,j)*srvtmp(j)^{spmo\_frac}+\sum_{ j=2}^{nages-1}Ntmp(j)*wt\_mature(istk,j)*srvtmp(j)^{spmo\_frac} 
+    SBtmp=wt\_mat^{istk}_j*(srvtmp(j))^{s_f}+\sum_{ j=2}^{m-1}Ntmp(j)*wt\_mat^{istk}_j*(srvtmp(j))^{s_f} 
 \end{equation}
 \begin{equation*}
-+Ntmp_{nages}*wt\_mature(istk,nages)*srvtmp(nages)^{spmo_frac}.
++Ntmp_{m}*wt\_mat^{istk}_j*(srvtmp(m))^{s_f}.
 \end{equation*}
 Finally this function returns 
 \begin{equation}
@@ -2148,85 +2410,86 @@ Finally this function returns
 Let $Ntmp_1=1$ and then 
 
 \begin{equation*}
-    Ntmp_j=Ntmp_{j-1}*e^{-M(istk,j)} \\ 2 \leq j \leq m-1.
+    Ntmp_j=Ntmp_{j-1}*e^{-M^{istk}_j} \\ 2 \leq j \leq m-1.
 \end{equation*}
 Finally
 \begin{equation}
-    Ntmp_m=\dfrac{Ntmp_{nages-1}}{(1.-e^{-M^{istk}_{i,m}})},
+    Ntmp_m=\dfrac{Ntmp_{m-1}e^{-M^{istk}_{m-1}}}{(1.-e^{-M^{istk}_{i,m}})},
 \end{equation}
 and
 \begin{equation}
-    SBtmp=\sum_{j=1}^{m-1}Ntmp_j*wt\_mature_j^{istk}*e^{-s\_f * M^{istk}_{i,j}}
+    SBtmp=\sum_{j=1}^{m}Ntmp_j*wt\_mat_j^{istk}*e^{-s\_f * M^{istk}_{i,j}}.
 \end{equation}
-\begin{equation*}
-+Ntmp_m*wt\_mature^{istk}_m*e^{(-s\_f * M^{istk}_{i,nages})}.
-\end{equation*}
+% \begin{equation*}
+% +Ntmp_m*wt\_mat^{istk}_m*e^{(-s\_f * M^{istk}_{i,m})}.
+% \end{equation*}
 This function returns $SBtmp$.
 
 \textbf{FUNCTION compute\_spr\_rates}\\
 
-Let $1\leq k \leq nfsh$ and s is the stock to which it corresponds:
+Let the stock number s:
 \begin{equation}
-    sumF(s)=\sum_{k_s}\sum_{j=1}^mF^{k_s}_{y_N, j},
+    sumF(s)=\sum_{k_s}\left(\sum_{j=1}^mF^{k_s}_{y_N, j}\right),
 \end{equation}
-where $\sum_{k_s}$ denotes the sum over the fisheries corresponding to stock s and then
+where $\sum_{k_s}$ denotes the sum over the fisheries corresponding to stock s, then
 \begin{equation}
-    Fratio(k)=\dfrac{\sum_{j=1}^mF^k_{y_N,j}}{sumF(s)}.
+    Fratio(k)=\dfrac{\sum_{j=1}^mF^k_{y_N,j}}{sumF(s_k)},
 \end{equation}
-For $1\leq s \leq nstk$:
-\begin{itemize}
-    \item \begin{equation}
-        F35\_est(s) = get\_spr\_rates(.35,s)
-    \end{equation}
-    \item \begin{equation}
-        F50\_est(s) = get\_spr\_rates(.50,s)
-    \end{equation}
-    \item \begin{equation}
-        F40\_est(s) = get\_spr\_rates(.40,s).
-    \end{equation}
-\end{itemize}
-And for $1\leq k \leq nfsh$:
-\begin{itemize}
-    \item \begin{equation}
-        F50(k) = F50\_est(sel\_map(1,k)) * (Fratio(k))
-    \end{equation}
-    \item \begin{equation}
-        F40(k) = F40\_est(sel\_map(1,k)) * (Fratio(k))
-    \end{equation}
-    \item \begin{equation}
-        F35(k) = F35\_est(sel\_map(1,k)) * (Fratio(k)).
-    \end{equation}
-\end{itemize}
+where $s_k$ is the stock number to which fishery k belongs.\\
 
-\textbf{FUNCTION void writerep(dvariable\& tmp,adstring\& tmpstring)}\\
+For $1\leq s \leq nstk$:
+ \begin{equation}
+        F35\_est(s) = get\_spr\_rates(0.35,s),
+    \end{equation}
+     \begin{equation}
+        F50\_est(s) = get\_spr\_rates(0.50,s),
+    \end{equation}
+     \begin{equation}
+        F40\_est(s) = get\_spr\_rates(0.40,s).
+    \end{equation}
+
+And for $1\leq k \leq n_{fsh}$:
+\begin{equation}
+        F50(k) = F50\_est(s_k) * (Fratio(k)),
+    \end{equation}
+\begin{equation}
+        F40(k) = F40\_est(s_k) * (Fratio(k)),
+    \end{equation}
+\begin{equation}
+        F35(k) = F35\_est(s_k) * (Fratio(k)).
+    \end{equation}
+
+
+% \textbf{FUNCTION void writerep(dvariable\& tmp,adstring\& tmpstring)}\\
 
 
 \textbf{SolveF3( iyr, N\_tmp,  TACin, istk)}\\
-
-Entradas:  iyr, N\_tmp,  TACin, istk.
+This function returns ftmp.\\
+Input:  iyr, N\_tmp,  TACin, istk.
 \begin{equation}
-    M\_tmp=M^{istk}_{iyr},
+    M\_tmp_j=M^{istk}_{iyr,j}, \ 1\leq j \leq m
+\end{equation}
+with initial value for ftmp
+\begin{equation}
+    ftmp=\dfrac{TACin}{\sum_{j=1}^mN\_tmp_j*se^1_{iyr,j}*wt\_pop^s_j},
 \end{equation}
 
 \begin{equation}
-    ftmp_0=\dfrac{TACin}{\sum_{j=1}^mN\_tmp_j*sel\_fsh_j(1,iyr)*wt\_pop^s_j},
+    Fratsel_j(k)=Fratio(k)*se^k_{iyr,j}, \ 1\leq k \leq n_{fsh}.
 \end{equation}
-
+For $1 \leq ii \leq 5$ :
 \begin{equation}
-    Fratsel_j(k)=Fratio(k)*sel\_fsh_j(k,iyr), \ 1\leq k \leq nfsh, \ 1 \leq j \leq m.
+    Ftottmp_j= \sum_{k_{istk}}ftmp*Fratsel_j(k_{istk}), \ 1\leq j \leq m,
 \end{equation}
-For $1 \leq ii \leq 5$:
+where $\displaystyle\sum_{k_{istk}}$ denotes the sum over all fisheries corresponding with stock number istk.
 \begin{equation}
-    Ftottmp= \sum_{k_{istk}}ftmp*Fratsel(k),
-\end{equation}
-\begin{equation}
-    Z\_tmp=Ftottmp+M\_tmp,
+    Z\_tmp_j=Ftottmp_j+M\_tmp_j,
 \end{equation}
 \begin{equation}
-    S\_tmp=e^{-Z\_tmp}.
+    S\_tmp_j=e^{-Z\_tmp_j}.
 \end{equation}
 \begin{equation}
-    cc=\sum_{k_{istk}}\left(\sum_{j=1}^mwt\_fsh^{k_{istk}}_{j,y_N}*\left(\dfrac{ftmp*Fratsel_j(k)}{Z\_tmp_j}\right)*(1.-S\_tmp_j)*N\_tmp_j\right)
+    cc=\sum_{k_{istk}}\left(\sum_{j=1}^m wt\_fsh^{k_{istk}}_{y_N,j}*\left(\dfrac{ftmp*Fratsel_j(k_{istk})}{Z\_tmp_j}\right)*(1.-S\_tmp_j)*N\_tmp_j\right),
 \end{equation}
 \begin{equation}
     dd=\dfrac{cc}{TACin}-1
@@ -2239,7 +2502,28 @@ If ($dd<0.$) :   $dd \leftarrow dd . (-1)$
 \begin{equation}
     ii \leftarrow ii +1.
 \end{equation}
-Salida: $ftmp$.
+Output: $ftmp$.
+
+
+
+ \begin{algorithm}[H]
+	\caption{{\bf \textit{SolveF3}}}
+	1. $\  \ $Let $ftmp=\dfrac{TACin}{\sum_{j=1}^mN\_tmp_j*se^1_{iyr,j}*wt\_pop^s_j}$. \\
+    2. $\  \ $ For $ii=1,...,5$, Do \\
+	3. $\  \ \quad$   $Ftottmp_j= \sum_{k_{istk}}ftmp*Fratsel_j(k_{istk}), \ 1\leq j \leq m,$\\
+	4. $\  \ \quad$  $Z\_tmp_j=Ftottmp_j+M\_tmp_j,$\\
+	5. $\  \ \quad$ $S\_tmp_j=e^{-Z\_tmp_j},$\\
+    6. $\  \ \quad$ $cc=\sum_{k_{istk}}\left(\sum_{j=1}^m wt\_fsh^{k_{istk}}_{y_N,j}*\left(\dfrac{ftmp*Fratsel_j(k_{istk})}{Z\_tmp_j}\right)*(1.-S\_tmp_j)*N\_tmp_j\right),$\\
+    7. $\  \ \quad$ $dd=\dfrac{cc}{TACin}-1.$\\
+    8. $\  \ \quad$  If  $dd<0,$\\
+    9. $\  \ \qquad$   $dd \leftarrow dd * (-1)$,\\
+    10.$\  \ \quad$   $ftmp \leftarrow ftmp + \dfrac{(TACin-cc)}{btmp},$\\
+    11.$\  \ \quad$   $ii \leftarrow ii+1.$\\
+    12.$\  \ $EndDo.
+    
+\end{algorithm}
+
+
 
 %hace lo mismo que solveF3\textbf{SolveF2(iyr, N\_tmp, TACin, istk)}\\
 %Entradas: iyr, N\_tmp, TACin, istk.
@@ -2254,54 +2538,54 @@ Entradas: iyr, Catch, istk.
     dd=10,
 \end{equation}
 \begin{equation}
-    N\_tmp = natage(istk,iyr),
+    N\_tmp_j = N^{istk}_{iyr,j}, \ 1\leq j \leq m,
 \end{equation}
 \begin{equation}
     btmp_0=0,
 \end{equation}
 \begin{equation}
-    M\_tmp=M^{istk}_{iyr}.
+    M\_tmp_j=M^{istk}_{iyr,j}.
 \end{equation}
 
-Let $k$ a positive integer with $1\leq k \leq nfsh$
+Let $k$ a fishery ($1\leq k \leq n_{fsh}$)
 \begin{equation}
-    btmp(k)  =  \sum_{j=1}^mN\_tmp_j * sel\_fsh_j(k,iyr) * wt\_fsh_j(k,iyr),
+    btmp(k)  =  \sum_{j=1}^mN\_tmp_j * se^k_{iyr,j} * wt\_fsh^k_{iyr,j},
 \end{equation}
 \begin{equation}
     hrate(k) = \dfrac{Catch(k)}{btmp(k)},
 \end{equation}
 \begin{equation}
-    Frat(k)  = \dfrac{Catch(k)}{\sum_{k=1}^{nfsh} Catch(k)},
+    Frat(k)  = \dfrac{Catch(k)}{\sum_{k=1}^{n_{fsh}} Catch(k)},
 \end{equation}
 \begin{equation}
-    Fratsel_j(k) = Frat(k)*sel\_fsh_j(k,iyr), \ 1\leq k \leq nfsh, \ 1\leq j \leq m,
+    Fratsel_j(k) = Frat(k)*se^k_{iyr,j}, \ 1\leq k \leq n_{fsh}, \ 1\leq j \leq m,
 \end{equation}
 \begin{equation}
     ftmp(k) = 1.1*(1.- posfun(1.-hrate(k),.10,fpen(4))).
 \end{equation}
 If $hrate(k)<.9999$, for $1\leq ii \leq 8$:
 \begin{equation}
-    Ftottmp(aaa)=\sum_{k_{istk}}ftmp(k_{istk})*Fratsel(k_{istk},aaa), \ 1\leq aaa \leq m
+    Ftottmp(aaa)=\sum_{k_{istk}}ftmp(k_{istk})*Fratsel_{aaa}(k_{istk}), \ 1\leq aaa \leq m
 \end{equation}
 where the sum is over the fisheries corresponding to stock number $istk$.
 \begin{equation}
-    Z\_tmp     = Ftottmp  + M\_tmp,
+    Z\_tmp_j     = Ftottmp_j  + M\_tmp_j, \ 1\leq j \leq m
 \end{equation}
 \begin{equation}
-    S\_tmp     = e^{ -Z\_tmp },
+    S\_tmp_j     = e^{ -Z\_tmp_j },
 \end{equation}
 \begin{equation}
-    cc = \sum_{j=1}^mwt\_fsh_j(k,iyr) * \left(\dfrac{ftmp(k)*Fratsel_j(k)}{  Z\_tmp_j}\right)*(1.-S\_tmp_j)*N\_tmp_j.
+    cc = \sum_{j=1}^m wt\_fsh^k_{iyr,j} * \left(\dfrac{ftmp(k)*Fratsel_j(k)}{  Z\_tmp_j}\right)*(1.-S\_tmp_j)*N\_tmp_j.
 \end{equation}
 \begin{equation}
     ftmp(k) \leftarrow ftmp(k) + \dfrac{Catch(k)-cc}{btmp(k)}
 \end{equation}
 End For.
 \begin{equation}
-    Frat(k)=\dfrac{ftmp(k)}{\sum_{k=1}^{nfsh}ftmp(k)},
+    Frat(k)=\dfrac{ftmp(k)}{\sum_{k=1}^{n_{fsh}}ftmp(k)},
 \end{equation}
 \begin{equation}
-    Fratsel_j(k)=Frat(k)*sel\_fsh_j(k,iyr), \ 1\leq j \leq m.
+    Fratsel_j(k)\leftarrow Frat(k)*se^k_{iyr,j}, \ 1\leq j \leq m.
 \end{equation}
 Salida: ftmp.\\
 
@@ -2311,42 +2595,42 @@ Salida: ftmp.\\
 
 \textbf{FUNCTION double mn\_age(const dvector\& pobs)}
 \begin{equation}
-    mobs = \sum_{j=1}^m(pobs_j*age\_vector_j)
+    mobs = \sum_{a=1}^m(pobs_a*age\_vector_a)
 \end{equation}
 This function returns mobs.\\
 
 \textbf{FUNCTION double mn\_age(const dvar\_vector\& pobs)}
 
 \begin{equation}
-    mobs = value\left(\sum_{j=1}^m pobs_j*age\_vector_j\right).
+    mobs = value\left(\sum_{a=1}^m pobs_a*age\_vector_a\right).
 \end{equation}
 This function returns mobs.\\
 
 \textbf{FUNCTION double Sd\_age(const dvector\& pobs)}\\
 \begin{equation}
-    mobs = \sum_{j=1}^m(pobs_j*age\_vector_j),
+    mobs = \sum_{a=1}^m(pobs_a*age\_vector_a),
 \end{equation}
 \begin{equation}
-    stmp = \sqrt{\left(\sum_{j=1}^m(age\_vector_j*age\_vector_j)*pobs_j\right) - mobs^2}.
+    stmp = \sqrt{\left(\sum_{a=1}^m(age\_vector_a*age\_vector_a)*pobs_a\right) - mobs^2}.
 \end{equation}
 This function returns stmp.\\
 \textbf{FUNCTION double mn\_length(const dvector\& pobs)}\\
 \begin{equation}
-    mobs = \sum_{j=1}^{nlength}(pobs_j*len\_bins_j),
+    mobs = \sum_{a=1}^{nlength}(pobs_a*len\_bins_a),
 \end{equation}
 this function returns mobs.\\
 \textbf{FUNCTION double mn\_length(const dvar\_vector\& pobs)}\\
 \begin{equation}
-    mobs = value\left(\sum_{j=1}^{nlength}(pobs_j*len\_bins_j)\right),
+    mobs = value\left(\sum_{a=1}^{nlength}(pobs_a*len\_bins_a)\right),
 \end{equation}
 this function returns mobs.\\
 
 \textbf{FUNCTION double Sd\_length(const dvector\& pobs)}\\
 \begin{equation}
-    mobs = \sum_{j=1}^{nlength}(pobs_j*len\_bins_j),
+    mobs = \sum_{a=1}^{nlength}(pobs_a*len\_bins_a),
 \end{equation}
 \begin{equation}
-    stmp = \sqrt{\left(\sum_{j=1}^{nlength}(len\_bins_j^2)*pobs_j\right) - mobs^2},
+    stmp = \sqrt{\left(\sum_{a=1}^{nlength}(len\_bins_a^2)*pobs_j\right) - mobs^2},
 \end{equation}
 this function returns stmp.\\
 
@@ -2475,14 +2759,14 @@ This function returns sdnr.
     \item $i1=oac.rowmin()$,
     \item $i2=oac.rowmax()$,
     \item $nobs = oac.rowsize()$,
-    \item $ages$ is a vector defined by $ages(oac.colmin(),nages)$, that is, with oac.colmin() rows and nages columns.
+    \item $ages$ is a vector defined by $ages(oac.colmin(),m)$, that is, with oac.colmin() rows and $m$ columns.
     \item $resid$ is a vector defined by $resid(i1,i2)$.
 \end{itemize}
 Then we get
 \begin{equation}
     ages(i) = 2*(i) + 0.5,
 \end{equation}
-for  $oac.colmin() \leq i \leq nages$.\\
+for  $oac.colmin() \leq i \leq m$.\\
 
 On the other hand, considering $i1\leq i \leq i2$:
 
@@ -2519,7 +2803,7 @@ Model implementation could allow to analyse the effect of stock structure hypoth
 
 \section{Model parameters}
 \subsection{Estimable parameters}
-Para ajustar el modelo a los datos observados se estiman ciertos parámetros de manera que sus predicciones coincidan con las observaciones lo mejor posible. Los parámetros a estimar pueden tener predeterminado su fase de activación, luego si este es negativo quiere decir que el parámetro no es estimado en el modelo y por lo tanto toma un valor constante. Los parámetros estimables en el JJM son los siguientes 
+Para ajustar el modelo a los datos observados se estiman determinados parámetros de manera que sus predicciones coincidan con las observaciones lo mejor posible. Los parámetros a estimar pueden tener predeterminado su fase de activación, luego si este es negativo quiere decir que el parámetro no es estimado en el modelo y por lo tanto toma un valor constante. Los parámetros estimables en el JJM son los siguientes 
 \subsubsection{Biological Parameters}
 \begin{itemize}
     \item init\_bounded\_number\_vector Mest(1,nmort,.02,4.8,phase\_M)
@@ -2541,7 +2825,7 @@ Para ajustar el modelo a los datos observados se estiman ciertos parámetros de 
     \item init\_number\_vector log\_Rzero(1,nregs,phase\_Rzero)
     \item init\_bounded\_matrix rec\_dev(1,nstk,styr\_rec,endyr,-15,15,2)
     \item init\_number\_vector log\_sigmar(1,nrec,phase\_sigmar)
-    \item 
+    
 \end{itemize}
 \subsubsection{Fishing mortality parameters}
 \begin{itemize}
@@ -2573,7 +2857,7 @@ Here we give the values with which some parameters to be estimated are initializ
 
 \begin{tabular}{c c}
     Mest & natmortprior \\
-     steepness & steepnessprior\\
+     steepness & steepnessprior \\
      log\_sigmar & log\_sigmarprior \\
      log\_Rzero &    R\_guess\\
      mean\_log\_rec 
@@ -2597,6 +2881,12 @@ Here we give the values with which some parameters to be estimated are initializ
 
 
 \textbf{Calculation of initialization values}\\
+\begin{equation}
+    natmortprior, \ input
+\end{equation}
+\begin{equation}
+    steepnessprior, \ input
+\end{equation}
 \begin{equation}
 log\_sigmarprior = log(sigmarprior)
 \end{equation}
@@ -2657,10 +2947,10 @@ Line in the .dat file & Name in .dat file  & Name in the User Guide & Tpl name &
  3 &  years & $y_0$  & styr & Year of start of observation\\ \hline
 4 &  years & $y_N$  & endyr & End year of observation\\ \hline
 6 & ages  & $r_a$  & $rec\_age$ & Recruitment age\\ \hline
-7 & ages  &   & $oldest\_age$ & Oldest age\\ \hline
-9 & nbins &   & $n\_lenght$ & Number of sizes  considered\\ \hline
+7 & ages  &  $o_a$ & $oldest\_age$ & Oldest age class\\ \hline
+9 & nbins &   & $nlenght$ & Number of sizes  considered\\ \hline
 10 & lengthbin &   & $len\_bins$ & Vector sizes \\  \hline
-12 & Fnum &   & $nfsh$ & Total number of fisheries\\ \hline
+12 & Fnum & $n_{fsh}$  & $nfsh$ & Total number of fisheries\\ \hline
 14 & Fnames &   & $fshnameread$ & Fisheries names\\ \hline
 16 & Fcaton &   & $catch\_bio\_in$ & Observed catch biomass\\ \hline
 19 & Fcatonerr &   & $catch\_bio\_sd\_in$ & Catch biomass standard errors \\ \hline
@@ -2673,11 +2963,11 @@ Line in the .dat file & Name in .dat file  & Name in the User Guide & Tpl name &
 33 & Fagecomp &   & $oac\_fsh\_in$ & Age composition matrix \\ \hline
 36 & Flenghtcomp &   & $olc\_fsh\_in$ & Lenght composition matrix\\ \hline
 80 & Fwtatage &   & $wt\_fsh$ & Matrix weight at age for each year(styr-endyr)\\ \hline
-134 & Inum &   & $nind$ & Total number of indices\\ \hline
+134 & Inum &  $n_{ind}$ & $nind$ & Total number of indices\\ \hline
 136 & Inames &   & $indnameread$ & Index names\\ \hline
-138 & Inumyears &   & $nyrs\_ind$ & Vector with numbers of years for each fishery.\\ \hline
+138 & Inumyears & $nyrs^k_{ind}$  & $nyrs\_ind$ & Vector with numbers of years for each fishery.\\ \hline
 141 & Iyears &   & $yrs\_ind\_in$ & Matrix with years for each index.\\ \hline
-144 & Imonths &   & $mo\_ind$ & Month occur \\ \hline
+144 & Imonths & $mo_{ind}$  & $mo\_ind$ & Month occur \\ \hline
 147 & Index &   & $obs\_ind\_in$ & Values of index value (annual)\\ \hline
 150 & Indexerr &   & $obs\_se\_ind\_in$ & Values of indices serrs.\\ \hline
 153 & Inumageyears &   & $nyrs\_ind\_age$ & Number of years with age data available for index.\\
@@ -2690,7 +2980,7 @@ Line in the .dat file & Name in .dat file  & Name in the User Guide & Tpl name &
 167 & Ilenghtsample &   & $n\_sample\_ind\_lenght\_in$ & \\ \hline
 169 & Iproplenght &   & $olc\_ind\_in$ & Observed lenght comp from index.\\ \hline
 171 & Iwtatage &   & $wt\_ind$ & Matrix weight at age for each year and index value. \\ \hline
-278 & Pspwn &  $s_f$ & $spawnmo$ & Spawning month.\\ \hline
+278 & Pspwn &  $s_p$ & $spawnmo$ & Spawning month.\\ \hline
 280 & Pageerr &   & $age\_err$ & Error in matrix age.\\ \hline
 \end{tabular} 
 
@@ -2740,7 +3030,7 @@ A full description of data sets used to the assessment of Jack mackerel is in th
 \begin{tabular}{|  p{0.9cm} | p{1.9cm}  | p{1.9cm} | c | c |}
 \hline
 Line in the .ctl file & Name in .ctl file  & Name in the User Guide & Tpl name & Definition\\ \hline  \hline
- 5 &  Number of stocks & $nstk$  & nstk & Total number of stocks\\ \hline
+ 5 &  Number of stocks & $n_{stk}$  & nstk & Total number of stocks\\ \hline
 6 &  Names of stocks & - & $stknameread$   & Stocks name\\ \hline
 8 &  Selectivity sharing vector & sel\_map  & $sel\_map$ & Selectivity matrix\\ \hline
 15 &  Number of regimes &  - & $nreg$ & Vector with regimes for each stock.\\ \hline
