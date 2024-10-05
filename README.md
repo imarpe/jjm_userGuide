@@ -7,7 +7,7 @@ This repository provides a detailed specification of the Jack Mackerel Joint Mod
   - Biological Reference Points (BRPs)
   - Catch projections
 
-For this purpose, we have analyzed the model code located at [this repository](https://github.com/CriscelyLP/jjm/blob/main/src/jjm.tpl). The document also covers:
+For this purpose, we have analyzed the model code located at [this repository](https://github.com/SPRFMO/jjm/blob/main/src/jjm.tpl). The document also covers:
 
 - Input data (dat and ctl files) and key parameters for the assessment, including parameters to be estimated.
 - Steps to follow for the installation of the resources and running the model.
@@ -15,4 +15,3 @@ For this purpose, we have analyzed the model code located at [this repository](h
 Finally, a case study is used to illustrate the use of the JJM model
 
 ## V.0.0.0 (08-12-2024):
-xxxxxxxxx 
